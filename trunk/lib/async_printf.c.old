@@ -1,0 +1,108 @@
+#include <global.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <lock.h>
+#include <queue.h>
+#include <thread.h>
+#include <async_printf.h>
+#include <uart.h>
+#include <lcd.h>
+
+//FILE lcdout = FDEV_SETUP_STREAM(async_putc, NULL, _FDEV_SETUP_WRITE);
+extern FILE lcdout;
+extern FILE uartout;
+
+TAILQ_HEAD(print_queue_head, print_queue) pqueue;
+struct print_queue {
+	TAILQ_ENTRY(print_queue) pq_link;
+	FILE *out;
+	char *buf;
+};
+
+#define TAILQ_EMPTY(head)    ((head)->tqh_first == NULL)
+#define TAILQ_FIRST(head)    ((head)->tqh_first)
+#define BUFFER_SIZE			(33*sizeof (char))
+
+struct lock print_queue_lock;
+
+int
+async_loop_start (void) {
+	init_lock(&print_queue_lock, "print queue");
+	TAILQ_INIT(&pqueue);
+
+	// loop and wait for input
+	for (;;) {
+		acquire(&print_queue_lock);
+
+		if (!TAILQ_EMPTY(&pqueue)) {
+			struct print_queue *next = TAILQ_FIRST(&pqueue);
+			TAILQ_REMOVE(&pqueue, next, pq_link);
+			release(&print_queue_lock);
+
+			if (next->out == &lcdout) {
+				lcd_printf("%s", next->buf);
+			} else if (next->out == &uartout) {
+				uart_printf("%s", next->buf);
+			} else {
+				cli();
+				uart_printf_P(PSTR("Unknown file descriptor %p\n"),next->out);
+				uart_printf_P(PSTR(" uartout at %p\n"), &uartout);
+				uart_printf_P(PSTR(" lcdout at %p\n"), &lcdout);
+				panic ("async_loop");
+			}
+
+			/*
+			free(next->buf);
+			free(next);
+			*/
+		} else {
+			release(&print_queue_lock);
+			yield();
+		}
+	}
+
+	return 0;
+}
+
+int
+async_vfprintf (FILE *out, const char *fmt, va_list ap) {
+	panic ("async_printf");
+	if(1) return vfprintf(out, fmt, ap);
+	/*
+	char *buf;
+	while((buf = (char *) malloc(BUFFER_SIZE)) == NULL)
+		yield();
+
+	int result = vsnprintf(buf, BUFFER_SIZE, fmt, ap);
+
+	struct print_queue *next;
+	while((next = malloc (sizeof(struct print_queue))) == NULL)
+		yield();
+
+	next->buf = buf;
+	next->out = out;
+
+	acquire(&print_queue_lock);
+	TAILQ_INSERT_TAIL(&pqueue, next, pq_link);
+	release(&print_queue_lock);
+
+	return result;
+	*/
+}
+
+int
+async_printf (FILE *out, const char *fmt, ...) {
+	va_list ap;
+	int count;
+
+	if (out != &uartout && out != &lcdout) {
+		panic("unknown out");
+	}
+
+	va_start(ap, fmt);
+	count = async_vfprintf (out, fmt, ap);
+	va_end(ap);
+
+	return count;
+}
+
