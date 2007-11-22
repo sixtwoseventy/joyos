@@ -56,6 +56,6 @@ void panic (char *msg);
 #define static_assert(x) switch(x) case 0: case (x):
 
 //! Current JoyOS version
-#define JOYOS_VERSION	"0.1.06"
+#define JOYOS_VERSION	"0.1.6"
 
 #endif // __INCLUDE_GLOBAL_H__

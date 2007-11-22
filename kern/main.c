@@ -94,7 +94,7 @@ int main (void) {
 
 	// TODO check for debug mode
 
-	waitForClick ("JoyOS v"JOYOS_VERSION"   Press GO");
+	waitForClick ("JoyOS v"JOYOS_VERSION"    Press GO");
 
 	uart_printf_P (PSTR("__malloc_heap_start = %p\n"), __malloc_heap_start);
 
