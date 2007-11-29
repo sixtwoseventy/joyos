@@ -2,7 +2,7 @@ CC = avr-gcc
 MCU = atmega128
 OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
-INCLUDES = -Ihal -Iinc
+INCLUDES = -Idrivers -Icommon -Iinc
 #PRINTFOP = -Wl,-u,vfprintf -lprintf_min
 #SCANFOP = -Wl,-u,vfscanf -lscanf_flt -lm
 SCANFOP =
@@ -19,11 +19,11 @@ OSTARGET = os.hex
 # OS Source files
 
 # Driver source files
-DRIVERSRC = hal/io.c \
-			hal/adc.c \
-			hal/spi.c \
-			hal/uart.c \
+DRIVERSRC = common/io.c \
 			drivers/lcd.c \
+			drivers/adc.c \
+			drivers/spi.c \
+			drivers/uart.c \
 			drivers/fpga.c \
 			drivers/servo.c \
 			drivers/motor.c \
@@ -107,7 +107,7 @@ release: $(OSTARGET) docs
 	rm -rf release/*
 	mkdir release/6.270/
 	cp -R inc release/6.270/inc
-	cp -R hal/*.h release/6.270/inc
+	cp -R common/*.h release/6.270/inc
 	rm -rf release/6.270/inc/.svn
 	cp -R doc release/6.270/doc
 	rm -rf release/6.270/doc/.svn
@@ -116,7 +116,7 @@ release: $(OSTARGET) docs
 	cp -R drivers/*.o release/6.270/lib/
 	cp -R kern/*.o release/6.270/lib/
 	cp -R lib/*.o release/6.270/lib/
-	cp -R hal/*.o release/6.270/lib/
+	cp -R common/*.o release/6.270/lib/
 	mkdir release/6.270/src
 	cp -R user/happytest release/6.270/src
 	rm -rf release/6.270/src/happytest/.svn
