@@ -23,42 +23,26 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#include <avr/interrupt.h>
+#include <lcd.h>
+#include <kern/global.h>
+#include <kern/lock.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+void
+panic (char *msg) {
+	// stop everything
+	cli();
+	// notify user
+	extern struct lock *lcd_lock;
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+	// clobber LCD lock so we can write
+	lcd_lock->locked = 0;
+	lcd_lock->thread = NULL;
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+	lcd_clear(); // clear lcd
+	lcd_printf("panic: %s\n", msg ? msg : ""); // print msg
+	// TODO: uartPrint
+	// halt
+	while (1);
 }
 

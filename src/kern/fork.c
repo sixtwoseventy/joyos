@@ -23,42 +23,55 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
+
+// Fork
+//
+// Split a thread into two.
+//
+// Written by: Greg Belote [gbelote@mit.edu]
+
 #include <kern/thread.h>
+#include <kern/global.h>
+#include <avr/interrupt.h>
+#include <setjmp.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
-
-// Entry point to contestant code.
-// Create threads and return 0.
+// Duplicate this thread (with it's own stack).
+// In the parent thread, this returns the thread id (tid) of the child.
+// In the child thread, this returns 0.
 int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
+fork (void) {
+
+	panic ("fork");
+
+	struct thread *child;
+
+	// record interrupt status
+	uint8_t was_enabled = SREG & SREG_IF;
+	// lock thread table
+	cli();
+
+	// allocate new thread for child
+	child = NULL; // FIXME
+
+	// copy state to child thread
+	//if (setjmp(child->th_jmpbuf) != 0) {
+	if (setjmp(TO_JMP_BUF(child->th_jmpbuf)) != 0) {
+		// we're the child now and we've just been scheduled
+		// interrupts should be enabled
+
+		// fork returns 0
+		return 0;
 	}
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+	// allocate child stack and copy contents of parent stack
+
+	// enable child thread
+	child->th_status = THREAD_RUNNABLE;
+
+	// restore interrupt status
+	SREG |= was_enabled;
+
+	// we're the parent and our work is done, we're ready to return
+	return child->th_id;
 }
 

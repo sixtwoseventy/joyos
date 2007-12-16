@@ -23,42 +23,48 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#ifndef __INCLUDE_GLOBAL_H__
+#define __INCLUDE_GLOBAL_H__
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+/**
+ * \file global.h
+ * \brief Miscellaneous kernel support functions.
+ *
+ * This header includes kernel-level support and debbugging functions as well
+ * as JoyOS version information.
+ */
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+#include <assert.h>
+#include <stddef.h>
+#include "config.h" // TODO rewrite
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
+//#define __ASSERT_USE_STDERR
+//#define assert(expr) if (!(expr)) { panic("assert"); } else
 
+//void abort (void);
+
+/**
+ * System panic.
+ * Call this routine to halt the board and display an error message on the
+ * LCD. This routine never returns.
+ *
+ * @param msg	Display "panic: msg" on the LCD.
+ */
+void panic (char *msg);
+
+/**
+ * Enable or disable the Auto-halt.
+ * By default after 60 seconds, the kernel will disable all motors and servos
+ * and halt. To disable this functionality call set_auto_halt(0);
+ *
+ * @param ah whether to enable or disable auto-halt functionality
+ */
+void set_auto_halt(uint8_t ah);
+
+// throw compiler error if x is false
+#define static_assert(x) switch(x) case 0: case (x):
+
+//! Current JoyOS version
+#define JOYOS_VERSION	"0.1.6"
+
+#endif // __INCLUDE_GLOBAL_H__

@@ -23,42 +23,52 @@
  *
  */
 
-// Include headers from OS
+#include <avr/interrupt.h>
 #include <board.h>
-#include <kern/thread.h>
+#include <kern/global.h>
+#include <kern/util.h>
+#include <kern/lock.h>
+#include <lcd.h>
+#include <lib/async_printf.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
-
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
+void
+waitForClick(char *msg) {
+	if (msg) {
+		// TODO: clean up, make more general (don't assume LCD)
+		lcd_clear();
+		// print to LCD
+		lcd_printf("%s", msg);
+		// print to UART
+		uart_printf("%s\n", msg);
 	}
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+	go_click();
+}
+
+// prints n bytes of 'bytes' to UART
+void
+dumpBytes (uint8_t *bytes, uint8_t n) {
+	uart_printf("INDEX   ADDR   VALUE\n");
+	uart_printf("====================\n");
+	for (int i = 0; i < n; i++) {
+		uart_printf("% 5d   %4p   %02x\n", i, (void *)(bytes + i), bytes[i]);
+	}
+}
+
+int 
+printf (const char *fmt, ...) {
+	extern struct lock lcd_lock;
+	extern FILE lcdout;
+	acquire(&lcd_lock);
+	va_list ap;
+	int count;
+
+	va_start(ap, fmt);
+	count = vfprintf (&lcdout, fmt, ap);
+	//count = async_vfprintf (&lcdout, fmt, ap);
+	va_end(ap);
+
+	release(&lcd_lock);
+	return count;
 }
 

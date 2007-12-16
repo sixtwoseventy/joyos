@@ -23,42 +23,33 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#include "hal/io.h"
+#include "hal/adc.h"
+#include "kern/lock.h"
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
+#define PRESCALER	0x7
+
+struct lock adc_lock;
+
+void
+adc_init (void) {
+	init_lock(&adc_lock, "adc lock");
 }
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+int8_t
+adc_get_sample (adc_ref ref, adc_input config, uint16_t * val)
+{
+	acquire(&adc_lock);
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+	ADMUX = (ref << 7) | _BV(REFS0) | /*_BV(ADLAR) |*/ config;
+	ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIF) | PRESCALER;
+
+	while (!(ADCSRA & _BV(ADIF)));
+	ADCSRA |= _BV(ADIF);
+
+	*val = ADCL;
+	*val |= (ADCH << 8);
+
+	release(&adc_lock);
+	return ADC_SUCCESS;
 }
-

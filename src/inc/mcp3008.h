@@ -23,42 +23,38 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#ifndef _MCP3008_H_
+#define _MCP3008_H_
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+typedef enum {
+	MCP3008_MOTOR,
+	MCP3008_ADC1,
+	MCP3008_ADC2,
+} mcp3008_device;
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+typedef enum {
+	MCP3008_CH0				= 0x8,
+	MCP3008_CH1				= 0x9,
+	MCP3008_CH2				= 0xa,
+	MCP3008_CH3				= 0xb,
+	MCP3008_CH4				= 0xc,
+	MCP3008_CH5				= 0xd,
+	MCP3008_CH6				= 0xe,
+	MCP3008_CH7				= 0xf,
+	MCP3008_DIFF_0_1	= 0x0,
+	MCP3008_DIFF_1_0	= 0x1,
+	MCP3008_DIFF_2_3	= 0x2,
+	MCP3008_DIFF_3_2	= 0x3,
+	MCP3008_DIFF_4_5	= 0x4,
+	MCP3008_DIFF_5_4	= 0x5,
+	MCP3008_DIFF_6_7	= 0x6,
+	MCP3008_DIFF_7_6	= 0x7
+} mcp3008_input;
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
+#define MCP3008_SUCCESS		0
+#define MCP3008_SPI_BUSY	-1
 
+void init_mcp3008 (void);
+int8_t mcp3008_get_sample (mcp3008_device dev, mcp3008_input config, uint16_t * sample);
+
+#endif

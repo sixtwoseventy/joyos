@@ -23,42 +23,13 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#ifndef __INCLUDE_GYRO_H__
+#define __INCLUDE_GYRO_H__
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+void gyro_init (uint8_t port, uint16_t lsb_ms_per_deg, uint32_t samples);
+void gyro_update (void);
+uint8_t gyro_enabled (void);
+float gyro_get_degrees (void);
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
-
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
+#endif // __INCLUDE_GYRO_H__
 

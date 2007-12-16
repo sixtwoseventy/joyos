@@ -23,42 +23,62 @@
  *
  */
 
-// Include headers from OS
+#include <config.h>
 #include <board.h>
-#include <kern/thread.h>
+#include <hal/io.h>
+#include <hal/spi.h>
+#include <hal/adc.h>
+#include <hal/delay.h>
+#include <kern/global.h>
+#include <kern/lock.h>
+#include <kern/isr.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+extern FILE lcdout, uartout;
+#define BOOT_TEXT "Happyboard v"BOARD_VERSION_STRING"               \5"
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
+void
+board_init (void) {
+	io_init();
+	LED_PWR(1);
+	digital_init();
+	encoder_init();
+	spi_init();
+	motor_init();
+	servo_init();
+	lcd_init();
+	adc_init();
+	uart_init(BAUD_RATE);
+	uart_print(BOOT_TEXT);
+	uart_print("\n\r");
+	isr_init();
+	// init stdout/stderr
+	stdout = &lcdout;
+	stderr = &uartout;
+	
+	lcd_printf(BOOT_TEXT);
+	lcd_set_pos(31);
+	// init fpga
+	uint8_t fpgaOK = fpga_init();
+	uint8_t battOK = read_battery()>=7500;
+	// smiley / frowny depending on fpga state
+	lcd_printf(fpgaOK ? "\1" : "\3");
+	uart_printf("FPGA %d %d.%d\n\r",
+			fpgaOK,
+			fpga_get_version_major(), 
+			fpga_get_version_minor());
+	lcd_set_pos(16);
+	if (!battOK)
+		lcd_printf("Low battery    \3");
+	if (!fpgaOK)
+		lcd_printf("FPGA failure   \3");
+	if ((!battOK) || (!fpgaOK)) {
+		while (1);
 	}
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+	delay_busy_ms(500);
+	LED_COMM(0);
+	// beep
+	rf_init();
+	beep(400,100);
 }
 

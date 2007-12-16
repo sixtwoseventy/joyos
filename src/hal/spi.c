@@ -23,42 +23,57 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#include "config.h"
+#include "hal/io.h"
+#include "hal/spi.h"
+#include <kern/lock.h>
+#include <kern/global.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
+//static uint8_t in_use = 0;
+
+struct lock spi_lock;
+
+void 
+spi_init (void) {
+	init_lock(&spi_lock, "spi lock");
 }
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
+int8_t 
+spi_acquire() {
+	acquire(&spi_lock);
+	return SPI_READY;
+}
+
+void 
+spi_release () {
+	release(&spi_lock);
+}
+
+void 
+spi_set_master (spi_clk_div div, uint8_t flags) {
+	// set spi control reg:
+	// SPE - enable
+	// MSTR - master mode
+	// flags - see spi.h
+	// div - high two bits of div are divides, low bit is 2X multiplier 
+	SPCR = _BV(SPE) | _BV(MSTR) | flags | (div>>1);
+	// set multiplier flag
+	if (div&1)
+		SPSR |= _BV(SPI2X);
+	else
+		SPSR &= ~_BV(SPI2X);
+	// set direction of pins
+	DDRB |= _BV(PB2) | _BV(PB1) | _BV(PB0);
+}
+
+int8_t 
+spi_transfer_sync (uint8_t * data, uint8_t len) {
+	uint8_t i;
+
+	for (i = 0; i < len; i++) {
+		SPDR = data[i];
+		while (!(SPSR & _BV(SPIF)));
+		data[i] = SPDR;
 	}
-
-	// Will never return, but the compiler complains without a return
-	// statement.
 	return 0;
 }
-

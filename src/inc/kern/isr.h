@@ -23,42 +23,17 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#ifndef __INCLUDE_ISR_H__
+#define __INCLUDE_ISR_H__
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+#include <avr/interrupt.h>
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+/**
+ * Configure timer 0 to call function 'func' whenever an TIMER0 interrupt
+ * occurs.
+ */ 
+void set_timer0_callback( void (*func) () );
+void isr_init();
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
+#endif // __INCLUDE_ISR_H__
 

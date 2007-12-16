@@ -23,71 +23,159 @@
  *
  */
 
-/* Gyro demo program for gyro with noise injection.
-   Howard Samuels, 11/16/2004 
-   howard.samuels@analog.com
-   
-   Modified for Happyboard
-   Ross Glashan, 07/05/2005
-   rng@mit.edu
-*/
-
-#include <global.h>
 #include <board.h>
-#include <thread.h>
-#include <math.h>
-#include <gyro.h>
-#include <board.h>
-//#include <pid.h>
+#include <kern/global.h>
+#include <kern/thread.h>
 
-#define GYRO_PORT 11
-
-#define MOTOR_LEFT 4
-#define MOTOR_RIGHT 3
-
-#define DEGS_TO_RADS	0.01745328f
-
-int display_angle (void) {
-	for (;;) {
-		int theta = (int) get_degrees ();
-		printf("\ntheta = %d", theta);
-		pause(500);
-	}
-
-	return 0;
+/**
+ * Display testName and 'Press Go'
+ */
+void start_test(char testName[]) {
+	printf("\n%sPress Go",testName);
+	go_click();
 }
- 
+
+/**
+ * Test Servos
+ * servos 0 - 5 positions are set by frob knob
+ */
+void test_servos() {
+	uint8_t srv;
+	uint16_t pos;
+	while (!stop_press()) {
+		pos = read_frob()/2;
+		printf("\nservos=%d",pos);
+		for (srv=0;srv<6;srv++)
+			servo_set_pos(srv,pos);
+		pause(50);
+	}
+}
+
+/**
+ * Test Motors
+ * Motor velocity is set by frob knob
+ * Cycle through motors with go button
+ */
+void test_motors() {
+	uint8_t mot=0;
+	uint16_t pos;
+
+	while (!stop_press()) {
+		pos = read_frob()/2;
+		printf("\nmotor%d=%3d %dmA",mot,pos,motor_get_current_MA(mot));
+		motor_set_vel(mot,pos-256);
+		if (go_press()) {
+			go_click();
+			motor_set_vel(mot,0);
+			mot++;
+			if (mot==6) mot = 0;
+		}
+		pause(50);
+	}
+	motor_set_vel(mot,0);
+}
+
+/**
+ * Test Encoders
+ * Displays all encoder counts
+ */
+void test_encoders() {
+	while (!stop_press()) {
+		uint16_t e24 = encoder_read(24);
+		uint16_t e25 = encoder_read(25);
+		uint16_t e26 = encoder_read(26);
+		uint16_t e27 = encoder_read(27);
+		
+		printf("\ne24=%03d e25=%03d e26=%03d e27=%03d",e24,e25,e26,e27);
+		pause(50);
+	}
+}
+
+
+/**
+ * Test Analog Inputs
+ * Display single analog input, select with frob knob
+ */
+void test_analog() {
+	uint8_t port;
+	while (!stop_press()) {
+		port = (read_frob()/64) + 8;
+		printf("\nanalog%02d=%d",port,analog_read(port));
+		pause(50);
+	}
+}
+
+/**
+ * Test Digital Inputs
+ * Displayed as single 8bit binary num
+ */
+void test_digital() {
+	while (!stop_press()) {
+		printf("\ndigital=");
+		for (uint8_t i=0;i<8;i++)
+			lcd_print_char(digital_read(i) ? '1' : '0',NULL);
+		pause(50);
+	}
+}
+
+void test_battery() {
+	while (!stop_press()) {
+		uint16_t v = (uint16_t)(read_battery());
+		printf("\nBatery: %dmV", v);
+		pause(50);
+	}
+}
+
+/**
+ * Test RF
+ * Display X, Y coordinates of board
+ */
+void test_rf() {
+	while (!stop_press()) {
+		uint8_t team = read_frob()>511;
+		printf("\nrobot %d         x:%d y:%d",team,rf_get_x(team),rf_get_y(team));
+		pause(50);
+	}
+}
+
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	printf("\nPlace robot,    press go.");
-	goClick();
-	printf("\nStabilizing...");
-	pause(500); /* Wait for robot to stabilize mechanically */
-	printf("\nCalibrating     offset...");
-	init_gyro(GYRO_PORT, 638, 10000);
-	printf("\nDone calibration");
-
-	rf_set_team(60);
+	set_auto_halt(0);
 	return 0;
 }
 
-float read_angle () {
-	return get_degrees () * DEGS_TO_RADS;
-}
+/**
+ * Run all tests
+ */
+int
+umain (void) {
+	start_test("Happytest v0.61 ");
 
-void set_turn (float value) {
-	printf("\nActuate %f", (double) value);
-}
+	start_test("Servo Test      ");
+	test_servos();
+	
+	start_test("Motor Test      ");
+	test_motors();
 
-int umain(void) {
-	create_thread(&display_angle, 64, 0, "display angle");
+	start_test("Digital Test    ");
+	test_digital();
 
-	//struct pid_controller pid;
-	//init_pid (&pid, 1, 0, 0, &read_angle, &set_turn);
+	start_test("Analog Test     ");
+	test_analog();
+	
+	start_test("Encoder Test    ");
+	test_encoders();
 
+	start_test("Battery Test    ");
+	test_battery();
+	
+	start_test("RF Test         ");
+	test_rf();
+
+	printf("\nTests complete.");
 	while (1);
-
 	return 0;
 }
+
 

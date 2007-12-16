@@ -23,42 +23,52 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
+// Interrupt service routines
+//
+// Written by: Greg Belote [gbelote@mit.edu]
+
+#include <avr/interrupt.h>
 #include <kern/thread.h>
+#include <kern/global.h>
+#include <gyro.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+extern struct thread *current_thread;
+extern uint32_t global_time;
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
+//void (*timer0_callback) () = 0;
+
+ISR(TIMER2_OVF_vect) {
+	global_time++;
+	//global_time++; // FIXME
+	if (gyro_enabled()) {
+		gyro_update();
 	}
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+	suspend();
+
+	// TODO: nested interrupts
 }
 
+/*
+ISR(TIMER0_OVF_vect) {
+	if (timer0_callback)
+		timer0_callback();
+}
+
+void
+set_timer0_callback(void (*func) ()) {
+	timer0_callback = func;
+}
+*/
+
+ISR(__vector_default) {
+	panic ("unknown interrupt");
+}
+
+/**
+ * Need a externally-referenced function in the object file containg 
+ * the ISRs to force the linker insert these ISRs into the IVT.
+ * see http://www.nongnu.org/avr-libc/user-manual/library.html
+ **/
+void isr_init() {
+}

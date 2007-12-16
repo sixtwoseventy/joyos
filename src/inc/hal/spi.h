@@ -23,42 +23,47 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#ifndef _SPI_H_
+#define _SPI_H_
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+#define SPI_FLAG_LSB_FIRST			_BV(DORD)
+#define SPI_FLAG_MSB_FIRST			0
+#define SPI_FLAG_IDLE_HIGH			_BV(CPOL)
+#define SPI_FLAG_IDLE_LOW				0
+#define SPI_FLAG_SAMPLE_TRAIL		_BV(CPHA)
+#define SPI_FLAG_SAMPLE_LEAD		0
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+#define SPI_FLAGS_DEFAULT (SPI_FLAG_MSB_FIRST | SPI_FLAG_IDLE_LOW | \
+													SPI_FLAG_SAMPLE_LEAD)
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
+typedef enum {
+	SPI_CLK_DIV_2 	= 1, // 001
+	SPI_CLK_DIV_4		= 0, // 000
+	SPI_CLK_DIV_8		= 3, // 011
+	SPI_CLK_DIV_16	= 2, // 010
+	SPI_CLK_DIV_32	= 5, // 101
+	SPI_CLK_DIV_64	= 4, // 100
+	SPI_CLK_DIV_128	= 6, // 110
+} spi_clk_div;
 
+#define SPI_READY	0
+#define SPI_IN_USE	-1
+
+void spi_init(void);
+
+/** 
+ * Lock the SPI bus for access from a single thread.
+ * spi_aquire() needs to be called before any communication on the
+ * spi bus. spi_release() should be called after the communication
+ * is complete.
+ */
+int8_t spi_acquire();
+void   spi_release ();
+
+/** If performing a SPI master transaction, call this function to
+    configure the SPI mode AFTER acquiring the SPI bus. **/
+void spi_set_master(spi_clk_div div, uint8_t flags);
+
+int8_t spi_transfer_sync (uint8_t * data, uint8_t len);
+
+#endif

@@ -66,39 +66,39 @@ int display_angle (void) {
 }
 
 void setServoStraight () {
-	servoSetPos (SERVO_BACKRIGHT, 202);
+	servo_set_pos (SERVO_BACKRIGHT, 202);
 	pause (SET_SERVO_PAUSE);
 	uart_printf("set backright");
-	servoSetPos (SERVO_BACKLEFT, 280);
+	servo_set_pos (SERVO_BACKLEFT, 280);
 	pause (SET_SERVO_PAUSE);
 	uart_printf("set backleft");
-	servoSetPos (SERVO_FRONTRIGHT, 222);
+	servo_set_pos (SERVO_FRONTRIGHT, 222);
 	pause (SET_SERVO_PAUSE);
 	uart_printf("set frontright");
-	servoSetPos (SERVO_FRONTLEFT, 138);
+	servo_set_pos (SERVO_FRONTLEFT, 138);
 	pause (SET_SERVO_PAUSE);
 	uart_printf("set frontleft");
 }
 
 void setServoTurn () {
-	servoSetPos (SERVO_BACKRIGHT, 292);
+	servo_set_pos (SERVO_BACKRIGHT, 292);
 	pause (SET_SERVO_PAUSE);
-	servoSetPos (SERVO_BACKLEFT, 148);
+	servo_set_pos (SERVO_BACKLEFT, 148);
 	pause (SET_SERVO_PAUSE);
-	servoSetPos (SERVO_FRONTRIGHT, 121);
+	servo_set_pos (SERVO_FRONTRIGHT, 121);
 	pause (SET_SERVO_PAUSE);
-	servoSetPos (SERVO_FRONTLEFT, 242);
+	servo_set_pos (SERVO_FRONTLEFT, 242);
 	pause (SET_SERVO_PAUSE);
 }
 
 void setServoSide () {
-	servoSetPos (SERVO_BACKRIGHT, 422);
+	servo_set_pos (SERVO_BACKRIGHT, 422);
 	pause (SET_SERVO_PAUSE);
-	servoSetPos (SERVO_BACKLEFT, 6);
+	servo_set_pos (SERVO_BACKLEFT, 6);
 	pause (SET_SERVO_PAUSE);
-	servoSetPos (SERVO_FRONTRIGHT, 4);
+	servo_set_pos (SERVO_FRONTRIGHT, 4);
 	pause (SET_SERVO_PAUSE);
-	servoSetPos (SERVO_FRONTLEFT, 390);
+	servo_set_pos (SERVO_FRONTLEFT, 390);
 	pause (SET_SERVO_PAUSE);
 }
 

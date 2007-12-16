@@ -23,42 +23,39 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#include "config.h"
+#include "mcp3008.h"
+#include "hal/io.h"
+#include "hal/spi.h"
+#include <kern/global.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+int8_t 
+mcp3008_get_sample(mcp3008_device dev, mcp3008_input config, uint16_t *sample) {
+	uint8_t cmd[3];
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
+	if (spi_acquire() == SPI_IN_USE)
+		return MCP3008_SPI_BUSY;
+
+	cmd[0] = 0x40 | (config << 2);
+
+	spi_set_master (SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
+
+	switch (dev) {
+		case MCP3008_MOTOR: SPI_MOTOR_SS(0); break;
+		case MCP3008_ADC1:  SPI_ADC1_SS(0); break;
+		case MCP3008_ADC2:  SPI_ADC2_SS(0); break;
+ 	}
+	spi_transfer_sync (cmd, 3);
+	switch (dev) {
+		case MCP3008_MOTOR: SPI_MOTOR_SS(1); break;
+		case MCP3008_ADC1:  SPI_ADC1_SS(1); break;
+ 		case MCP3008_ADC2:  SPI_ADC2_SS(1); break;
 	}
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
+	*sample = ((uint16_t)cmd[1] << 8) | cmd[2];
+	*sample >>= 6;
 
+	spi_release();
+
+	return MCP3008_SUCCESS;
+}

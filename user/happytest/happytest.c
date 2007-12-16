@@ -23,30 +23,28 @@
  *
  */
 
-#include <global.h>
 #include <board.h>
-#include <thread.h>
 
 /**
  * Display testName and 'Press Go'
  */
-void startTest(char testName[]) {
+void start_test(char testName[]) {
 	printf("\n%sPress Go",testName);
-	goClick();
+	go_click();
 }
 
 /**
  * Test Servos
  * servos 0 - 5 positions are set by frob knob
  */
-void testServos() {
+void test_servos() {
 	uint8_t srv;
 	uint16_t pos;
-	while (!stopPress()) {
-		pos = readFrob()/2;
+	while (!stop_press()) {
+		pos = read_frob()/2;
 		printf("\nservos=%d",pos);
 		for (srv=0;srv<6;srv++)
-			servoSetPos(srv,pos);
+			servo_set_pos(srv,pos);
 		pause(50);
 	}
 }
@@ -56,35 +54,35 @@ void testServos() {
  * Motor velocity is set by frob knob
  * Cycle through motors with go button
  */
-void testMotors() {
+void test_motors() {
 	uint8_t mot=0;
 	uint16_t pos;
 
-	while (!stopPress()) {
-		pos = readFrob()/2;
-		printf("\nmotor%d=%3d %dmA",mot,pos,motorGetCurrentMA(mot));
-		motorSetVel(mot,pos-256);
-		if (goPress()) {
-			goClick();
-			motorSetVel(mot,0);
+	while (!stop_press()) {
+		pos = read_frob()/2;
+		printf("\nmotor%d=%3d %dmA",mot,pos,motor_get_current_MA(mot));
+		motor_set_vel(mot,pos-256);
+		if (go_press()) {
+			go_click();
+			motor_set_vel(mot,0);
 			mot++;
 			if (mot==6) mot = 0;
 		}
 		pause(50);
 	}
-	motorSetVel(mot,0);
+	motor_set_vel(mot,0);
 }
 
 /**
  * Test Encoders
  * Displays all encoder counts
  */
-void testEncoders() {
-	while (!stopPress()) {
-		uint16_t e24 = encoderRead(24);
-		uint16_t e25 = encoderRead(25);
-		uint16_t e26 = encoderRead(26);
-		uint16_t e27 = encoderRead(27);
+void test_encoders() {
+	while (!stop_press()) {
+		uint16_t e24 = encoder_read(24);
+		uint16_t e25 = encoder_read(25);
+		uint16_t e26 = encoder_read(26);
+		uint16_t e27 = encoder_read(27);
 		
 		printf("\ne24=%03d e25=%03d e26=%03d e27=%03d",e24,e25,e26,e27);
 		pause(50);
@@ -96,11 +94,11 @@ void testEncoders() {
  * Test Analog Inputs
  * Display single analog input, select with frob knob
  */
-void testAnalog() {
+void test_analog() {
 	uint8_t port;
-	while (!stopPress()) {
-		port = (readFrob()/64) + 8;
-		printf("\nanalog%02d=%d",port,analogRead(port));
+	while (!stop_press()) {
+		port = (read_frob()/64) + 8;
+		printf("\nanalog%02d=%d",port,analog_read(port));
 		pause(50);
 	}
 }
@@ -109,11 +107,11 @@ void testAnalog() {
  * Test Digital Inputs
  * Displayed as single 8bit binary num
  */
-void testDigital() {
-	while (!stopPress()) {
+void test_digital() {
+	while (!stop_press()) {
 		printf("\ndigital=");
 		for (uint8_t i=0;i<8;i++)
-			lcdPrintChar(digitalGet(i) ? '1' : '0',NULL);
+			lcd_print_char(digital_read(i) ? '1' : '0',NULL);
 		pause(50);
 	}
 }
@@ -122,9 +120,9 @@ void testDigital() {
  * Test RF
  * Display X, Y coordinates of board
  */
-void testRF() {
-	while (!stopPress()) {
-		uint8_t team = readFrob()>511;
+void test_rf() {
+	while (!stop_press()) {
+		uint8_t team = read_frob()>511;
 		printf("\nrobot %d         x:%d y:%d",team,rf_get_x(team),rf_get_y(team));
 		pause(50);
 	}
@@ -133,6 +131,7 @@ void testRF() {
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
+	set_auto_halt(0);
 	return 0;
 }
 
@@ -141,25 +140,25 @@ int usetup (void) {
  */
 int
 umain (void) {
-	startTest("Happytest v0.51 ");
+	start_test("Happytest v0.61 ");
 
-	startTest("Servo Test      ");
-	testServos();
+	start_test("Servo Test      ");
+	test_servos();
 	
-	startTest("Motor Test      ");
-	testMotors();
+	start_test("Motor Test      ");
+	test_motors();
 
-	startTest("Digital Test    ");
-	testDigital();
+	start_test("Digital Test    ");
+	test_digital();
 
-	startTest("Analog Test     ");
-	testAnalog();
+	start_test("Analog Test     ");
+	test_analog();
 	
-	startTest("Encoder Test    ");
-	testEncoders();
+	start_test("Encoder Test    ");
+	test_encoders();
 	
-	startTest("RF Test         ");
-	testRF();
+	start_test("RF Test         ");
+	test_rf();
 
 	printf("\nTests complete.");
 	while (1);

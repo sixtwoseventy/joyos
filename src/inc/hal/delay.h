@@ -23,42 +23,20 @@
  *
  */
 
-// Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#ifndef _DELAY_H_
+#define _DELAY_H_
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
-int usetup (void) {
-	return 0;
-}
+#include <util/delay.h>
 
-// Entry point to contestant code.
-// Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+/**
+ * \file delay.h
+ * \brief Simple busy-loop delays
+ */ 
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
-}
 
+/// Wait in milliseconds
+#define delay_busy_ms(ms) (_delay_ms(ms))
+/// Wait in in microseconds
+#define delay_busy_us(us) (_delay_us(us))
+
+#endif

@@ -32,9 +32,8 @@
    rng@mit.edu
 */
 
-#include <global.h>
 #include <board.h>
-#include <thread.h>
+#include <kern/thread.h>
 #include <math.h>
 
 #define GYRO_PORT 11
@@ -64,7 +63,7 @@ void calibrate_gyro(void) {
   uint32_t int_time_ms = 5000L;
 
   printf("\nPlace robot,    press go.\n");
-  goClick();
+  go_click();
   printf("Stabilizing...\n");
   pause(500); /* Wait for robot to stabilize mechanically */
   printf("Calibrating     offset...\n");
@@ -75,13 +74,13 @@ void calibrate_gyro(void) {
 
   start_time_ms = get_time();
   while( ( get_time() - start_time_ms ) < int_time_ms ){
-    sum += (float)analogRead(GYRO_PORT);
+    sum += (float)analog_read(GYRO_PORT);
     samples++;
   }
   offset = sum / (float)samples;
 
   theta = 0.0;
-  lcdClear();
+  lcd_clear();
   printf("Done calibration\n");
 } /* calibrate_gyro() */
 
@@ -96,7 +95,7 @@ int update_angle(void) {
   time_ms = get_time();
 
   for(;;){
-		analog_value = analogRead(GYRO_PORT);
+		analog_value = analog_read(GYRO_PORT);
     new_time_ms = get_time();
     delta_t_ms = (new_time_ms - time_ms);
 
@@ -119,8 +118,8 @@ int display_angle(void) {
 } /* display_angle() */
 
 void spin(int speed){
-  motorSetVel(MOTOR_LEFT, -speed);
-  motorSetVel(MOTOR_RIGHT, speed);
+  motor_set_vel(MOTOR_LEFT, -speed);
+  motor_set_vel(MOTOR_RIGHT, speed);
 } /* spin() */
 
 int sign(float a){
@@ -192,25 +191,25 @@ void go_straight(float angle, int speed, long duration_ms){
   while ((get_time() - start_time) < duration_ms){
     if (theta < (angle_target - tolerance)) {
       /* Turn CCW a little */
-      motorSetVel(MOTOR_LEFT, speed - tweak);
-      motorSetVel(MOTOR_RIGHT, speed + tweak);
+      motor_set_vel(MOTOR_LEFT, speed - tweak);
+      motor_set_vel(MOTOR_RIGHT, speed + tweak);
     } else if (theta > (angle_target + tolerance)){
       /* Turn CW a little */
-      motorSetVel(MOTOR_LEFT, speed + tweak);
-      motorSetVel(MOTOR_RIGHT, speed - tweak);
+      motor_set_vel(MOTOR_LEFT, speed + tweak);
+      motor_set_vel(MOTOR_RIGHT, speed - tweak);
     } else {
-      motorSetVel(MOTOR_LEFT, speed);
-      motorSetVel(MOTOR_RIGHT, speed);
+      motor_set_vel(MOTOR_LEFT, speed);
+      motor_set_vel(MOTOR_RIGHT, speed);
     }  
     /* You can check a sensor here and terminate the while loop */
   } /* while */
   
   /* Throw it in reverse briefly to stop quickly */
-  motorSetVel(MOTOR_LEFT, -255);
-  motorSetVel(MOTOR_RIGHT, -255);
+  motor_set_vel(MOTOR_LEFT, -255);
+  motor_set_vel(MOTOR_RIGHT, -255);
   pause(20L);  
-  motorSetVel(MOTOR_LEFT, 0);
-  motorSetVel(MOTOR_RIGHT, 0);  
+  motor_set_vel(MOTOR_LEFT, 0);
+  motor_set_vel(MOTOR_RIGHT, 0);  
 } /* void go_straight() */
 
 
@@ -223,17 +222,17 @@ void go_open_loop( int speed, long duration_ms ){
   start_time = get_time();
   
   while ((get_time() - start_time) < duration_ms){
-    motorSetVel(MOTOR_LEFT, speed);
-    motorSetVel(MOTOR_RIGHT, speed); 
+    motor_set_vel(MOTOR_LEFT, speed);
+    motor_set_vel(MOTOR_RIGHT, speed); 
     /* You can check a sensor here and terminate the while loop if necessary */
   } /* while */
   
   /* Throw it in reverse briefly to stop quickly */
-  motorSetVel(MOTOR_LEFT, -100);
-  motorSetVel(MOTOR_RIGHT, -100);
+  motor_set_vel(MOTOR_LEFT, -100);
+  motor_set_vel(MOTOR_RIGHT, -100);
   pause(20L);  
-  motorSetVel(MOTOR_LEFT, 0);
-  motorSetVel(MOTOR_RIGHT, 0);
+  motor_set_vel(MOTOR_LEFT, 0);
+  motor_set_vel(MOTOR_RIGHT, 0);
   
 } /* void go_open_loop() */
 
@@ -245,7 +244,7 @@ int run_demo(void) {
   go_to_angle(360.0); 
 
   /* Make another one, but obstruct the robot for the demo */
-  goClick();
+  go_click();
   pause( 500L );
   go_straight(360.0, 200, 4000L);
   go_straight(495.0, 200, 5657L); 
@@ -253,7 +252,7 @@ int run_demo(void) {
   go_to_angle(720.0); 
 
   /* Drive straight in current direction under gyro control... */
-  goClick();
+  go_click();
   pause(500L);
   /* theta/lsb_ms_per_deg is the current angle in degrees */
   go_straight( theta/lsb_ms_per_deg, 200, 12000L );
