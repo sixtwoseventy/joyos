@@ -26,6 +26,15 @@
 #ifndef _HAPPYLIB_H_
 #define _HAPPYLIB_H_
 
+#include "lib/confdb.h"
+#include "lib/irdist.h"
+
+#define HAPPYLIB_VERSION		0x0010
+
+#define CONF_HLIB_VERSION		0x00
+#define CONF_HLIB_IRDIST_M 		0x01
+#define CONF_HLIB_IRDIST_C 		0x02
+
 void happylib_init();
 
 #endif

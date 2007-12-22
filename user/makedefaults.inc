@@ -28,7 +28,7 @@ program: $(TARGET).hex
 
 $(TARGET).elf: $(OBJ)
 	@echo "Linking $@"
-	@$(CC) $(CFLAGS) $(LIBS) $(OBJ) -o $@ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(OBJ) $(LIBS) -o $@ $(LDFLAGS)
 
 %.hex: %.elf
 	@echo "Generating hex file $@"
