@@ -59,7 +59,10 @@ KERNELSRC = src/kern/main.c \
 
 # Library source files
 LIBSRC = 	src/lib/async_printf.c \
-		 	src/lib/pid.c
+		 	src/lib/pid.c \
+			src/lib/irdist.c \
+			src/lib/confdb.c \
+			src/lib/happylib.c \
 
 # User source files
 USERSRC = user/umain.c

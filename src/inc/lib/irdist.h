@@ -23,39 +23,35 @@
  *
  */
 
-#ifndef __INCLUDE_BOARD_H__
-#define __INCLUDE_BOARD_H__
+#ifndef _IRDIST_H_
+#define _IRDIST_H_
 
-#include <hal/uart.h>
-#include <lcd.h>
-#include <fpga.h>
-#include <servo.h>
-#include <analog.h>
-#include <digital.h>
-#include <encoder.h>
-#include <motor.h>
-#include <buttons.h>
-#include <rf.h>
+#include <kern/global.h>
 
 /**
- * \file board.h
- * \brief Common board functionality.
- * 
- * This file includes all the drivers for the happyboard and should be 
- * included from user code. 
+ * \file irdist.h
+ * \brief Sharp IR distance sensor linearisation
  */
 
 /**
- * Happyboard configuration structure stores basic board config
+ * Set calibration values for IR distance sensors. Calibration values can be 
+ * calculated using the irdistcal program (which automatically saves the 
+ * calibration values to flash). One should only use this function to
+ * temporarily change the calibration, or to test new values.
+ *
+ * @param m  calibration gradient
+ * @param c  calibration offset
  */
-typedef struct {
-    uint16_t version;       ///< Happyboard hardware version
-    uint16_t id;            ///< Unique board id
-    uint16_t fpga_version;  ///< FPGA firmware version
-    uint16_t fpga_len;      ///< FPGA firmware length
-    uint16_t crc;           ///< Config CRC
-} HappyConfig; 
+void irdist_set_calibration(uint16_t m, uint16_t c);
 
-void board_init (void);
+/**
+ * Read a Sharp IR distance sensor connected to an analog port and return
+ * the distance in cm
+ *
+ * @param port  port to read from
+ * @returns     measured distance in cm
+ */
+uint16_t irdist_read(int port);
 
-#endif // __INCLUDE_BOARD_H__
+#endif
+

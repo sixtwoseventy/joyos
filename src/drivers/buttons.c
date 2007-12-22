@@ -67,11 +67,18 @@ stop_press() {
 }
 
 uint16_t 
-read_frob() {
+frob_read() {
 	uint16_t v;
 	adc_get_sample(ADC_REF_AVCC,ADC_CH1,&v);
 	return v;
 }
+
+uint16_t 
+frob_read_range(uint16_t min, uint16_t max) {
+    uint16_t div = max-min+1;
+    return (frob_read()/div) + min;
+}
+
 
 uint16_t 
 read_battery() {

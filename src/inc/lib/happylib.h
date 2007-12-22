@@ -23,39 +23,10 @@
  *
  */
 
-#ifndef __INCLUDE_BOARD_H__
-#define __INCLUDE_BOARD_H__
+#ifndef _HAPPYLIB_H_
+#define _HAPPYLIB_H_
 
-#include <hal/uart.h>
-#include <lcd.h>
-#include <fpga.h>
-#include <servo.h>
-#include <analog.h>
-#include <digital.h>
-#include <encoder.h>
-#include <motor.h>
-#include <buttons.h>
-#include <rf.h>
+void happylib_init();
 
-/**
- * \file board.h
- * \brief Common board functionality.
- * 
- * This file includes all the drivers for the happyboard and should be 
- * included from user code. 
- */
+#endif
 
-/**
- * Happyboard configuration structure stores basic board config
- */
-typedef struct {
-    uint16_t version;       ///< Happyboard hardware version
-    uint16_t id;            ///< Unique board id
-    uint16_t fpga_version;  ///< FPGA firmware version
-    uint16_t fpga_len;      ///< FPGA firmware length
-    uint16_t crc;           ///< Config CRC
-} HappyConfig; 
-
-void board_init (void);
-
-#endif // __INCLUDE_BOARD_H__

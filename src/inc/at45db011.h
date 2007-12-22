@@ -32,10 +32,12 @@
 #define AT45DB_SPI_BUSY		-1
 
 int8_t at45db_start_continuous_read (uint32_t addr);
-uint8_t at45db_get_next_byte ();
-void at45db_end_continuous_read ();
-int8_t at45db_get_status (uint8_t * status);
-int8_t at45db_store_buffer (uint32_t addr);
-int16_t at45db_fill_buffer (uint32_t addr, uint8_t * data, uint16_t len);
+uint8_t at45db_continuous_read_block(uint16_t len, uint8_t* data);
+void at45db_end_continuous_read();
+uint8_t at45db_get_next_byte();
+int8_t at45db_get_status(uint8_t * status);
+int8_t at45db_store_buffer(uint32_t addr);
+int16_t at45db_fill_buffer(uint32_t addr, uint8_t * data, uint16_t len);
+int8_t at45db_fill_buffer_from_flash(uint32_t addr);
 
 #endif

@@ -62,7 +62,15 @@ void stop_click();
  * Read a value from the Frob knob.
  * @return The position of the frob knob (value 0 to 1023).
  */
-uint16_t read_frob();
+uint16_t frob_read();
+
+/**
+ * Read the from the frob and scale into the range min<=frob<=max
+ * @param min  minimum scaled value
+ * @param max  maximum scaled value
+ * @return     return the scaled position of the frob
+ */
+uint16_t frob_read_range(uint16_t min, uint16_t max);
 
 /**
  * Read the battery voltage. Returns a value in decivolts.

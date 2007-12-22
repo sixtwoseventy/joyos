@@ -26,6 +26,11 @@
 #ifndef _FPGA_H_
 #define _FPGA_H_
 
+/**
+ * \file fpga.h
+ * \brief Low-level FPGA interface
+ */ 
+
 // FPGA Base Address
 #define FPGA_BASE 0x1100
 
@@ -55,15 +60,15 @@
 #define FPGA_VERSION_MAJ	0xFE
 #define FPGA_VERSION_MIN	0xFF
 
-// FPGA Write Byte - write a byte to an FPGA register
+/// FPGA Write Byte - write a byte to an FPGA register
 #define fpga_write_byte(addr, v) ((volatile uint8_t*) FPGA_BASE)[(addr)] = (v)
-// FPGA Read Byte - read a byte from an FPGA register
+/// FPGA Read Byte - read a byte from an FPGA register
 #define fpga_read_byte(addr) ((volatile uint8_t*) FPGA_BASE)[(addr)]
-// Get the FPGA Major Version
+/// Get the FPGA Major Version
 #define fpga_get_version_major() fpga_read_byte(FPGA_VERSION_MAJ)
-// Get the FPGA Minor Version
+/// Get the FPGA Minor Version
 #define fpga_get_version_minor() fpga_read_byte(FPGA_VERSION_MIN)
-// Initialise FPGA
+/// Initialise FPGA
 uint8_t fpga_init();
 
 #endif

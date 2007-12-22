@@ -29,18 +29,27 @@
 #include "hal/delay.h"
 #include "at45db011.h"
 
-#define FLASH_RDY		7
+#define STAT_READY				7
+#define STAT_COMP				6
 
-#define OP_BUF_PROGRAM_ERASE	0x83
-#define OP_BUF_WRITE		0x84
-#define OP_STATUS_REG		0xD7
-#define OP_CONTINUOUS_READ	0xE8
+#define CMD_BLOCK_ERASE			0x50
+#define CMD_PAGE_TO_BUF_TXF		0x53 //
+#define CMD_PAGE_REWRITE		0x58
+#define CMD_PAGE_TO_BUF_CMP		0x60
+#define CMD_PAGE_ERASE			0x81
+#define CMD_PROGRAM_VIA_BUF		0x82
+#define CMD_BUF_PROGRAM_ERASE	0x83 //
+#define CMD_BUF_WRITE			0x84 //
+#define CMD_BUF_PROGRAM_NOERASE	0x88
+#define CMD_PAGE_READ			0xD2
+#define CMD_BUFFER_READ			0xD4
+#define CMD_STATUS_REG			0xD7 // 
+#define CMD_CONTINUOUS_READ		0xE8 //
 
 #define PAGE_EXTRA_BYTES	8
 #define PAGE_OFFSET_MASK	0x000ff
 #define PAGE_ADDR_SHIFT		8
 
-uint8_t curr_buffer;
 uint8_t read_offset;
 
 static void
@@ -48,15 +57,41 @@ wait_for_ready ()
 {
 	uint8_t byte;
 
-	byte = OP_STATUS_REG;
+	byte = CMD_STATUS_REG;
 
 	SPI_FLASH_SS (0);
 	spi_transfer_sync (&byte, 1);
 	do {
 		spi_transfer_sync (&byte, 1);
-	} while (!(byte & _BV(FLASH_RDY)));
+	} while (!(byte & _BV(STAT_READY)));
 	SPI_FLASH_SS (1);
 	delay_busy_us(1);
+}
+
+int8_t
+at45db_fill_buffer_from_flash(uint32_t addr) {
+	uint8_t cmd[4];
+	
+	if (spi_acquire() == SPI_IN_USE)
+		return AT45DB_SPI_BUSY;
+	
+	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
+	
+	cmd[0] = CMD_PAGE_TO_BUF_TXF;
+	cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
+	cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
+	cmd[3] = 0;
+	
+	wait_for_ready ();
+
+	SPI_FLASH_SS (0);
+	spi_transfer_sync (cmd, 4);
+	SPI_FLASH_SS (1);
+	delay_busy_us (1);
+
+	spi_release ();
+
+	return AT45DB_READY;
 }
 
 int8_t
@@ -69,7 +104,7 @@ at45db_start_continuous_read (uint32_t addr)
 		
 	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 	
-	cmd[0] = OP_CONTINUOUS_READ;
+	cmd[0] = CMD_CONTINUOUS_READ;
 	cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
 	cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
 	cmd[3] = read_offset = addr & PAGE_OFFSET_MASK;
@@ -103,6 +138,15 @@ at45db_get_next_byte ()
 	return byte;
 }
 
+uint8_t
+at45db_continuous_read_block(uint16_t len, uint8_t* data) {
+  uint16_t i;
+  for (i=0;i<len;i++)
+	data[i] = at45db_get_next_byte();
+
+  return AT45DB_READY;
+}
+
 void
 at45db_end_continuous_read ()
 {
@@ -116,7 +160,7 @@ at45db_get_status (uint8_t * status)
 {
 	uint8_t cmd[2];
 
-	cmd[0] = OP_STATUS_REG;
+	cmd[0] = CMD_STATUS_REG;
 	cmd[1] = 0;
 
 	if (spi_acquire() == SPI_IN_USE)
@@ -146,7 +190,7 @@ at45db_store_buffer (uint32_t addr)
 
 	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 	
-	cmd[0] = OP_BUF_PROGRAM_ERASE;
+	cmd[0] = CMD_BUF_PROGRAM_ERASE;
 	cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
 	cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
 	cmd[3] = 0;
@@ -158,9 +202,6 @@ at45db_store_buffer (uint32_t addr)
 	spi_transfer_sync (cmd, 4);
 	SPI_FLASH_SS (1);
 	delay_busy_us (1);
-
-	/* swap buffers for the next operation */
-	curr_buffer = !curr_buffer;
 
 	spi_release ();
 
@@ -179,7 +220,7 @@ at45db_fill_buffer (uint32_t addr, uint8_t * data, uint16_t len)
 
 	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 
-	cmd[0] = OP_BUF_WRITE;
+	cmd[0] = CMD_BUF_WRITE;
 	cmd[1] = 0;
 	cmd[2] = 0;
 	cmd[3] = offset = addr & PAGE_OFFSET_MASK;

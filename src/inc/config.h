@@ -23,15 +23,16 @@
  *
  */
 
-#ifndef _config_h
-#define _config_h
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
 #define F_CPU 8000000UL
 
 #include <inttypes.h>
+#include <stdbool.h>
 
-#define BAUD_RATE							19200
-#define BOARD_VERSION 				0x0060
+#define BAUD_RATE				19200
+#define BOARD_VERSION 			0x0060
 #define BOARD_VERSION_STRING 	"0.60"
 
 

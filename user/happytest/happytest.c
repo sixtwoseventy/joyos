@@ -41,7 +41,7 @@ void test_servos() {
 	uint8_t srv;
 	uint16_t pos;
 	while (!stop_press()) {
-		pos = read_frob()/2;
+		pos = frob_read()/2;
 		printf("\nservos=%d",pos);
 		for (srv=0;srv<6;srv++)
 			servo_set_pos(srv,pos);
@@ -59,7 +59,7 @@ void test_motors() {
 	uint16_t pos;
 
 	while (!stop_press()) {
-		pos = read_frob()/2;
+		pos = frob_read()/2;
 		printf("\nmotor%d=%3d %dmA",mot,pos,motor_get_current_MA(mot));
 		motor_set_vel(mot,pos-256);
 		if (go_press()) {
@@ -97,7 +97,7 @@ void test_encoders() {
 void test_analog() {
 	uint8_t port;
 	while (!stop_press()) {
-		port = (read_frob()/64) + 8;
+		port = (frob_read()/64) + 8;
 		printf("\nanalog%02d=%d",port,analog_read(port));
 		pause(50);
 	}
@@ -122,7 +122,7 @@ void test_digital() {
  */
 void test_rf() {
 	while (!stop_press()) {
-		uint8_t team = read_frob()>511;
+		uint8_t team = frob_read()>511;
 		printf("\nrobot %d         x:%d y:%d",team,rf_get_x(team),rf_get_y(team));
 		pause(50);
 	}
