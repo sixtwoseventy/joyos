@@ -72,3 +72,4 @@ ISR(__vector_default) {
  **/
 void isr_init() {
 }
+

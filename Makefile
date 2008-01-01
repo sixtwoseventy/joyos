@@ -3,13 +3,18 @@ MCU = atmega128
 OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
 INCLUDES = -Isrc/inc
-PRINTFOP = -Wl,-u,vfprintf -lprintf_min
+# Two printf options: full for OS, minimal for bootloader
+BOOT_PRINTFOP = -Wl,-u,vfprintf -lprintf_min
+OS_PRINTFOP = -Wl,-u,vfprintf -lprintf_flt -lm
 #MEMLAYOUT = -Wl,--defsym=__malloc_heap_end=0x800800
 CFLAGS = -Wall -std=gnu99 -g -Os -mmcu=$(MCU)
-LDFLAGS = $(PRINTFOP) $(MEMLAYOUT)
+BOOT_LDFLAGS = $(BOOT_PRINTFOP) $(MEMLAYOUT)
+OS_LDFLAGS = $(OS_PRINTFOP) $(MEMLAYOUT)
 
-AVRDUDE_PORT = /dev/tty.usbserial-0000113D
-AVRDUDE_USERPORT = /dev/tty.usbserial-A20e1uZB
+#AVRDUDE_PORT = /dev/tty.usbserial-0000113D
+AVRDUDE_PORT = /dev/ttyUSB0
+#AVRDUDE_USERPORT = /dev/tty.usbserial-A20e1uZB
+AVRDUDE_USERPORT = /dev/ttyUSB0
 AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F
 AVRDUDEFLAGS_USER = -c stk500 -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200
 
@@ -123,11 +128,11 @@ programterm:
 
 $(OSELF): $(OBJ)
 	@echo "-- Linking $@"
-	@$(CC) $(CFLAGS) $(OBJ) -o $@ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(OBJ) -o $@ $(OS_LDFLAGS)
 
 $(BOOTELF): $(BOOTOBJ)
 	@echo "-- Linking $@"
-	@$(CC) $(CFLAGS) $(BOOTOBJ) -o $@ $(LDFLAGS) -Wl,--section-start=.text=0x1E000
+	@$(CC) $(CFLAGS) $(BOOTOBJ) -o $@ $(BOOT_LDFLAGS) -Wl,--section-start=.text=0x1E000
 
 %.hex: %.elf
 	@echo "-- Generating hex file $@"

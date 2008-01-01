@@ -36,9 +36,10 @@
 
 void
 init_lock(struct lock *k, const char *name) {
-	//assert(k);
-	if (!k)
+	// make sure k is non-null
+	if (!k) {
 		panic ("init null lock");
+	}
 
 	k->locked = 0;
 	k->name = name;
@@ -48,13 +49,15 @@ init_lock(struct lock *k, const char *name) {
 void 
 acquire(struct lock *k) {
 	// make sure k is non-null
-	//assert (k);
-	if (!k)
+	if (!k) {
 		panic ("acquire null lock");
+	}
 
-	if (k->locked >= LOCK_MAX_ACQUIRES)
+	if (k->locked >= LOCK_MAX_ACQUIRES) {
 		panic ("acquired too many times");
+	}
 
+	// loop until we acquire lock...
 	for(;;) {
 		// record interrupt status
 		uint8_t was_enabled = SREG & SREG_IF;
@@ -98,8 +101,9 @@ acquire(struct lock *k) {
 int
 is_held (struct lock *k) {
 	//assert (k);
-	if (!k)
+	if (!k) {
 		panic ("is_held null lock");
+	}
 
 	extern struct thread *current_thread;
 	return current_thread == k->thread && k->locked;
@@ -108,33 +112,37 @@ is_held (struct lock *k) {
 void
 release(struct lock *k) {
 	// make sure k is non-null
-	//assert (k);
-	if (!k)
+	if (!k) {
 		panic ("release null lock");
+	}
 
 	// record interrupt status
-	uint8_t sreg = SREG;
+	uint8_t was_enabled = SREG & SREG_IF;
+
 	// disable global interrupts
 	cli();
-	//__disable_interrupt();
-	// assert lock is actually locked
-	//assert (k->locked);
-	if (!k->locked)
-		panic ("release unheld lock");
 
-	// assert lock is held by the current thread
+	// check lock is actually locked
+	if (!k->locked) {
+		panic ("release unheld lock");
+	}
+
+	// check that lock is held by the current thread
 	extern struct thread *current_thread;
-	//assert (k->thread == current_thread);
-	if (k->thread != current_thread)
+	if (k->thread != current_thread) {
 		panic ("lock held by another");
+	}
 
 	// release lock
 	k->locked--;
+
 	// if lock is no longer held...
-	if (!k->locked)
+	if (!k->locked) {
 		// remove pointer to holding thread
 		k->thread = NULL;
+	}
+
 	// restore SREG (potentially reenabling interrupts)
-	SREG = sreg;
+	SREG |= was_enabled;
 }
 

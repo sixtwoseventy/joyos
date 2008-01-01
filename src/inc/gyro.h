@@ -26,10 +26,11 @@
 #ifndef __INCLUDE_GYRO_H__
 #define __INCLUDE_GYRO_H__
 
-void gyro_init (uint8_t port, uint16_t lsb_ms_per_deg, uint32_t samples);
+void gyro_init (uint8_t port, double lsb_ms_per_deg, uint16_t samples);
 void gyro_update (void);
 uint8_t gyro_enabled (void);
-float gyro_get_degrees (void);
+double gyro_read ();
+double gyro_get_degrees (void);
 
 #endif // __INCLUDE_GYRO_H__
 

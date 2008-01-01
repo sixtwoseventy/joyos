@@ -29,53 +29,131 @@
 #include <kern/global.h>
 #include <kern/lock.h>
 #include <kern/thread.h>
+#include <stdlib.h>
 
-uint32_t _lsb_ms_per_deg = 0;
-int32_t _theta = 0;
+double _lsb_ms_per_deg = 0;
+volatile double _theta = 0;
 uint8_t _port = 11;
-uint8_t _gyro_enabled = 0;
-uint32_t _offset = 0;
-uint32_t _last_time = 0;
+volatile uint8_t _gyro_enabled = 0;
+double _offset = 0;
 
+uint16_t _num_samples = 29;
+uint16_t *_samples;
+volatile uint16_t _sum = 0;
+volatile uint16_t _index = 0;
+volatile uint8_t _sample_inited = 0;
+volatile uint16_t _update_counter = 0;
+
+// NOTE: happens during a ISR so interrupts are cleared
 void
-gyro_init(uint8_t port, uint16_t lsb_ms_per_deg, uint32_t samples) {
-	uint32_t sum = 0.0;
+gyro_new_sample () {
+	_sum -= _samples[_index];
+	_samples [_index] = analog_read (_port);
+	_sum += _samples[_index];
 
-	//dump_threadstates();
-	for (uint32_t i = 0; i < samples; i++) {
-		sum += analog_read (port);
+	_index++;
+
+	if (_index >= _num_samples) {
+		_sample_inited = 1;
+		//_index = (_index % _num_samples);
+		_index = 0;
 	}
 
-	_offset = sum / samples;
-	_theta = 0;
-	_lsb_ms_per_deg = lsb_ms_per_deg;
+	_update_counter++;
+}
+
+
+double
+gyro_read () {
+	// use a lockless scheme for concurrent modification detection
+	uint16_t counter;
+	double result;
+
+	do {
+		counter = _update_counter;
+		result = (double) _sum / (double) _num_samples;
+	} while (counter != _update_counter);
+
+
+/*
+	do {
+		// look at the counter before we start
+		counter = _update_counter;
+		sum = 0;
+
+		for (uint16_t i = 0; i < _num_samples; i++) {
+			//sum += _samples [(_index + i) % _num_samples];
+			sum += _samples [i];
+		}
+
+	// if the counter has changed, start again
+	} while (counter != _update_counter);
+*/
+
+	return result;
+}
+
+void
+gyro_init(uint8_t port, double lsb_ms_per_deg, uint16_t samples) {
+
+	uart_printf ("gyro_init (%u,%.2f,%u)\n",port, lsb_ms_per_deg, samples);
+
+	// record sample list size
+	_num_samples = samples;
+
+	// allocate sample list
+	_samples = (uint16_t *) malloc (_num_samples * sizeof(uint16_t));
+	for (uint16_t i = 0; i < _num_samples; i++)
+		_samples[i] = 0;
+
+	// record port of the gyro
 	_port = port;
 
-	extern uint32_t global_time;
-	_last_time = global_time;
+	uart_printf ("enabling isr\n");
 
+	// enable gyro and start reading measurments into sample list
 	_gyro_enabled = 1;
+
+	uart_printf ("waiting for sampling to finish\n");
+
+	// wait until list has filled
+	while (!_sample_inited) {
+		yield();
+	}
+
+	uart_printf ("init complete. grabbing stable value\n");
+
+	// assume robot has been sitting still and take current reading as offset
+	for (uint8_t i = 0; i < 10; i++) {
+		_offset += gyro_read ();
+		pause (100);
+	}
+
+	_offset /= 10;
+
+	uart_printf ("offset is %.2f\n", _offset);
+
+	// set angle to zero
+	_theta = 0;
+
+	// record LSB*ms/deg scale factor
+	_lsb_ms_per_deg = lsb_ms_per_deg;
+
+	uart_printf ("gyro_init complete\n");
 }
 
 void
 gyro_update() {
-	extern uint32_t global_time;
+	// sample and add to queue
+	gyro_new_sample ();
 
-	uint32_t current_time = global_time;
-	uint32_t ms_dt = current_time - _last_time;
-	_last_time = current_time;
+	// if we haven't finished initializing the sample queue, stop
+	if (!_sample_inited)
+		return;
 
-	uint16_t sum = 0;
-	const uint8_t samples = 3;
-	for (uint8_t i = 0; i < samples; i++) {
-		sum += analog_read (_port);
-	}
-	//uint16_t analog_value = sum / 10;
-	uint16_t analog_value = sum / samples;
-
-	//uart_printf("analog_value: %d\n", analog_value);
-
-	_theta -= (analog_value - _offset) * ms_dt;
+	// assume a constant time interval between measurements---1ms
+	// update theta
+	_theta -= gyro_read () - _offset;
 }
 
 uint8_t
@@ -83,11 +161,11 @@ gyro_enabled (void) {
 	return _gyro_enabled;
 }
 
-float
+double
 gyro_get_degrees (void) {
 	uint8_t sreg = SREG & SREG_IF;
 	cli ();
-	float result = ((float) _theta) / _lsb_ms_per_deg;
+	double result = _theta / _lsb_ms_per_deg;
 
 	SREG |= sreg;
 	return result;
