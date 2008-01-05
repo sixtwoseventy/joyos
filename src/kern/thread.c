@@ -39,6 +39,7 @@
 #include <board.h>
 #include <string.h>
 #include <avr/interrupt.h>
+#include <kern/lock.h>
 
 // array of all threads
 struct thread threads[MAX_THREADS];
@@ -506,11 +507,22 @@ create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
 
 void
 halt(void) {
+	// stop interrupts
+	cli();
+
+	// nuke motor lock
+	extern struct lock motor_lock;
+	motor_lock.locked = 0;
+	motor_lock.thread = NULL;
+
+	// break each motor
 	for (uint8_t i = 0; i < 6; i++)
 		motor_brake (i);
 
-	cli();
+	// enter busy loop forever
 	for(;;);
+
+	// unreachable code, should never happen
 	panic ("halt");
 }
 

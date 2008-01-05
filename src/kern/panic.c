@@ -27,6 +27,7 @@
 #include <lcd.h>
 #include <kern/global.h>
 #include <kern/lock.h>
+#include <kern/thread.h>
 
 void
 panic (char *msg) {
@@ -41,8 +42,9 @@ panic (char *msg) {
 
 	lcd_clear(); // clear lcd
 	lcd_printf("panic: %s\n", msg ? msg : ""); // print msg
+
 	// TODO: uartPrint
 	// halt
-	while (1);
+	halt();
 }
 

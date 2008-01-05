@@ -80,3 +80,4 @@ uint16_t
 motor_get_current_MA(uint8_t motor) {
 	return motor_get_current(motor)*MOTOR_MA_PER_LSB;
 }
+
