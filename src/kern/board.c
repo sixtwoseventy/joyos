@@ -32,12 +32,35 @@
 #include <kern/global.h>
 #include <kern/lock.h>
 #include <kern/isr.h>
+#include <at45db011.h>
+#include <util/crc16.h>
 
 extern FILE lcdout, uartout;
 #define BOOT_TEXT "Happyboard v"BOARD_VERSION_STRING"               \5"
 
+uint8_t
+board_load_config (void) {
+	uint8_t i;
+	uint16_t crc=0;
+	uint8_t *config_arr = (uint8_t*)&board_config;
+	at45db_start_continuous_read(BOARD_CONFIG_ADDRESS);
+	at45db_continuous_read_block(sizeof(board_config),(uint8_t*)(&board_config));
+	at45db_end_continuous_read();
+	for (i=0;i<8;i++)
+		crc = _crc_xmodem_update(crc,config_arr[i]);
+	uart_printf("brd ver: 0x%04X\n\r",board_config.version);
+	uart_printf("brd id: 0x%04X\n\r",board_config.id);
+	uart_printf("fpga ver: 0x%04X\n\r",board_config.fpga_version);
+	uart_printf("fpga len: 0x%04X\n\r",board_config.fpga_len);
+	uart_printf("calc crc: 0x%04X\n\r",board_config.crc);
+	uart_printf("crc: 0x%04X\n\r",crc);
+	return (crc==board_config.crc);
+}
+
 void
 board_init (void) {
+	uint8_t fpgaOK, battOK, confOK;
+
 	io_init();
 	LED_PWR(1);
 	digital_init();
@@ -54,18 +77,11 @@ board_init (void) {
 	// init stdout/stderr
 	stdout = &lcdout;
 	stderr = &uartout;
-	
+
+	confOK = board_load_config();
 	lcd_printf(BOOT_TEXT);
-	lcd_set_pos(31);
-	// init fpga
-	uint8_t fpgaOK = fpga_init();
-	uint8_t battOK = read_battery()>=7500;
-	// smiley / frowny depending on fpga state
-	lcd_printf(fpgaOK ? "\1" : "\3");
-	uart_printf("FPGA %d %d.%d\n\r",
-			fpgaOK,
-			fpga_get_version_major(), 
-			fpga_get_version_minor());
+	fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
+	battOK = read_battery()>=7500;
 	lcd_set_pos(16);
 	if (!battOK)
 		lcd_printf("Low battery    \3");
@@ -74,6 +90,11 @@ board_init (void) {
 	if ((!battOK) || (!fpgaOK)) {
 		while (1);
 	}
+	lcd_set_pos(31);
+	lcd_printf("\1");
+	uart_printf("FPGA %d.%d\n\r",
+			fpga_get_version_major(), 
+			fpga_get_version_minor());
 
 	delay_busy_ms(500);
 	LED_COMM(0);

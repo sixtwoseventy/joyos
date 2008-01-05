@@ -45,6 +45,9 @@
  * included from user code. 
  */
 
+#define BOARD_CONFIG_ADDRESS 0
+#define FPGA_CONFIG_ADDRESS 256
+
 /**
  * Happyboard configuration structure stores basic board config
  */
@@ -54,7 +57,9 @@ typedef struct {
     uint16_t fpga_version;  ///< FPGA firmware version
     uint16_t fpga_len;      ///< FPGA firmware length
     uint16_t crc;           ///< Config CRC
-} HappyConfig; 
+} BoardConfig;
+
+BoardConfig board_config;
 
 void board_init (void);
 

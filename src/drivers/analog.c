@@ -24,6 +24,7 @@
  */
 
 #include <kern/global.h>
+#include <kern/thread.h>
 #include <mcp3008.h>
 
 uint16_t 

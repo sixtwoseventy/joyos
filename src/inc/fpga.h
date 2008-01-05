@@ -69,6 +69,6 @@
 /// Get the FPGA Minor Version
 #define fpga_get_version_minor() fpga_read_byte(FPGA_VERSION_MIN)
 /// Initialise FPGA
-uint8_t fpga_init();
+uint8_t fpga_init(uint16_t start, uint16_t len);
 
 #endif

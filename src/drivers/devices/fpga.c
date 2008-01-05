@@ -29,13 +29,13 @@
 #include "at45db011.h"
 
 uint8_t 
-fpga_init() {
+fpga_init(uint16_t start, uint16_t len) {
 	uint16_t outSize = 0;
 	uint16_t binSize;
 	uint8_t val, i, bit, count;
 	uint8_t obuf[8];
 
-	while (at45db_start_continuous_read(0) == AT45DB_SPI_BUSY);
+	while (at45db_start_continuous_read(start) == AT45DB_SPI_BUSY);
 
 	// pulse prog_b line to start programming
 	FPGA_PROGB(0);
@@ -43,8 +43,9 @@ fpga_init() {
 	FPGA_PROGB(1);
 
 	// get binary size	
-	i = at45db_get_next_byte();
-	binSize = (i<<8) + at45db_get_next_byte();
+	//i = at45db_get_next_byte();
+	//binSize = (i<<8) + at45db_get_next_byte();
+	binSize = len;
 
 	while (outSize<binSize) {
 		count = 1;
