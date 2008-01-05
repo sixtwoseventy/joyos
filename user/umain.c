@@ -1,76 +1,46 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2007 MIT 6.270 Robotics Competition
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <kern/global.h>
 #include <board.h>
 #include <kern/thread.h>
 #include <math.h>
-#include <gyro.h>
-#include <board.h>
-//#include <pid.h>
-#include <avr/interrupt.h>
-#include <stdlib.h>
-#include <string.h>
 
-#define GYRO_PORT 11
-
-int display_angle (void) {
-	for (;;) {
-		printf("\ntheta = %.2f", gyro_get_degrees());
-		//printf("\nreading = %.2f", gyro_read());
-		pause(500);
-	}
-
-	return 0;
-}
- 
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	printf("\nPlace robot,    press go.");
-	go_click();
-	printf("\nStabilizing...");
-	pause(500); /* Wait for robot to stabilize mechanically */
-	printf("\nCalibrating     offset...");
-	//gyro_init(GYRO_PORT, 496.2, 29);
-	gyro_init(GYRO_PORT, 496.2, 29);
-	printf("\nDone calibration");
-
-	set_auto_halt (0);
+	set_auto_halt(0);
 	return 0;
-}
-
-void set_turn (float value) {
-	printf("\nActuate %f", (double) value);
 }
 
 int umain(void) {
-	create_thread(&display_angle, 64, 0, "display angle");
-
-	extern uint16_t *_samples;
-	extern uint16_t _num_samples;
-	uint16_t *samp = (uint16_t *) malloc (_num_samples * sizeof (uint16_t));
-
 	while (1) {
-		uart_printf ("heartbeat\n");
-
-		cli();
-		for (uint16_t i = 0; i < _num_samples; i++) {
-			samp[i] = _samples[i];
-		}
-		sei();
-
-		uart_printf ("samples = [");
-		for (uint16_t i = 0; i < _num_samples-1; i++) {
-			uart_printf ("%u,", samp[i]);
-		}
-		uart_printf ("%u];\n", samp[_num_samples-1]);
-		uart_printf ("  read = %.2f\n", gyro_read());
-//		pause(500);
-
-		servo_set_pos (0,10);
-		pause (1000);
-		servo_set_pos (0,500);
-		pause (1000);
+		int time = (int) (get_time() / 1000);
+		int ms = (int) (get_time() % 1000);
+		printf("\n%03d.%03d", time, ms);
+		pause (10);
 	}
-
 	return 0;
 }
-

@@ -38,6 +38,8 @@ extern uint32_t global_time;
 //void (*timer0_callback) () = 0;
 
 ISR(TIMER2_OVF_vect) {
+	TCNT2 = TIMER_1MS_EXPIRE;
+
 	global_time++;
 	//global_time++; // FIXME
 	if (gyro_enabled()) {

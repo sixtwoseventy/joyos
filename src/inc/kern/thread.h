@@ -45,7 +45,8 @@
 #include <config.h>
 
 #define TIMER_PRESCALER (64)
-#define TIMER_1MS_EXPIRE ((uint8_t)(0xff-(F_CPU/TIMER_PRESCALER/1000)+1))
+//#define TIMER_1MS_EXPIRE ((uint8_t)(0xff-(F_CPU/TIMER_PRESCALER/1000)+1))
+#define TIMER_1MS_EXPIRE 131
 
 // TODO probably defined elsewhere
 #define SREG_IF	0x80
