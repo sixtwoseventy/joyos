@@ -36,74 +36,112 @@
 #include <util/crc16.h>
 
 extern FILE lcdout, uartout;
-#define BOOT_TEXT "Happyboard v"BOARD_VERSION_STRING"               \5"
 
+// Boot failure message
+char str_boot_fail[] PROGMEM  = "Init fail: %s\n\r";
+
+// Boot text
+char str_boot_message[] = "Happyboard v%X.%02X               \5";
+
+// Boot progress messages
+char str_boot_uart[] PROGMEM  = "UART0 opened at %d\n\r";
+char str_boot_start[] PROGMEM = "Happyboard init started\n\r";
+char str_boot_board[] PROGMEM = "Hardware version %X.%02X\n\r";
+char str_boot_id[] PROGMEM    = "Board ID %04X\n\r";
+char str_boot_conf[] PROGMEM  = "Board config OK\n\r";
+char str_boot_batt[] PROGMEM  = "Battery OK: %dmV\n\r";
+char str_boot_fpga[] PROGMEM  = "FPGA v%d.%d\n\r";
+
+// Load board config.
+// Return true if config CRC is valid
 uint8_t
 board_load_config (void) {
 	uint8_t i;
 	uint16_t crc=0;
 	uint8_t *config_arr = (uint8_t*)&board_config;
+	// read config from flash
 	at45db_start_continuous_read(BOARD_CONFIG_ADDRESS);
 	at45db_continuous_read_block(sizeof(board_config),(uint8_t*)(&board_config));
 	at45db_end_continuous_read();
+	// calculate CRC
 	for (i=0;i<8;i++)
 		crc = _crc_xmodem_update(crc,config_arr[i]);
-	uart_printf("brd ver: 0x%04X\n\r",board_config.version);
-	uart_printf("brd id: 0x%04X\n\r",board_config.id);
-	uart_printf("fpga ver: 0x%04X\n\r",board_config.fpga_version);
-	uart_printf("fpga len: 0x%04X\n\r",board_config.fpga_len);
-	uart_printf("calc crc: 0x%04X\n\r",board_config.crc);
-	uart_printf("crc: 0x%04X\n\r",crc);
+	// check CRC
 	return (crc==board_config.crc);
 }
 
+// Halt board on init failure and print message
+void 
+board_fail(const char* msg) {
+	uart_printf_P(str_boot_fail,msg);
+	// print message
+	lcd_set_pos(16);
+	lcd_printf(msg);
+	lcd_set_pos(31);
+	lcd_print_char('\3', NULL);
+	// and stop
+	while (1);
+}
+
+// Initialise board
 void
 board_init (void) {
-	uint8_t fpgaOK=0, battOK, confOK;
+	uint8_t fpgaOK, battOK, confOK;
 
+	// Init GPIOs
 	io_init();
 	LED_PWR(1);
+	// init uart
+	uart_init(BAUD_RATE);
+	stderr = &uartout;
+	uart_printf_P(str_boot_uart,BAUD_RATE);
+	uart_printf_P(str_boot_start);
+	// other IO init
 	digital_init();
 	encoder_init();
 	spi_init();
 	motor_init();
 	servo_init();
 	lcd_init();
-	adc_init();
-	uart_init(BAUD_RATE);
-	uart_print(BOOT_TEXT);
-	uart_print("\n\r");
-	isr_init();
-	// init stdout/stderr
 	stdout = &lcdout;
-	stderr = &uartout;
+	adc_init();
+	isr_init();
 
+	// load config, or fail if invalid
 	confOK = board_load_config();
-	battOK = read_battery()>=7500;
-	lcd_printf(BOOT_TEXT);
-	if (confOK) {
-		fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
-	}
-	lcd_set_pos(16);
 	if (!confOK)
-		lcd_printf("Bad Config     \3");
+		board_fail("Bad Config");
+	uart_printf_P(str_boot_conf);
+	uart_printf_P(str_boot_board,
+			board_config.version>>8,
+			board_config.version&0xFF);
+	uart_printf_P(str_boot_id, board_config.id);
+
+	// print boot text to screen
+	lcd_printf(str_boot_message, 
+			board_config.version>>8, board_config.version&0xFF);
+
+	// check battery, fail if <7.5V
+	battOK = read_battery()>=7500;
 	if (!battOK)
-		lcd_printf("Low battery    \3");
+		board_fail("Low battery");
+	uart_printf_P(str_boot_batt,read_battery());
+
+	// initialise FPGA
+	fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
 	if (!fpgaOK)
-		lcd_printf("FPGA failure   \3");
-	if ((!confOK) || (!battOK) || (!fpgaOK)) {
-		while (1);
-	}
-	lcd_set_pos(31);
-	lcd_printf("\1");
-	uart_printf("FPGA %d.%d\n\r",
-			fpga_get_version_major(), 
+		board_fail("FPGA failure");
+	uart_printf_P(str_boot_fpga,
+			fpga_get_version_major(),
 			fpga_get_version_minor());
 
-	delay_busy_ms(500);
+	// all ok
+	lcd_set_pos(31);
+	lcd_print_char('\1', NULL);
+
+	//delay_busy_ms(500);
 	LED_COMM(0);
 	// beep
-	rf_init();
 	beep(400,100);
 }
 

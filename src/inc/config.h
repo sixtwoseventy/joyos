@@ -32,8 +32,5 @@
 #include <stdbool.h>
 
 #define BAUD_RATE				19200
-#define BOARD_VERSION 			0x0060
-#define BOARD_VERSION_STRING 	"0.60"
-
 
 #endif
