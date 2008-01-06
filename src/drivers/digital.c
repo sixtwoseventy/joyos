@@ -54,6 +54,7 @@ digital_read(uint8_t port) {
 		result = ((~(fpga_read_byte(FPGA_DIGITAL_BASE)))>>port)&1;
 		release(&digital_lock);
 	} else if (port<24) {
+		// is analog value of `port' greater than half the max+1 ?
 		result = analog_read(port)>((ANALOG_MAX+1)>>1);
 	} else {
 		panic("digital_read");

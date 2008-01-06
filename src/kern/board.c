@@ -142,6 +142,6 @@ board_init (void) {
 	//delay_busy_ms(500);
 	LED_COMM(0);
 	// beep
-	beep(400,100);
+	beep(450,2500);
 }
 
