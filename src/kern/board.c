@@ -59,7 +59,7 @@ board_load_config (void) {
 
 void
 board_init (void) {
-	uint8_t fpgaOK, battOK, confOK;
+	uint8_t fpgaOK=0, battOK, confOK;
 
 	io_init();
 	LED_PWR(1);
@@ -79,15 +79,19 @@ board_init (void) {
 	stderr = &uartout;
 
 	confOK = board_load_config();
-	lcd_printf(BOOT_TEXT);
-	fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
 	battOK = read_battery()>=7500;
+	lcd_printf(BOOT_TEXT);
+	if (confOK) {
+		fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
+	}
 	lcd_set_pos(16);
+	if (!confOK)
+		lcd_printf("Bad Config     \3");
 	if (!battOK)
 		lcd_printf("Low battery    \3");
 	if (!fpgaOK)
 		lcd_printf("FPGA failure   \3");
-	if ((!battOK) || (!fpgaOK)) {
+	if ((!confOK) || (!battOK) || (!fpgaOK)) {
 		while (1);
 	}
 	lcd_set_pos(31);
