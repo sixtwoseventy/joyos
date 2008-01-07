@@ -96,7 +96,8 @@ gyro_read () {
 void
 gyro_init(uint8_t port, double lsb_ms_per_deg, uint16_t samples) {
 
-	uart_printf ("gyro_init (%u,%.2f,%u)\n",port, lsb_ms_per_deg, samples);
+	uart_printf_P (PSTR("gyro_init (%u,%.2f,%u)\n"),
+			port, lsb_ms_per_deg, samples);
 
 	// record sample list size
 	_num_samples = samples;
@@ -109,19 +110,19 @@ gyro_init(uint8_t port, double lsb_ms_per_deg, uint16_t samples) {
 	// record port of the gyro
 	_port = port;
 
-	uart_printf ("enabling isr\n");
+	uart_printf_P (PSTR("enabling isr\n"));
 
 	// enable gyro and start reading measurments into sample list
 	_gyro_enabled = 1;
 
-	uart_printf ("waiting for sampling to finish\n");
+	uart_printf_P (PSTR("waiting for sampling to finish\n"));
 
 	// wait until list has filled
 	while (!_sample_inited) {
 		yield();
 	}
 
-	uart_printf ("init complete. grabbing stable value\n");
+	uart_printf_P (PSTR("init complete. grabbing stable value\n"));
 
 	// assume robot has been sitting still and take current reading as offset
 	for (uint8_t i = 0; i < 10; i++) {
@@ -131,7 +132,7 @@ gyro_init(uint8_t port, double lsb_ms_per_deg, uint16_t samples) {
 
 	_offset /= 10;
 
-	uart_printf ("offset is %.2f\n", _offset);
+	uart_printf_P (PSTR("offset is %.2f\n"), _offset);
 
 	// set angle to zero
 	_theta = 0;
@@ -139,7 +140,7 @@ gyro_init(uint8_t port, double lsb_ms_per_deg, uint16_t samples) {
 	// record LSB*ms/deg scale factor
 	_lsb_ms_per_deg = lsb_ms_per_deg;
 
-	uart_printf ("gyro_init complete\n");
+	uart_printf_P (PSTR("gyro_init complete\n"));
 }
 
 void

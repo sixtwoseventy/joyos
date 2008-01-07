@@ -72,7 +72,7 @@ board_load_config (void) {
 
 // Halt board on init failure and print message
 void 
-board_fail(const char* msg) {
+board_fail_P(PGM_P msg) {
 	uart_printf_P(str_boot_fail,msg);
 	// print message
 	lcd_set_pos(16);
@@ -110,7 +110,7 @@ board_init (void) {
 	// load config, or fail if invalid
 	confOK = board_load_config();
 	if (!confOK)
-		board_fail("Bad Config");
+		board_fail_P(PSTR("Bad Config"));
 	uart_printf_P(str_boot_conf);
 	uart_printf_P(str_boot_board,
 			board_config.version>>8,
@@ -124,13 +124,13 @@ board_init (void) {
 	// check battery, fail if <7.5V
 	battOK = read_battery()>=7500;
 	if (!battOK)
-		board_fail("Low battery");
+		board_fail_P(PSTR("Low battery"));
 	uart_printf_P(str_boot_batt,read_battery());
 
 	// initialise FPGA
 	fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
 	if (!fpgaOK)
-		board_fail("FPGA failure");
+		board_fail_P(PSTR("FPGA failure"));
 	uart_printf_P(str_boot_fpga,
 			fpga_get_version_major(),
 			fpga_get_version_minor());

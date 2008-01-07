@@ -202,6 +202,30 @@ lcd_printf(const char *fmt, ...) {
 	return count;
 }
 
+
+int
+lcd_vprintf_P (PGM_P fmt, va_list ap) {
+	int count;
+
+	acquire (&lcd_lock);
+	count = vfprintf_P (&lcdout, fmt, ap);
+	release (&lcd_lock);
+
+	return count;
+}
+
+int
+lcd_printf_P (PGM_P fmt, ...) {
+	va_list ap;
+	int count;
+
+	va_start (ap, fmt);
+	count = lcd_vprintf_P (fmt, ap);
+	va_end (ap);
+
+	return count;
+}
+
 int 
 lcd_print_char(char ch, FILE *f) {
 	// wait for control

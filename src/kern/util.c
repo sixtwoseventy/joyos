@@ -30,6 +30,7 @@
 #include <kern/lock.h>
 #include <lcd.h>
 #include <lib/async_printf.h>
+#include <avr/pgmspace.h>
 
 void
 waitForClick(char *msg) {
@@ -48,10 +49,11 @@ waitForClick(char *msg) {
 // prints n bytes of 'bytes' to UART
 void
 dumpBytes (uint8_t *bytes, uint8_t n) {
-	uart_printf("INDEX   ADDR   VALUE\n");
-	uart_printf("====================\n");
+	uart_printf_P(PSTR("INDEX   ADDR   VALUE\n"));
+	uart_printf_P(PSTR("====================\n"));
 	for (int i = 0; i < n; i++) {
-		uart_printf("% 5d   %4p   %02x\n", i, (void *)(bytes + i), bytes[i]);
+		uart_printf_P(PSTR("% 5d   %4p   %02x\n"),
+			i, (void *)(bytes + i), bytes[i]);
 	}
 }
 

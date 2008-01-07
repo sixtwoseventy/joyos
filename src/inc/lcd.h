@@ -76,6 +76,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <avr/pgmspace.h>
 
 // TODO lock
 
@@ -123,6 +124,10 @@ int lcd_vprintf(const char *fmt, va_list ap);
  * @param fmt		format to display
  */
 int lcd_printf(const char *fmt, ...);
+
+
+int lcd_vprintf_P (PGM_P fmt, va_list ap);
+int lcd_printf_P (PGM_P fmt, ...);
 
 /**
  * Print a single character to the LCD.

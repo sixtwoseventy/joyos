@@ -64,7 +64,7 @@ set_timer0_callback(void (*func) ()) {
 */
 
 ISR(__vector_default) {
-	panic ("unknown interrupt");
+	panic_P ("unknown interrupt");
 }
 
 /**

@@ -45,7 +45,7 @@ init_pid (struct pid_controller *pid, float kp, float ki, float kd,
 		float (*input) (), void (*output) (float value)) {
 
 	if (pid == 0)
-		panic ("init_pid: pid null");
+		panic_P (PSTR("init_pid: pid null"));
 
 	pid->kp = kp;
 	pid->ki = ki;
@@ -62,23 +62,23 @@ init_pid (struct pid_controller *pid, float kp, float ki, float kd,
 float
 update_pid (struct pid_controller *pid) {
 	if (!pid->enabled) {
-		panic ("update_pid: pid disabled");
+		panic_P (PSTR("update_pid: pid disabled"));
 	}
 
 	if (!pid->input)
-		panic ("update_pid: no input");
+		panic_P (PSTR("update_pid: no input"));
 	if (!pid->output)
-		panic ("update_pid: no output");
+		panic_P (PSTR("update_pid: no output"));
 
 	float current_val = pid->input();
 
-	uart_printf("current value %d.%03u\n",
+	uart_printf_P (PSTR("current value %d.%03u\n"),
 			(int) current_val, 
 			(int) floor(current_val*100-floor(current_val)*100));
 
 	float error = pid->goal - current_val;
 
-	uart_printf("error %d.%03u\n",
+	uart_printf_P (PSTR("error %d.%03u\n"),
 			(int) error, 
 			(int) floor(error*100-floor(error)*100));
 

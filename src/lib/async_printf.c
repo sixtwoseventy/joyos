@@ -145,7 +145,7 @@ async_loop_start (void) {
 				uart_printf_P(PSTR("Unknown file descriptor %p\n"),link->out);
 				uart_printf_P(PSTR(" uartout at %p\n"), &uartout);
 				uart_printf_P(PSTR(" lcdout at %p\n"), &lcdout);
-				panic ("async_loop");
+				panic_P (PSTR("async_loop"));
 			}
 
 			free (link->buf);
@@ -160,7 +160,7 @@ int
 async_vfprintf (FILE *out, const char *fmt, va_list ap) {
 	char *buf;
 	while((buf = (char *) malloc (BUFFER_SIZE)) == NULL) {
-		panic ("async_vfprintf out of mem");
+		panic_P (PSTR("async_vfprintf out of mem"));
 		//yield();
 	}
 
@@ -177,7 +177,7 @@ async_printf (FILE *out, const char *fmt, ...) {
 	int count;
 
 	if (out != &uartout && out != &lcdout) {
-		panic("unknown out");
+		panic_P (PSTR("unknown out"));
 	}
 
 	va_start(ap, fmt);

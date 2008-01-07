@@ -35,7 +35,7 @@ analog_read(uint8_t port) {
 		while (mcp3008_get_sample(MCP3008_ADC1, MCP3008_CH0+(15-port), &v)
 				!= MCP3008_SUCCESS) {
 			// XXX: for now notify user of fail
-			panic ("mcp3008 fail");
+			panic_P (PSTR("mcp3008 fail"));
 
 			// yield and try again
 			yield();
@@ -46,7 +46,7 @@ analog_read(uint8_t port) {
 		while (mcp3008_get_sample(MCP3008_ADC2, MCP3008_CH0+(23-port), &v) 
 				!= MCP3008_SUCCESS) {
 			// XXX: for now notify user of fail
-			panic ("mcp3008 fail");
+			panic_P (PSTR("mcp3008 fail"));
 
 			// yield and try again
 			yield();
@@ -54,7 +54,7 @@ analog_read(uint8_t port) {
 	}
 
 	else {
-		panic("analog_read");
+		panic_P (PSTR("analog_read"));
 	}
 
 	return v;

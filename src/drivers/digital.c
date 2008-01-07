@@ -57,7 +57,7 @@ digital_read(uint8_t port) {
 		// is analog value of `port' greater than half the max+1 ?
 		result = analog_read(port)>((ANALOG_MAX+1)>>1);
 	} else {
-		panic("digital_read");
+		panic_P (PSTR("digital_read"));
 	}
 
 	return result;

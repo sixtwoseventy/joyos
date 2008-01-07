@@ -55,7 +55,7 @@ idle(void) {
 		yield();
 	}
 
-	panic ("idle");
+	panic_P (PSTR("idle"));
 	return 0;
 }
 
@@ -116,7 +116,7 @@ init_thread(void) {
 	// assert idle thread is thread #0
 	//assert (threads[0].th_status != THREAD_FREE);
 	if (threads[0].th_status == THREAD_FREE)
-		panic ("idle free");
+		panic_P (PSTR("idle free"));
 
 	setjmp(TO_JMP_BUF(sched_jbuf));
 	sched_jbuf.sp = KSTACKTOP;
@@ -192,7 +192,7 @@ schedule(void) {
 	}
 
 	// should never return
-	panic ("schedule");
+	panic_P (PSTR("schedule"));
 }
 
 void
@@ -207,12 +207,12 @@ check (struct thread *t) {
 		extern uint16_t __malloc_heap_start, __malloc_heap_end;
 		uart_printf_P(PSTR("malloc space [%p,%p]\n"),
 				__malloc_heap_start, __malloc_heap_end);
-		panic ("no idle");
+		panic_P (PSTR("no idle"));
 	}
 
 	// check if SP is above stacktop
 	if (t->th_jmpbuf.sp > STACKTOP(t->th_id)) {
-		panic ("SP above");
+		panic_P (PSTR("SP above"));
 	}
 
 	/*
@@ -245,7 +245,7 @@ check (struct thread *t) {
 		uart_printf_P(PSTR("stacktop: %p\n"), t->th_stacktop);
 		uart_printf_P(PSTR("reserved space: %p to %p\n"),
 				STACKTOP(t->th_id+1)+1, STACKTOP(t->th_id));
-		panic ("stack overflow");
+		panic_P (PSTR("stack overflow"));
 	}
 
 	/*
@@ -263,7 +263,7 @@ check (struct thread *t) {
 void
 suspend() {
 	if (!current_thread)
-		panic ("no current_thread");
+		panic_P (PSTR("no current_thread"));
 
 	//if (setjmp(current_thread->th_jmpbuf) == 0)
 	if (setjmp(TO_JMP_BUF(current_thread->th_jmpbuf)) == 0) {
@@ -304,7 +304,7 @@ resume(struct thread *t) {
 	longjmp(TO_JMP_BUF(current_thread->th_jmpbuf), 1);
 
 	// resume should never return
-	panic ("resume");
+	panic_P (PSTR("resume"));
 }
 
 void
@@ -350,7 +350,7 @@ yield(void) {
 			"push r31\n\t" ::);
 
 	//assert (current_thread);
-	if (!current_thread) panic ("yield");
+	if (!current_thread) panic_P (PSTR("yield"));
 
 	suspend();
 
@@ -381,7 +381,7 @@ sleep(void *channel) {
 	cli();
 
 	//assert(current_thread);
-	if (!current_thread) panic ("sleep");
+	if (!current_thread) panic_P (PSTR("sleep"));
 
 	current_thread->th_channel = channel;
 	current_thread->th_status = THREAD_SLEEPING;
@@ -415,12 +415,12 @@ exit(int status) {
 
 	//assert(current_thread);
 	if (!current_thread)
-		panic ("exiting nothing");
+		panic_P (PSTR("exiting nothing"));
 
 	current_thread->th_status = THREAD_FREE;
 	yield();
 
-	panic ("exit");
+	panic_P (PSTR("exit"));
 	for (;;); // satisfy compiler
 }
 
@@ -501,7 +501,7 @@ create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
 			return i;
 		}
 
-	panic ("out of threads");
+	panic_P (PSTR("out of threads"));
 	for(;;); // satisfy compiler
 }
 
@@ -523,7 +523,7 @@ halt(void) {
 	for(;;);
 
 	// unreachable code, should never happen
-	panic ("halt");
+	panic_P (PSTR("halt"));
 }
 
 /*

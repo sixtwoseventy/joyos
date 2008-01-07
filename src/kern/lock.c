@@ -38,7 +38,7 @@ void
 init_lock(struct lock *k, const char *name) {
 	// make sure k is non-null
 	if (!k) {
-		panic ("init null lock");
+		panic_P (PSTR("init null lock"));
 	}
 
 	k->locked = 0;
@@ -50,11 +50,11 @@ void
 acquire(struct lock *k) {
 	// make sure k is non-null
 	if (!k) {
-		panic ("acquire null lock");
+		panic_P ("acquire null lock");
 	}
 
 	if (k->locked >= LOCK_MAX_ACQUIRES) {
-		panic ("acquired too many times");
+		panic_P (PSTR("acquired too many times"));
 	}
 
 	// loop until we acquire lock...
@@ -95,14 +95,14 @@ acquire(struct lock *k) {
 	}
 
 	// control should never reach this
-	panic ("acquire");
+	panic_P (PSTR("acquire"));
 }
 
 int
 is_held (struct lock *k) {
 	//assert (k);
 	if (!k) {
-		panic ("is_held null lock");
+		panic_P (PSTR("is_held null lock"));
 	}
 
 	extern struct thread *current_thread;
@@ -113,7 +113,7 @@ void
 release(struct lock *k) {
 	// make sure k is non-null
 	if (!k) {
-		panic ("release null lock");
+		panic_P (PSTR("release null lock"));
 	}
 
 	// record interrupt status
@@ -124,13 +124,13 @@ release(struct lock *k) {
 
 	// check lock is actually locked
 	if (!k->locked) {
-		panic ("release unheld lock");
+		panic_P (PSTR("release unheld lock"));
 	}
 
 	// check that lock is held by the current thread
 	extern struct thread *current_thread;
 	if (k->thread != current_thread) {
-		panic ("lock held by another");
+		panic_P (PSTR("lock held by another"));
 	}
 
 	// release lock

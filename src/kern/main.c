@@ -57,7 +57,7 @@ int robot_monitor (void) {
 	// start the calibration period...
 	usetup ();
 
-	lcd_printf ("\nWaiting for RF  'Go' to override");
+	lcd_printf_P (PSTR("\nWaiting for RF  'Go' to override"));
 	// wait for the start signal
 	while (rf_get_round_state() != STATE_RUNNING && !go_press ())
 		yield ();
@@ -78,7 +78,7 @@ int robot_monitor (void) {
 		while (1) { yield(); }
 	} else {
 		pause (29296L);
-		lcd_printf ("\nRound end");
+		lcd_printf_P (PSTR("\nRound end"));
 		halt();
 	}
 
@@ -89,7 +89,7 @@ int main (void) {
 	// check for runaway code
 	extern struct thread *current_thread;
 	if (current_thread != NULL)
-		panic ("runaway code");
+		panic_P (PSTR("runaway code"));
 
 	// startup malloc
 	extern uint16_t __malloc_heap_end;
@@ -99,14 +99,21 @@ int main (void) {
 	board_init();
 
 	extern uint16_t __malloc_heap_start;
-	if (__malloc_heap_start > __malloc_heap_end)
-		panic ("         memory full");
+	uart_printf_P (PSTR("__malloc_heap_start = %p\n"), __malloc_heap_start);
+	uart_printf_P (PSTR("__malloc_heap_end = %p\n"), __malloc_heap_end);
+
+	int16_t heap_size = 2 * (__malloc_heap_end - __malloc_heap_start);
+	uart_printf_P (PSTR("heap size: %d bytes\n"), heap_size);
+
+	if (__malloc_heap_start >= __malloc_heap_end)
+		panic_P (PSTR("         memory full"));
 
 	// TODO check for debug mode
 
-	waitForClick ("JoyOS v"JOYOS_VERSION"    Press GO");
-
-	uart_printf_P (PSTR("__malloc_heap_start = %p\n"), __malloc_heap_start);
+	PGM_P boot_msg = PSTR("JoyOS v"JOYOS_VERSION"    Press GO");
+	lcd_printf_P (boot_msg);
+	uart_printf_P (boot_msg);
+	uart_printf_P (PSTR("\n"));
 
 	// startup multithreading
 	init_thread();
@@ -128,7 +135,7 @@ int main (void) {
 	//longjmp(TO_JMP_BUF(sched_jbuf),1);
 
 	// control should never reach here
-	panic ("main");
+	panic_P (PSTR("main"));
 
 	return 0;
 }

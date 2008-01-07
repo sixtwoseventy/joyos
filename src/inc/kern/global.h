@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include "config.h" // TODO rewrite
+#include <avr/pgmspace.h>
 
 //#define __ASSERT_USE_STDERR
 //#define assert(expr) if (!(expr)) { panic("assert"); } else
@@ -51,6 +52,8 @@
  * @param msg	Display "panic: msg" on the LCD.
  */
 void panic (char *msg);
+
+void panic_P (PGM_P msg);
 
 /**
  * Enable or disable the Auto-halt.
