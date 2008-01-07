@@ -55,7 +55,6 @@ DRIVERSRC = src/drivers/devices/fpga.c \
 KERNELSRC = src/kern/main.c \
 			src/kern/lock.c \
 			src/kern/board.c \
-			src/kern/abort.c \
 			src/kern/fork.c \
 			src/kern/panic.c \
 			src/kern/thread.c \

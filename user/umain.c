@@ -1,45 +1,63 @@
-/*
- * The MIT License
- *
- * Copyright (c) 2007 MIT 6.270 Robotics Competition
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- */
-
-#include <kern/global.h>
 #include <board.h>
+#include <kern/global.h>
 #include <kern/thread.h>
+#include <kern/lock.h>
+#include <avr/interrupt.h>
 #include <math.h>
-#include <motor.h>
+#include <gyro.h>
+#include <board.h>
+//#include <pid.h>
 
-// usetup is called during the calibration period. It must return before the
-// period ends.
+#define GYRO_PORT 11
+//#define MEASURE_SAMPLES 1400
+#define NUM_SAMPLES 100
+
+uint16_t samples[NUM_SAMPLES];
+uint32_t time[NUM_SAMPLES];
+
+void grab_samples (void) {
+	for (uint32_t i = 0; i < NUM_SAMPLES; i++) {
+		samples[i] = analog_read (GYRO_PORT);
+		time[i] = get_time ();
+	}
+}
+
+void outp_samples (void) {
+	uart_printf ("sampes = [");
+	for (uint32_t i = 0; i < NUM_SAMPLES-1; i++) {
+		uart_printf ("%u,",samples[i]);
+	}
+	uart_printf ("%u]\n",samples[NUM_SAMPLES-1]);
+
+	uart_printf ("time = [");
+	for (uint32_t i = 0; i < NUM_SAMPLES; i++) {
+		uart_printf ("%lu,",time[i]);
+	}
+	uart_printf ("%lu]\n",time[NUM_SAMPLES-1]);
+}
+ 
 int usetup (void) {
-	set_auto_halt(0);
+	set_auto_halt (0);
 	return 0;
 }
 
 int umain(void) {
-	printf ("\nwait 3 sec...");
-	motor_set_vel (0, 192);
-	pause(3000);
-	panic ("stop");
+	cli();
+	printf ("\nready");
+
+	do {
+		go_click ();
+
+		printf ("\nsampling...");
+		grab_samples ();
+
+		printf ("\noutputing...\n");
+		outp_samples ();
+
+		printf ("\ndone. ready");
+
+	} while (1);
+
 	return 0;
 }
+
