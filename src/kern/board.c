@@ -35,6 +35,8 @@
 #include <at45db011.h>
 #include <util/crc16.h>
 
+#define FAIL_MSG_BUF_LEN	17
+
 extern FILE lcdout, uartout;
 
 // Boot failure message
@@ -73,6 +75,11 @@ board_load_config (void) {
 // Halt board on init failure and print message
 void 
 board_fail_P(PGM_P msg) {
+	// need to put the message in a char buffer before printf
+	char buf[FAIL_MSG_BUF_LEN];
+	strncpy_P (buf, msg, FAIL_MSG_BUF_LEN);
+	buf[FAIL_MSG_BUF_LEN-1] = '\0';
+
 	uart_printf_P(str_boot_fail,msg);
 	// print message
 	lcd_set_pos(16);
