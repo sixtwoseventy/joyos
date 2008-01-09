@@ -2,6 +2,8 @@ CC = avr-gcc
 MCU = atmega128
 OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
+FTDI_EEPROM = ftdi_eeprom
+
 INCLUDES = -Isrc/inc
 # Two printf options: full for OS, minimal for bootloader
 BOOT_PRINTFOP = -Wl,-u,vfprintf -lprintf_min
@@ -101,9 +103,6 @@ size: $(OSELF)
 	@echo -n "-- OS Size "
 	@tools/avr-mem.sh $(OSELF) $(MCU)
 
-programnojoy: nojoy.hex
-	$(AVRDUDE) $(AVRDUDEFLAGS_USER) -U flash:w:nojoy.hex
-
 program: $(OSTARGET)
 	$(AVRDUDE) $(AVRDUDEFLAGS_USER) -U flash:w:$(OSTARGET)
 
@@ -117,6 +116,9 @@ programboot: $(BOOTTARGET)
 
 programfuses:
 	$(AVRDUDE) $(AVRDUDEFLAGS_BOOT) -V -U lfuse:w:0xef:m -U hfuse:w:0x98:m -U efuse:w:0xff:m
+
+programftdi:
+	$(FTDI_EEPROM) --flash-eeprom tools/ftdi.conf
 
 programterm:
 	$(AVRDUDE) $(AVRDUDEFLAGS_BOOT) -t
