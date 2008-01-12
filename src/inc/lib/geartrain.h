@@ -21,7 +21,7 @@
  *
  *  \code
  *
- *  #define ENCODER_TO_WHEEL_RATION 3
+ *  #define ENCODER_TO_WHEEL_RATIO 3
  *  #define WHEEL_CIRCUMFERENCE 10.0
  *  #define WHEEL_TRACK 20.0
  *

@@ -42,6 +42,8 @@ typedef uint8_t MotorGroup; ///< MotorGroup
 /// Check if a group contains a motor
 #define motor_group_has(group, motor) ((group)&(1<<(motor)))
 
+#define MOTOR_GROUP_ALL 0x3F
+
 /**
  * Create a new motor group and specify which motors are in the group.
  * For example, a group with motors 1,2 and 3:

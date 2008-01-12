@@ -188,6 +188,7 @@ release: $(OSLIB) size docs
 	@cp -R user/irdistcal release/6.270/src
 	@cp -R user/happytest release/6.270/src
 	@cp -R user/gyrotest release/6.270/src
+	@cp -R user/motiontest release/6.270/src
 	@cp -R user/robot release/6.270/src
 	@cp -R user/makedefaults.inc release/6.270/src
 	@find release/ -name ".svn" | xargs rm -rf
