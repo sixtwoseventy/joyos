@@ -95,6 +95,15 @@ void init_pid (struct pid_controller *pid,
 
 /**
  * Perform a single step of the PID loop.
+ * like update_pid() except takes a current value as an argument
+ *
+ * @param pid          PID controller
+ * @param current_val  Current control value
+ */
+float update_pid_input(struct pid_controller *pid, float current_val);
+
+/**
+ * Perform a single step of the PID loop.
  * The update_pid() steps are as follows:
  *
  * - check the pid is enabled

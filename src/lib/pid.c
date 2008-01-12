@@ -59,28 +59,14 @@ init_pid (struct pid_controller *pid, float kp, float ki, float kd,
 	pid->enabled = 0;
 }
 
-float
-update_pid (struct pid_controller *pid) {
-	if (!pid->enabled) {
-		panic_P (PSTR("update_pid: pid disabled"));
-	}
+float 
+update_pid_input(struct pid_controller *pid, float current_val) {
 
-	if (!pid->input)
-		panic_P (PSTR("update_pid: no input"));
-	if (!pid->output)
-		panic_P (PSTR("update_pid: no output"));
-
-	float current_val = pid->input();
-
-	uart_printf_P (PSTR("current value %d.%03u\n"),
-			(int) current_val, 
-			(int) floor(current_val*100-floor(current_val)*100));
+	uart_printf_P (PSTR("current value %0.3f\n"), current_val);
 
 	float error = pid->goal - current_val;
 
-	uart_printf_P (PSTR("error %d.%03u\n"),
-			(int) error, 
-			(int) floor(error*100-floor(error)*100));
+	uart_printf_P (PSTR("error %0.3f\n"), error);
 
 	// proportional feedback
 	float result = error * pid->kp;
@@ -103,9 +89,23 @@ update_pid (struct pid_controller *pid) {
 	pid->last_val = current_val;
 	pid->last_time = get_time();
 
-	pid->output (result);
+	if (pid->output)
+		pid->output (result);
 
 	return result;
+}
+
+float
+update_pid (struct pid_controller *pid) {
+	if (!pid->enabled)
+		panic_P (PSTR("update_pid: pid disabled"));
+
+	if (!pid->input)
+		panic_P (PSTR("update_pid: no input"));
+	
+	float current_val = pid->input();
+
+	return update_pid_input(pid, current_val);
 }
 
 

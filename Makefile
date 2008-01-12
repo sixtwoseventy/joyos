@@ -69,6 +69,9 @@ LIBSRC = 	src/lib/async_printf.c \
 			src/lib/irdist.c \
 			src/lib/confdb.c \
 			src/lib/happylib.c \
+			src/lib/motor_group.c \
+			src/lib/motion.c \
+			src/lib/motion_diff.c \
 
 # User source files
 USERSRC = user/umain.c
