@@ -48,8 +48,8 @@ encoder_read(uint8_t encoder) {
 	uint16_t hi,lo;
 	uint16_t result;
 	uint8_t ebase = FPGA_ENCODER_BASE + (encoder-24)*FPGA_ENCODER_SIZE;
-	hi = fpga_read_byte(ebase+FPGA_ENCODER_HI);
 	lo = fpga_read_byte(ebase+FPGA_ENCODER_LO);
+	hi = fpga_read_byte(ebase+FPGA_ENCODER_HI);
 	result = ((hi<<8) | lo) - encoder_zero[encoder-24];
 	release (&encoder_lock);
 	return result;
