@@ -32,3 +32,8 @@ motion_update(MotionController *motion) {
 	// apply the (limited) drive value to the motors
 	motor_group_set_vel(motion->output, limit(drive, -255, 255));
 }
+
+bool 
+motion_goal_reached(MotionController *motion) {
+	return motion->position == ((int32_t)(motion->pid.goal));
+}

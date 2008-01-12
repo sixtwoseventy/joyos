@@ -119,18 +119,6 @@ void test_digital() {
 	}
 }
 
-/**
- * Test RF
- * Display X, Y coordinates of board
- */
-void test_rf() {
-	while (!stop_press()) {
-		uint8_t team = frob_read()>511;
-		printf("\nrobot %d         x:%d y:%d",team,rf_get_x(team),rf_get_y(team));
-		pause(50);
-	}
-}
-
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
@@ -160,9 +148,6 @@ umain (void) {
 	start_test("Encoder Test    ");
 	test_encoders();
 	
-	start_test("RF Test         ");
-	test_rf();
-
 	printf("\nTests complete.");
 	while (1);
 	return 0;

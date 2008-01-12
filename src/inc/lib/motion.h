@@ -82,4 +82,11 @@ void motion_set_goal(MotionController *motion, int32_t goal);
  */
 void motion_update(MotionController *motion);
 
+/**
+ * Check if the MotionController's goal has been reached
+ *
+ * @returns true if goal reached, false otherwise
+ */
+bool motion_goal_reached(MotionController *motion);
+
 #endif
