@@ -50,7 +50,7 @@ void
 acquire(struct lock *k) {
 	// make sure k is non-null
 	if (!k) {
-		panic_P ("acquire null lock");
+		panic_P (PSTR("acquire null lock"));
 	}
 
 	if (k->locked >= LOCK_MAX_ACQUIRES) {

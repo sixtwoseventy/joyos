@@ -20,12 +20,21 @@ motion_set_goal(MotionController *motion, int32_t goal) {
 	motion->pid.goal = goal;
 }
 
+// take 2 encoder readings and return an int32 of the delta
+// handle rollover gracefully.
+int32_t delta_roll(uint16_t new, uint16_t old) {
+  uint16_t diff = new-old;
+  //printf("n:%5d o:%5d diff: %5d | ",new,old,diff);
+  if (diff>32768)
+    return -65536+(int32_t)diff;
+  return diff;
+}
+
 void 
 motion_update(MotionController *motion) {
 	float drive;
 	// update our actual position with encoder reading.
-	// FIXME this will probably explode when the encoder rolls over
-	int16_t delta	= encoder_read(motion->encoder) - motion->encoder_old_pos;
+	int32_t delta	= delta_roll(encoder_read(motion->encoder),motion->encoder_old_pos);
 	motion->position += delta;
   // run the PID to calculate our drive value
 	drive = update_pid_input(&(motion->pid), motion->position);
