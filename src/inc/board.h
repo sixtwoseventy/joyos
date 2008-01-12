@@ -35,7 +35,6 @@
 #include <encoder.h>
 #include <motor.h>
 #include <buttons.h>
-#include <rf.h>
 
 /**
  * \file board.h

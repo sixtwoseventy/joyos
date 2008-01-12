@@ -57,10 +57,11 @@ int robot_monitor (void) {
 	// start the calibration period...
 	usetup ();
 
-	lcd_printf_P (PSTR("\nWaiting for RF  'Go' to override"));
+	//lcd_printf_P (PSTR("\nWaiting for RF  'Go' to override"));
 	// wait for the start signal
-	while (rf_get_round_state() != STATE_RUNNING && !go_press ())
-		yield ();
+	// FIXME: add new start code
+	//while (rf_get_round_state() != STATE_RUNNING && !go_press ())
+	//	yield ();
 
 	//lcd_printf ("\nStarting umain()");
 	//pause (100);
