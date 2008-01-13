@@ -9,6 +9,9 @@ SRC = irdistcal.c
 # USB-Serial port number for programming the happyboard
 PORT = com6
 
+# Extra libraries
+EXTRALIBS = happy
+
 # Top level JoyOS directory
 TOPDIR = ../../
 

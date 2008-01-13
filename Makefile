@@ -27,6 +27,10 @@ OSTARGET = $(OSNAME).hex
 OSLIB = $(OSNAME).a
 OSELF = $(OSNAME).elf
 
+HLNAME = bin/libhappy
+HLLIB = $(HLNAME).a
+HLELF = $(HLNAME).elf
+
 BOOTNAME = bin/hboot
 BOOTTARGET = $(BOOTNAME).hex
 BOOTELF = $(BOOTNAME).elf
@@ -85,13 +89,19 @@ BOOTSRC = 	src/boot/hboot.c \
 			src/hal/io.c \
 
 # ALL source files
-SRC = $(DRIVERSRC) $(KERNELSRC) $(LIBSRC) $(HALSRC) $(USERSRC)
+SRC = $(DRIVERSRC) $(KERNELSRC) $(HALSRC) $(USERSRC)
 
-#Source files for library
-DISTSRC = $(DRIVERSRC) $(KERNELSRC) $(LIBSRC) $(HALSRC)
+# Source files for os library
+DISTSRC = $(DRIVERSRC) $(KERNELSRC) $(HALSRC)
+
+# Source files for happy library
+HLSRC = $(LIBSRC)
 
 # OS object files
 OBJ = $(SRC:.c=.o)
+
+# Happylib object files
+HLOBJ = $(HLSRC:.c=.o)
 
 # Bootloader object files
 BOOTOBJ = $(BOOTSRC:.c=.o)
@@ -99,7 +109,7 @@ BOOTOBJ = $(BOOTSRC:.c=.o)
 # Objects for library
 DISTOBJ = $(DISTSRC:.c=.o)
 
-all: $(OSLIB) $(BOOTTARGET) size
+all: $(OSLIB) $(HLLIB) $(BOOTTARGET) size
 
 size: $(OSELF)
 	@echo -n "-- OS Size "
@@ -145,10 +155,14 @@ $(OSLIB): $(DISTOBJ)
 	@echo "-- Archiving" $@
 	@avr-ar rcs $@ $(DISTOBJ)
 
+$(HLLIB): $(HLOBJ)
+	@echo "-- Archiving" $@
+	@avr-ar rcs $@ $(HLOBJ)
+
 clean:
 	@echo "-- Cleaing objects"
-	@rm -f $(OBJ) $(BOOTOBJ)
-	@rm -f $(OSELF) $(OSTARGET) $(OSLIB)
+	@rm -f $(OBJ) $(BOOTOBJ) $(HLOBJ)
+	@rm -f $(OSELF) $(OSTARGET) $(OSLIB) $(HLLIB)
 	@rm -f $(BOOTELF) $(BOOTTARGET)
 	@rm -f gdbinit
 	@rm -rf release/*
@@ -184,7 +198,7 @@ release: $(OSLIB) size docs
 	@mkdir release/6.270/src
 	@cp -R src/inc release/6.270/inc
 	@cp -R doc/api release/6.270/doc
-	@cp bin/libjoyos.a release/6.270/lib
+	@cp bin/*.a release/6.270/lib
 	@cp -R user/irdistcal release/6.270/src
 	@cp -R user/happytest release/6.270/src
 	@cp -R user/gyrotest release/6.270/src

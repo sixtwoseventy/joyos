@@ -12,5 +12,8 @@ PORT = com6
 # Top level JoyOS directory
 TOPDIR = ../../
 
+# Extra libraries
+EXTRALIBS =
+
 # Include support makefile
 include ../makedefaults.inc

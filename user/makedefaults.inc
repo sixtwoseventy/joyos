@@ -6,7 +6,7 @@ MCU = atmega128
 OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
 INCLUDES = -I$(TOPDIR)inc
-LIBS = -ljoyos
+LIBS = -ljoyos $(EXTRALIBS:%=-l%)
 LIBDIR = $(TOPDIR)lib
 SCANFOP =
 PRINTFOP = -Wl,-u,vfprintf -lprintf_flt -lm
