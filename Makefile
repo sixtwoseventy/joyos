@@ -176,10 +176,10 @@ gdb-config:
 	@echo "target remote localhost:4242" >> gdbinit
 	@echo "break main" >> gdbinit
 
-debug: $(OSELF)gdb-config
+debug: $(OSELF) gdb-config
 	@echo "-- Starting debugger"
 	@avarice -D -e -p --file $(OSELF) --jtag $(AVRDUDE_PORT) localhost:4242
-	@avrgdb --command=gdbinit
+	@avr-gdb --command=gdbinit
 
 docs:
 	@echo "-- Generating documentation"
