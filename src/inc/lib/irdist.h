@@ -35,9 +35,7 @@
 
 /**
  * Set calibration values for IR distance sensors. Calibration values can be 
- * calculated using the irdistcal program (which automatically saves the 
- * calibration values to flash). One should only use this function to
- * temporarily change the calibration, or to test new values.
+ * calculated using the irdistcal program. 
  *
  * @param m  calibration gradient
  * @param c  calibration offset

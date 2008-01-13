@@ -29,8 +29,10 @@
 #include <kern/global.h>
 
 /**
- * \file confdb.h
- * \brief Simple non-volatile configuration database
+ * DISABLED UNTIL FURTHER TESTING
+ *
+ * \XXfile confdb.h
+ * \XXbrief Simple non-volatile configuration database
  *
  * Confdb provides a simple way to store configuration parameters in the 
  * Happyboards onboard flash memory. The Confdb stores ConfdbItems which can

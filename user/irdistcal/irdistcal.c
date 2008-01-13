@@ -1,6 +1,17 @@
 #include <board.h>
 #include <lib/happylib.h>
 
+/**
+ * This program attempts to calculate constants for a sharp IR
+ * linearisation function.
+ *
+ * The program will take a number of readings a different know
+ * distances then do a line fit and return the calibration 
+ * constants kM and kC. These constants can be passed to 
+ * ir_dist_set_calibration in a user program.
+ *
+ */
+
 uint8_t irdist_fit(uint16_t *xd, uint16_t *yd, 
         uint16_t n, uint16_t *km, uint16_t *kc) {
     uint16_t i;
@@ -35,7 +46,7 @@ int umain() {
     uint16_t km,kc;
     uint16_t xd[36];
     uint16_t yd[36];
-	happylib_init();
+		//happylib_init();
     // start
     printf("\nIRDistCal       Press Go");
     go_click();
@@ -69,6 +80,8 @@ int umain() {
     printf("\nOK: M: %5d    C: %d, press Go",km,kc);
     go_click();
     // save
+		/*
+		Disabled until confdb is working
     printf("\nGo to Save calibStop to quit");
     while (1) {
         if (go_press()) {
@@ -82,5 +95,6 @@ int umain() {
             break;
         }
     }
+		*/
     return 0;
 }
