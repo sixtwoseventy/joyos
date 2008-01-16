@@ -68,6 +68,6 @@ void set_auto_halt(uint8_t ah);
 #define static_assert(x) switch(x) case 0: case (x):
 
 //! Current JoyOS version
-#define JOYOS_VERSION	"0.1.6"
+#define JOYOS_VERSION	"0.2.0"
 
 #endif // __INCLUDE_GLOBAL_H__
