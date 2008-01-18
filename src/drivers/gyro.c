@@ -23,152 +23,83 @@
  *
  */
 
-#include <board.h>
-#include <gyro.h>
-#include <hal/io.h>
-#include <kern/global.h>
-#include <kern/lock.h>
-#include <kern/thread.h>
-#include <stdlib.h>
+#include <joyos.h>
 
-double _lsb_ms_per_deg = 0;
-volatile double _theta = 0;
+float _lsb_ms_per_deg = 0;
+volatile float _theta = 0;
 uint8_t _port = 11;
 volatile uint8_t _gyro_enabled = 0;
-double _offset = 0;
+float _offset = 0;
+struct lock gyro_lock;
 
-uint16_t _num_samples = 29;
-uint16_t *_samples;
-volatile uint16_t _sum = 0;
-volatile uint16_t _index = 0;
-volatile uint8_t _sample_inited = 0;
-volatile uint16_t _update_counter = 0;
-
-// NOTE: happens during a ISR so interrupts are cleared
 void
-gyro_new_sample () {
-	_sum -= _samples[_index];
-	_samples [_index] = analog_read (_port);
-	_sum += _samples[_index];
+gyro_init(uint8_t port, float lsb_ms_per_deg, uint32_t time_ms) {
+	uint32_t samples;
+	float sum;
+	uint32_t start_time_ms;
 
-	_index++;
+	_port = port;
+	_lsb_ms_per_deg = lsb_ms_per_deg;
 
-	if (_index >= _num_samples) {
-		_sample_inited = 1;
-		//_index = (_index % _num_samples);
-		_index = 0;
+	// average some samples for offset
+	sum = 0.0;
+	samples = 0;
+	start_time_ms = get_time ();
+	while ( (get_time() - start_time_ms) < time_ms ) {
+		sum += (float) analog_read (_port);
+		samples ++;
 	}
 
-	_update_counter++;
+	_offset = sum / (float) samples;
+	_theta = 0.0;
+
+	init_lock (&gyro_lock, "gyro lock");
+	create_thread (&gyro_update, STACK_DEFAULT, 0, "gyro");
 }
 
+int
+gyro_update(void) {
+	/* The units of theta are converter LSBs * ms
+	   1 deg/s = 5mV = 0.256 LSB for ADXRS300, 12.5mV = 0.64LSB for ADXRS150
+	   1 deg = 0.256LSB * 1000ms = 256 (stored in lsb_ms_per_deg)
+	   To convert theta to degrees, divide by lsb_ms_per_deg. */
 
-double
-gyro_read () {
-	// use a lockless scheme for concurrent modification detection
-	uint16_t counter;
-	double result;
+	uint32_t delta_t_ms, new_time_ms, analog_value, time_ms;
 
-	do {
-		counter = _update_counter;
-		result = (double) _sum / (double) _num_samples;
-	} while (counter != _update_counter);
+	time_ms = get_time();
 
+	for(;;) {
+		analog_value = analog_read(_port);
+		new_time_ms = get_time();
+		delta_t_ms = (new_time_ms - time_ms);
+		float dTheta = ((float) analog_value - _offset) * (float) delta_t_ms;
 
-/*
-	do {
-		// look at the counter before we start
-		counter = _update_counter;
-		sum = 0;
+		/* This does the Riemann sum; CCW gyro output polarity is negative
+		   when the gyro is visible from the top of the robot. */
+		acquire (&gyro_lock);
+		_theta -= dTheta;
+		release (&gyro_lock);
 
-		for (uint16_t i = 0; i < _num_samples; i++) {
-			//sum += _samples [(_index + i) % _num_samples];
-			sum += _samples [i];
-		}
-
-	// if the counter has changed, start again
-	} while (counter != _update_counter);
-*/
-
-	return result;
-}
-
-void
-gyro_init(uint8_t port, double lsb_ms_per_deg, uint16_t samples) {
-
-	uart_printf_P (PSTR("gyro_init (%u,%.2f,%u)\n"),
-			port, lsb_ms_per_deg, samples);
-
-	// record sample list size
-	_num_samples = samples;
-
-	// allocate sample list
-	_samples = (uint16_t *) malloc (_num_samples * sizeof(uint16_t));
-	for (uint16_t i = 0; i < _num_samples; i++)
-		_samples[i] = 0;
-
-	// record port of the gyro
-	_port = port;
-
-	uart_printf_P (PSTR("enabling isr\n"));
-
-	// enable gyro and start reading measurments into sample list
-	_gyro_enabled = 1;
-
-	uart_printf_P (PSTR("waiting for sampling to finish\n"));
-
-	// wait until list has filled
-	while (!_sample_inited) {
+		time_ms = new_time_ms;
 		yield();
 	}
 
-	uart_printf_P (PSTR("init complete. grabbing stable value\n"));
+	return 0;
+}
 
-	// assume robot has been sitting still and take current reading as offset
-	for (uint8_t i = 0; i < 10; i++) {
-		_offset += gyro_read ();
-		pause (100);
-	}
+float
+gyro_get_degrees (void) {
+	acquire (&gyro_lock);
+	float result = _theta / _lsb_ms_per_deg;
+	release (&gyro_lock);
 
-	_offset /= 10;
-
-	uart_printf_P (PSTR("offset is %.2f\n"), _offset);
-
-	// set angle to zero
-	_theta = 0;
-
-	// record LSB*ms/deg scale factor
-	_lsb_ms_per_deg = lsb_ms_per_deg;
-
-	uart_printf_P (PSTR("gyro_init complete\n"));
+	return result;
 }
 
 void
-gyro_update() {
-	// sample and add to queue
-	gyro_new_sample ();
-
-	// if we haven't finished initializing the sample queue, stop
-	if (!_sample_inited)
-		return;
-
-	// assume a constant time interval between measurements---1ms
-	// update theta
-	_theta -= gyro_read () - _offset;
-}
-
-uint8_t
-gyro_enabled (void) {
-	return _gyro_enabled;
-}
-
-double
-gyro_get_degrees (void) {
-	uint8_t sreg = SREG & SREG_IF;
-	cli ();
-	double result = _theta / _lsb_ms_per_deg;
-
-	SREG |= sreg;
-	return result;
+gyro_set_degrees (float deg) {
+	acquire (&gyro_lock);
+	_theta = deg;
+	release (&gyro_lock);
 }
 

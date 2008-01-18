@@ -32,6 +32,7 @@
 #include <hal/io.h>
 #include <stdio.h>
 #include <stdlib.h>
+//#include <assert.h>
 
 extern FILE lcdout;
 extern FILE uartout;
@@ -71,12 +72,12 @@ _push_front (FILE *out, char *buf) {
 	if (head != NULL) {
 		head->prev = link;
 		// make sure we have a tail if list is non-empty
-		assert (tail != NULL);
+		//assert (tail != NULL);
 	}
 
 	else {
 		// make sure we don't have a tail when the list is empty
-		assert (tail == NULL);
+		//assert (tail == NULL);
 	}
 
 	// set new link as head
@@ -95,12 +96,12 @@ _pop_back () {
 	acquire (&print_queue_lock);
 
 	if (head == NULL) {
-		assert (tail == NULL);
+		//assert (tail == NULL);
 		release (&print_queue_lock);
 		return NULL;
 	}
 
-	assert (tail != NULL);
+	//assert (tail != NULL);
 
 	link_t *link = tail;
 	if (tail->prev == NULL) {

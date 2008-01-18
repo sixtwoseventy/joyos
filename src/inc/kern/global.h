@@ -34,7 +34,7 @@
  * as JoyOS version information.
  */
 
-#include <assert.h>
+//#include <assert.h>
 #include <stddef.h>
 #include "config.h" // TODO rewrite
 #include <avr/pgmspace.h>

@@ -26,11 +26,23 @@
 #ifndef __INCLUDE_GYRO_H__
 #define __INCLUDE_GYRO_H__
 
-void gyro_init (uint8_t port, double lsb_ms_per_deg, uint16_t samples);
-void gyro_update (void);
-uint8_t gyro_enabled (void);
-double gyro_read ();
-double gyro_get_degrees (void);
+/**
+ * Initialize and calibrate the gyro located at `port'.
+ *
+ * @param port				Analog port number of the gyroscope.
+ * @param lsb_ms_per_deg	Constant for converting readings into degrees
+ * @param time_ms			Time (in milliseconds) for calibrating gyro.
+ */
+void gyro_init (uint8_t port, float lsb_ms_per_deg, uint32_t time_ms);
+
+/**
+ * Internal routine for updating gyroscope. Don't call this unless you know what
+ * you're doing.
+ */
+int gyro_update (void);
+
+float gyro_get_degrees (void);
+void gyro_set_degrees (float deg);
 
 #endif // __INCLUDE_GYRO_H__
 

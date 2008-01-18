@@ -78,7 +78,7 @@ int robot_monitor (void) {
 	if (!auto_halt) {
 		while (1) { yield(); }
 	} else {
-		pause (29296L);
+		pause (60000L);
 		lcd_printf_P (PSTR("\nRound end"));
 		halt();
 	}

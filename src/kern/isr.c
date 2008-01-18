@@ -42,9 +42,9 @@ ISR(TIMER2_OVF_vect) {
 
 	global_time++;
 	//global_time++; // FIXME
-	if (gyro_enabled()) {
-		gyro_update();
-	}
+//	if (gyro_enabled()) {
+//		gyro_update();
+//	}
 
 	suspend();
 

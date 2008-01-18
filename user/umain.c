@@ -23,133 +23,38 @@
  *
  */
 
-#include <board.h>
-#include <servo.h>
-#include <kern/thread.h>
-#include <kern/global.h>
+/* Gyro demo program for gyro with noise injection.
+   Howard Samuels, 11/16/2004 
+   howard.samuels@analog.com
+   
+   Modified for Happyboard
+   Ross Glashan, 07/05/2005
+   rng@mit.edu
+*/
 
-/**
- * Display testName and 'Press Go'
- */
-void start_test(char testName[]) {
-	printf("\n%sPress Go",testName);
-	go_click();
-}
+#include <joyos.h>
 
-/**
- * Test Servos
- * servos 0 - 5 positions are set by frob knob
- */
-void test_servos() {
-	uint8_t srv;
-	uint16_t pos;
-	while (!stop_press()) {
-		pos = frob_read()/2;
-		printf("\nservos=%d",pos);
-		for (srv=0;srv<6;srv++)
-			servo_set_pos(srv,pos);
-		pause(50);
-	}
-}
-
-/**
- * Test Motors
- * Motor velocity is set by frob knob
- * Cycle through motors with go button
- */
-void test_motors() {
-	uint8_t mot=0;
-	uint16_t pos;
-
-	while (!stop_press()) {
-		pos = frob_read()/2;
-		printf("\nmotor%d=%3d %dmA",mot,pos,motor_get_current_MA(mot));
-		motor_set_vel(mot,pos-256);
-		if (go_press()) {
-			go_click();
-			motor_set_vel(mot,0);
-			mot++;
-			if (mot==6) mot = 0;
-		}
-		pause(50);
-	}
-	motor_set_vel(mot,0);
-}
-
-/**
- * Test Encoders
- * Displays all encoder counts
- */
-void test_encoders() {
-	while (!stop_press()) {
-		uint16_t e24 = encoder_read(24);
-		uint16_t e25 = encoder_read(25);
-		uint16_t e26 = encoder_read(26);
-		uint16_t e27 = encoder_read(27);
-		
-		printf("\ne24=%03d e25=%03d e26=%03d e27=%03d",e24,e25,e26,e27);
-		pause(50);
-	}
-}
-
-
-/**
- * Test Analog Inputs
- * Display single analog input, select with frob knob
- */
-void test_analog() {
-	uint8_t port;
-	while (!stop_press()) {
-		port = (frob_read()/64) + 8;
-		printf("\nanalog%02d=%d",port,analog_read(port));
-		pause(50);
-	}
-}
-
-/**
- * Test Digital Inputs
- * Displayed as single 8bit binary num
- */
-void test_digital() {
-	while (!stop_press()) {
-		printf("\ndigital=");
-		for (uint8_t i=0;i<8;i++)
-			lcd_print_char(digital_read(i) ? '1' : '0',NULL);
-		pause(50);
-	}
-}
+#define GYRO_PORT 		11
+#define LSB_MS_PER_DEG	1024.0
 
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	set_auto_halt(0);
+	set_auto_halt (0);
+	printf_P (PSTR("\nPlace robot,    press go."));
+	go_click ();
+	printf_P (PSTR("\nStabilizing..."));
+	pause (500);
+	printf_P (PSTR("\nCalibrating     offset...\n"));
+	gyro_init (GYRO_PORT, LSB_MS_PER_DEG, 2000L);
 	return 0;
 }
 
-/**
- * Run all tests
- */
-int
-umain (void) {
-	start_test("Happytest v0.61 ");
-
-	start_test("Servo Test      ");
-	test_servos();
-	
-	start_test("Motor Test      ");
-	test_motors();
-
-	start_test("Digital Test    ");
-	test_digital();
-
-	start_test("Analog Test     ");
-	test_analog();
-	
-	start_test("Encoder Test    ");
-	test_encoders();
-	
-	printf("\nTests complete.");
-	while (1);
+int umain(void) {
+	for (;;) {
+		printf_P (PSTR("\ntheta = %.2f"), gyro_get_degrees());
+		pause (100);
+	}
 	return 0;
 }
 
