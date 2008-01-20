@@ -23,35 +23,27 @@
  *
  */
 
-#include <config.h>
-#include <fpga.h>
-#include <encoder.h>
-#include <kern/lock.h>
+#include <joyos.h>
+#include <happylib.h>
 
-struct lock encoder_lock;
+#define SHARP_M		22840
+#define SHARP_C		26
+#define SHARP_PORT	20
 
-static uint16_t encoder_zero[4];
-
-void
-encoder_init (void) {
-	init_lock (&encoder_lock, "encoder lock");
+// usetup is called during the calibration period. It must return before the
+// period ends.
+int usetup (void) {
+	irdist_set_calibration (SHARP_M, SHARP_C);
+	set_auto_halt (0);
+	return 0;
 }
 
-void 
-encoder_reset(uint8_t encoder) {
-	encoder_zero[encoder-24] = encoder_read(encoder);
-}
+int umain(void) {
+	for (;;) {
+		printf ("dist = %.2f in\n", irdist_read (SHARP_PORT)/2.54);
+		pause (40);
+	}
 
-uint16_t 
-encoder_read(uint8_t encoder) {
-	acquire (&encoder_lock);
-	uint16_t hi,lo;
-	uint16_t result;
-	uint8_t ebase = FPGA_ENCODER_BASE + (encoder-24)*FPGA_ENCODER_SIZE;
-	lo = fpga_read_byte(ebase+FPGA_ENCODER_LO);
-	hi = fpga_read_byte(ebase+FPGA_ENCODER_HI);
-	result = ((hi<<8) | lo) - encoder_zero[encoder-24];
-	release (&encoder_lock);
-	return result;
+	return 0;
 }
 

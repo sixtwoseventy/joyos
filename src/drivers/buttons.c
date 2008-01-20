@@ -28,6 +28,7 @@
 #include "hal/delay.h"
 #include "hal/adc.h"
 #include "mcp3008.h"
+#include <buttons.h>
 
 /**
  * Battery voltage conversion math
@@ -75,8 +76,11 @@ frob_read() {
 
 uint16_t 
 frob_read_range(uint16_t min, uint16_t max) {
-    uint16_t div = max-min+1;
-    return (frob_read()/div) + min;
+//	uint16_t div = max-min+1;
+//	return (frob_read()/div) + min;
+
+	uint16_t range = max-min+1;
+	return (uint16_t) (((uint32_t)frob_read()*range)/FROB_MAX + min);
 }
 
 
@@ -100,4 +104,5 @@ beep(uint16_t freq, uint16_t duration) {
 		count += i;
 	}
 }
+
 

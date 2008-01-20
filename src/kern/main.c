@@ -63,8 +63,11 @@ int robot_monitor (void) {
 	//while (rf_get_round_state() != STATE_RUNNING && !go_press ())
 	//	yield ();
 
-	//lcd_printf ("\nStarting umain()");
-	//pause (100);
+	// prompt user for start click
+	lcd_printf_P (PSTR("\nRobot ready.    Press 'Go'"));
+	go_click ();
+
+	lcd_clear ();
 	// create a user thread
 	create_thread(&umain, STACK_DEFAULT, 0, "user main"); // XXX: priority?
 	//dump_threadstates ();
@@ -109,12 +112,12 @@ int main (void) {
 	if (__malloc_heap_start >= __malloc_heap_end)
 		panic_P (PSTR("         memory full"));
 
-	// TODO check for debug mode
-
 	PGM_P boot_msg = PSTR("JoyOS v"JOYOS_VERSION"    Press GO");
+	lcd_clear();
 	lcd_printf_P (boot_msg);
 	uart_printf_P (boot_msg);
 	uart_printf_P (PSTR("\n"));
+	go_click();
 
 	// startup multithreading
 	init_thread();

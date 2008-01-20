@@ -241,5 +241,10 @@ long get_time_us (void);
 
 void dump_jmpbuf(struct jbuf *);
 
+/**
+ * Output to the UART the state of every thread.
+ */
+void dump_threadstates ();
+
 #endif // __INCLUDE_THREAD_H__
 

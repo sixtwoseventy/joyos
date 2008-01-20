@@ -23,38 +23,15 @@
  *
  */
 
-/* Gyro demo program for gyro with noise injection.
-   Howard Samuels, 11/16/2004 
-   howard.samuels@analog.com
-   
-   Modified for Happyboard
-   Ross Glashan, 07/05/2005
-   rng@mit.edu
-*/
-
 #include <joyos.h>
 
-#define GYRO_PORT 		11
-#define LSB_MS_PER_DEG	1024.0
-
-// usetup is called during the calibration period. It must return before the
-// period ends.
 int usetup (void) {
-	set_auto_halt (0);
-	printf_P (PSTR("\nPlace robot,    press go."));
-	go_click ();
-	printf_P (PSTR("\nStabilizing..."));
-	pause (500);
-	printf_P (PSTR("\nCalibrating     offset...\n"));
-	gyro_init (GYRO_PORT, LSB_MS_PER_DEG, 2000L);
 	return 0;
 }
 
-int umain(void) {
-	for (;;) {
-		printf_P (PSTR("\ntheta = %.2f"), gyro_get_degrees());
-		pause (100);
-	}
+int
+umain (void) {
+	while (1);
 	return 0;
 }
 

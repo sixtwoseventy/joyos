@@ -71,9 +71,10 @@ setup_timer(void) {
 uint32_t
 get_time (void) {
 	uint32_t current_time;
+	uint8_t was_enabled = SREG & SREG_IF;
 	cli();
 	current_time = global_time;
-	sei();
+	SREG |= was_enabled;
 	return current_time;
 }
 
@@ -82,11 +83,12 @@ get_time (void) {
 long
 get_time_us (void) {
 	long current_time;
+	uint8_t was_enabled = SREG & SREG_IF;
 	cli();
 	//current_time = global_time * 1000 + 
 	//	(uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
 	current_time = global_time * 1000;
-	sei();
+	SREG |= was_enabled;
 	return current_time;
 }
 
@@ -215,6 +217,33 @@ check (struct thread *t) {
 		panic_P (PSTR("SP above"));
 	}
 
+/*
+	// check is SP is below bottom (stacktop-stacksize)
+	if (t->th_stacktop - t->th_jmpbuf.sp > t->th_stacksize) {
+		uart_printf_P(PSTR("\nstack overflow\n"));
+		uart_printf_P(PSTR("sp of '%s' (id %d) is %p\n"),
+				t->th_name, t->th_id, t->th_jmpbuf.sp);
+		dump_jmpbuf(&t->th_jmpbuf);
+		uart_printf_P(PSTR("pc at %p\n"), t->th_jmpbuf.pc);
+		uart_printf_P(PSTR("stacktop: %p\n"), t->th_stacktop);
+		uart_printf_P(PSTR("reserved space: %p to %p\n"),
+				t->th_stacktop-t->th_stacksize+1, t->th_stacktop);
+		panic_P (PSTR("stack overflow"));
+	}
+*/
+	// check if SP is below stacktop
+	if (t->th_jmpbuf.sp <= STACKTOP(t->th_id+1)) {
+		uart_printf_P(PSTR("\nstack overflow\n"));
+		uart_printf_P(PSTR("sp of '%s' (id %d) is %p\n"),
+				t->th_name, t->th_id, t->th_jmpbuf.sp);
+		dump_jmpbuf(&t->th_jmpbuf);
+		uart_printf_P(PSTR("pc at %p\n"), t->th_jmpbuf.pc);
+		uart_printf_P(PSTR("stacktop: %p\n"), t->th_stacktop);
+		uart_printf_P(PSTR("reserved space: %p to %p\n"),
+				STACKTOP(t->th_id+1)+1, STACKTOP(t->th_id));
+		panic_P (PSTR("stack overflow"));
+	}
+
 	/*
 	for (uint8_t i = 0; i < STACK_SAFETY_ZONE; i++) {
 		uint8_t *sp = (uint8_t *) (t->th_stacktop - t->th_stacksize);
@@ -233,20 +262,6 @@ check (struct thread *t) {
 		}
 	}
 	*/
-
-
-	// check if SP is below stacktop
-	if (t->th_jmpbuf.sp <= STACKTOP(t->th_id+1)) {
-		uart_printf_P(PSTR("\nstack overflow\n"));
-		uart_printf_P(PSTR("sp of '%s' (id %d) is %p\n"),
-				t->th_name, t->th_id, t->th_jmpbuf.sp);
-		dump_jmpbuf(&t->th_jmpbuf);
-		uart_printf_P(PSTR("pc at %p\n"), t->th_jmpbuf.pc);
-		uart_printf_P(PSTR("stacktop: %p\n"), t->th_stacktop);
-		uart_printf_P(PSTR("reserved space: %p to %p\n"),
-				STACKTOP(t->th_id+1)+1, STACKTOP(t->th_id));
-		panic_P (PSTR("stack overflow"));
-	}
 
 	/*
 	if (!(t->th_jmpbuf.sreg & SREG_IF)) {
@@ -550,29 +565,31 @@ dump_jmpbuf(jmp_buf *jb) {
 
 void
 dump_jmpbuf(struct jbuf *jb) {
+	uart_printf_P(PSTR("Dumping jmp_buf:\n"));
+
+	uart_printf_P (PSTR(" <omitting r0-r31>\n"));
+
 	/*
-	uart_printf("Dumping jmp_buf:\n");
-
-	uart_printf("r0\tNA\t\tr1\tNA\t\tr2\t%2p\t\tr3\t%2p\t\tr4\t%2p\n",
+	uart_printf_P(PSTR("r0\tNA\t\tr1\tNA\t\tr2\t%2p\t\tr3\t%2p\t\tr4\t%2p\n"),
 			jb->r2, jb->r3, jb->r4);
-	uart_printf("r5\t%2p\t\tr6\t%2p\t\tr7\t%2p\t\tr8\t%2p\t\tr9\t%2p\n",
+	uart_printf_P(PSTR("r5\t%2p\t\tr6\t%2p\t\tr7\t%2p\t\tr8\t%2p\t\tr9\t%2p\n"),
 			jb->r5, jb->r6, jb->r7, jb->r8, jb->r9);
-	uart_printf("r10\t%2p\t\tr11\t%2p\t\tr12\t%2p\t\tr13\t%2p\t\tr14\t%2p\n",
+	uart_printf_P(PSTR("r10\t%2p\t\tr11\t%2p\t\tr12\t%2p\t\tr13\t%2p\t\tr14\t%2p\n"),
 			jb->r10, jb->r11, jb->r12, jb->r13, jb->r14);
-	uart_printf("r15\t%2p\t\tr16\t%2p\t\tr17\t%2p\t\tr18\t%2p\t\tr19\t%2p\n",
+	uart_printf_P(PSTR("r15\t%2p\t\tr16\t%2p\t\tr17\t%2p\t\tr18\t%2p\t\tr19\t%2p\n"),
 			jb->r15, jb->r16, jb->r17, jb->r18, jb->r19);
-	uart_printf("r20\t%2p\t\tr21\t%2p\t\tr22\t%2p\t\tr23\t%2p\t\tr24\t%2p\n",
+	uart_printf_P(PSTR("r20\t%2p\t\tr21\t%2p\t\tr22\t%2p\t\tr23\t%2p\t\tr24\t%2p\n"),
 			jb->r20, jb->r21, jb->r22, jb->r23, jb->r24);
-	uart_printf("r25\t%2p\t\tr26\t%2p\t\tr27\t%2p\t\tr28\tNA\t\tr29\tNA\n",
+	uart_printf_P(PSTR("r25\t%2p\t\tr26\t%2p\t\tr27\t%2p\t\tr28\tNA\t\tr29\tNA\n"),
 			jb->r25, jb->r26, jb->r27);
-	uart_printf("r30\t%2p\t\tr31\t%2p\n",
+	uart_printf_P(PSTR("r30\t%2p\t\tr31\t%2p\n"),
 			jb->r30, jb->r31);
-
-	uart_printf(" FP   : %04p\n", (uint32_t) JMPBUF_FP(*jb));
-	uart_printf(" SP   : %04p\n", (uint32_t) JMPBUF_SP(*jb));
-	uart_printf(" SREG : %02p\n", (uint32_t) JMPBUF_SREG(*jb));
-	uart_printf(" PC   : %08p\n", (uint32_t) JMPBUF_IP(*jb));
 	*/
+
+	uart_printf_P(PSTR(" FP   : %04p\n"), (uint32_t) JMPBUF_FP(*jb));
+	uart_printf_P(PSTR(" SP   : %04p\n"), (uint32_t) JMPBUF_SP(*jb));
+	uart_printf_P(PSTR(" SREG : %02p\n"), (uint32_t) JMPBUF_SREG(*jb));
+	uart_printf_P(PSTR(" PC   : %08p\n"), (uint32_t) JMPBUF_IP(*jb));
 }
 
 void
@@ -587,11 +604,7 @@ dump_threadstates () {
 			uart_printf_P(PSTR(" thread (tid %d) unallocated\n"), i);
 			continue;
 		}
-		/*
-		uart_printf(" thread (tid %d) '%s' status %d runs %u\n", 
-				i, threads[i].th_name, threads[i].th_status, 
-				threads[i].th_runs);
-		*/
+
 		uart_printf_P(PSTR(" thread (tid %d) '%s' status %d runs %u\n"),
 				i, threads[i].th_name, threads[i].th_status,
 				threads[i].th_runs);

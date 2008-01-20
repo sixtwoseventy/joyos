@@ -26,6 +26,13 @@
 #ifndef _BUTTONS_H_
 #define _BUTTONS_H_
 
+/** Bits of precision for the frob knob. */
+#define FROB_BITS	(10)
+/** Min value of frob knob. */
+#define FROB_MIN	(0)
+/** Max value of frob knob. */
+#define FROB_MAX	(1 << FROB_BITS)
+
 /**
  * \file buttons.h
  * \brief User Input/Output - buttons, frob, beeper and battery.

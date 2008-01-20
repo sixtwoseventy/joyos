@@ -23,35 +23,39 @@
  *
  */
 
-#include <config.h>
-#include <fpga.h>
-#include <encoder.h>
-#include <kern/lock.h>
+#include <joyos.h>
 
-struct lock encoder_lock;
-
-static uint16_t encoder_zero[4];
-
-void
-encoder_init (void) {
-	init_lock (&encoder_lock, "encoder lock");
+// usetup is called during the calibration period. It must return before the
+// period ends.
+int usetup (void) {
+	set_auto_halt (0);
+	return 0;
 }
 
-void 
-encoder_reset(uint8_t encoder) {
-	encoder_zero[encoder-24] = encoder_read(encoder);
+void frob_test (uint16_t min, uint16_t max) {
+	while (!go_press()) {
+		printf ("frob[%u,%u] = %u   (%u)\n", 
+				min, max, frob_read_range (min,max), frob_read());
+		pause (100);
+	}
+
+	while (go_press ());
 }
 
-uint16_t 
-encoder_read(uint8_t encoder) {
-	acquire (&encoder_lock);
-	uint16_t hi,lo;
-	uint16_t result;
-	uint8_t ebase = FPGA_ENCODER_BASE + (encoder-24)*FPGA_ENCODER_SIZE;
-	lo = fpga_read_byte(ebase+FPGA_ENCODER_LO);
-	hi = fpga_read_byte(ebase+FPGA_ENCODER_HI);
-	result = ((hi<<8) | lo) - encoder_zero[encoder-24];
-	release (&encoder_lock);
-	return result;
+int umain(void) {
+	frob_test (0,2);
+
+	frob_test (0,100);
+
+	frob_test (0,1023);
+
+	frob_test (500,1023);
+
+	frob_test (0,1024);
+
+	printf("done frobtest.\n");
+	for (;;);
+
+	return 0;
 }
 

@@ -138,9 +138,9 @@ programterm:
 	@echo "-- Compiling $@"
 	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(OSELF): $(OBJ)
+$(OSELF): $(OBJ) $(HLOBJ)
 	@echo "-- Linking $@"
-	@$(CC) $(CFLAGS) $(OBJ) -o $@ $(OS_LDFLAGS)
+	@$(CC) $(CFLAGS) $(OBJ) $(HLOBJ) -o $@ $(OS_LDFLAGS)
 
 $(BOOTELF): $(BOOTOBJ)
 	@echo "-- Linking $@"
@@ -188,7 +188,7 @@ docs:
 	@cp doc/doxygen/main.css doc/api
 	@rm doc/api/tab* doc/api/doxygen.png
 
-release: $(OSLIB) size docs
+release: $(OSLIB) $(HLLIB) size docs
 	@echo "-- Making release"
 	@mkdir -p release
 	@rm -rf release/*
@@ -198,10 +198,11 @@ release: $(OSLIB) size docs
 	@cp -R src/inc release/6.270/inc
 	@cp -R doc/api release/6.270/doc
 	@cp bin/*.a release/6.270/lib
-	#@cp -R user/irdistcal release/6.270/src
+	@cp -R user/irdistcal release/6.270/src
+	@cp -R user/irdisttest release/6.270/src
 	@cp -R user/happytest release/6.270/src
 	@cp -R user/gyrotest release/6.270/src
-	#@cp -R user/motiontest release/6.270/src
+	@cp -R user/motiontest release/6.270/src
 	@cp -R user/robot release/6.270/src
 	@cp -R user/makedefaults.inc release/6.270/src
 	@find release/ -name ".svn" | xargs rm -rf
