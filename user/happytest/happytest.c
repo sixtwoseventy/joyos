@@ -23,10 +23,7 @@
  *
  */
 
-#include <board.h>
-#include <servo.h>
-#include <kern/thread.h>
-#include <kern/global.h>
+#include <joyos.h>
 
 /**
  * Display testName and 'Press Go'

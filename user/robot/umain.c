@@ -24,8 +24,7 @@
  */
 
 // Include headers from OS
-#include <board.h>
-#include <kern/thread.h>
+#include <joyos.h>
 
 // usetup is called during the calibration period. It must return before the
 // period ends.

@@ -1,5 +1,5 @@
 #include <joyos.h>
-#include <lib/happylib.h>
+#include <happylib.h>
 
 /**
  * This program attempts to calculate constants for a sharp IR
