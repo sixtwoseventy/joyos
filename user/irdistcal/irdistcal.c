@@ -1,4 +1,4 @@
-#include <board.h>
+#include <joyos.h>
 #include <lib/happylib.h>
 
 /**
@@ -58,7 +58,12 @@ int umain() {
             case 1: n=18; break;
             case 2: n=36; break;
         }
+		pause (40);
     }
+
+	// wait for go release
+	while (go_press());
+
     // fill distance array
     for (i=0;i<n;i++) {
         xd[i] = 10 + 2*i*(36/n);
@@ -67,14 +72,23 @@ int umain() {
     while (!go_press()) {
         port = frob_read_range(8,23);
         printf("\nUse frob to     select port: %2d",port);
+		pause (40);
     }
+
+	// wait for go release
+	while (go_press());
+
     // read samples
     for (i=0;i<n;i++) {
         while (!go_press()) {
             yd[i] = analog_read(port);
             printf("\nSample @ %2dcm =%4d",xd[i],yd[i]);
         }
+
+		// wait for go release
+		while (go_press());
     }
+
     // calculate & print
     irdist_fit(xd,yd,n,&km,&kc);
     printf("\nOK: M: %5d    C: %d, press Go",km,kc);
@@ -96,5 +110,11 @@ int umain() {
         }
     }
 		*/
+
+	printf("\ncalibration done");
+
+	// do nothing forever
+	while (1);
+
     return 0;
 }

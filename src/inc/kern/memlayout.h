@@ -61,7 +61,8 @@
  * +----------------------+
  */
 
-#define STACKSIZE			400
+//#define STACKSIZE			400
+#define STACKSIZE			300
 #define KSTACKSIZE			328 // not needed?
 
 //#define KSTACKTOP			0x1100

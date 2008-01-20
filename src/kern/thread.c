@@ -217,7 +217,6 @@ check (struct thread *t) {
 		panic_P (PSTR("SP above"));
 	}
 
-/*
 	// check is SP is below bottom (stacktop-stacksize)
 	if (t->th_stacktop - t->th_jmpbuf.sp > t->th_stacksize) {
 		uart_printf_P(PSTR("\nstack overflow\n"));
@@ -230,7 +229,8 @@ check (struct thread *t) {
 				t->th_stacktop-t->th_stacksize+1, t->th_stacktop);
 		panic_P (PSTR("stack overflow"));
 	}
-*/
+
+/*
 	// check if SP is below stacktop
 	if (t->th_jmpbuf.sp <= STACKTOP(t->th_id+1)) {
 		uart_printf_P(PSTR("\nstack overflow\n"));
@@ -243,6 +243,7 @@ check (struct thread *t) {
 				STACKTOP(t->th_id+1)+1, STACKTOP(t->th_id));
 		panic_P (PSTR("stack overflow"));
 	}
+*/
 
 	/*
 	for (uint8_t i = 0; i < STACK_SAFETY_ZONE; i++) {
