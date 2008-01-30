@@ -99,7 +99,7 @@ gyro_get_degrees (void) {
 void
 gyro_set_degrees (float deg) {
 	acquire (&gyro_lock);
-	_theta = deg;
+	_theta = deg * _lsb_ms_per_deg;
 	release (&gyro_lock);
 }
 
