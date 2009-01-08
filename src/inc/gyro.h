@@ -30,10 +30,10 @@
  * Initialize and calibrate the gyro located at `port'.
  *
  * @param port				Analog port number of the gyroscope.
- * @param lsb_ms_per_deg	Constant for converting readings into degrees
+ * @param lsb_us_per_deg	Constant for converting readings into degrees
  * @param time_ms			Time (in milliseconds) for calibrating gyro.
  */
-void gyro_init (uint8_t port, float lsb_ms_per_deg, uint32_t time_ms);
+void gyro_init (uint8_t port, float lsb_us_per_deg, uint32_t time_ms);
 
 /**
  * Internal routine for updating gyroscope. Don't call this unless you know what
