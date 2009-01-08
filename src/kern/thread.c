@@ -85,9 +85,9 @@ get_time_us (void) {
 	long current_time;
 	uint8_t was_enabled = SREG & SREG_IF;
 	cli();
-	//current_time = global_time * 1000 + 
-	//	(uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
-	current_time = global_time * 1000;
+	current_time = global_time * 1000 + 
+		(uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
+	//current_time = global_time * 1000;
 	SREG |= was_enabled;
 	return current_time;
 }
