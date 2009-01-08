@@ -97,6 +97,8 @@ unsigned char dlData[] PROGMEM = {
 uint8_t lcdPos = 0;
 uint8_t lcdClearFlag = 0;
 
+char lcdContents[0x10];
+
 // setup LCD file descriptor (for printf)
 // NOTE: when printing directly to lcdout, lcd_lock should be held
 FILE lcdout = FDEV_SETUP_STREAM(lcd_print_char, NULL, _FDEV_SETUP_WRITE);
@@ -139,6 +141,7 @@ lcd_set_custom_char(uint8_t chnum,uint8_t *data) {
 
 void 
 lcd_init(void) {
+    int i;
 	delay_busy_ms(100);
 	lcd_write(LCD_CTRL, 0x33); // should be? LCD_IFLEN|LCD_2LINES
 	lcd_write(LCD_CTRL, 0x32); // should be? LCD_IFLEN|LCD_2LINES
@@ -153,28 +156,31 @@ lcd_init(void) {
 	lcd_set_custom_char(6,(uint8_t*)dlData);
 	lcd_write(LCD_CTRL, LCD_CLR); // 0x01
 	lcd_write(LCD_CTRL, LCD_HOME); // 0x02
+    for(i=0;i<0x10;i++)
+        lcdContents[i] = ' ';
 	lcd_write(LCD_CTRL, LCD_ENTRYMODE | LCD_CURSINC); // 0x06
 	lcd_write(LCD_CTRL, LCD_DISPCTL | LCD_DISPON); // 0x0C
 
 	init_lock(&lcd_lock, "LCD lock");
 }
 
+// apparently used only in bootloader, and there only for printable characters
 void 
 lcd_print(const char *string) {
 	acquire(&lcd_lock);
 	uint8_t i=0;
 	while (*string) {
-		if (*string=='\n') {
-			lcd_write(LCD_CTRL, LCD_DDADDR);
-			lcdPos=0;
-			string++;
-		}
-		else
-			lcd_write(LCD_DATA, *string++);
-		if (i==15)
-			lcd_write(LCD_CTRL, LCD_DDADDR|0x40);
-		i++;
-		lcdPos++;
+        if (*string=='\n') {
+            lcd_write(LCD_CTRL, LCD_DDADDR);
+            lcdPos=0;
+        }
+        else
+            lcd_write(LCD_DATA, *string);
+        if (i==15)
+            lcd_write(LCD_CTRL, LCD_DDADDR|0x40);
+        i++;
+        lcdPos++;
+        string++;
 	}
 	release(&lcd_lock);
 }
@@ -234,20 +240,29 @@ lcd_print_char(char ch, FILE *f) {
 	// waiting
 	acquire(&lcd_lock);
 
-	if (lcdClearFlag) {
-		lcd_clear();
-		lcd_set_pos(0);
-		lcdClearFlag = 0;
-	}
-	if (ch=='\n') {
-		lcdClearFlag = 1;
-		lcdPos = 0;
-	} else {
-		lcd_write(LCD_DATA, ch);
-		if (lcdPos==15)
-			lcd_write(LCD_CTRL, LCD_DDADDR|0x40);
-		lcdPos++;
-	}
+    if (lcdClearFlag) {
+        lcd_clear();
+        lcd_set_pos(0);
+        lcdClearFlag = 0;
+    }
+    if (ch=='\n') {
+        lcdClearFlag = 1;
+        lcdPos = 0;
+    } else {
+        if (lcdPos>=0x10) {
+            lcd_clear();
+            lcd_set_pos(0);
+            //lcd_write(LCD_CTRL, LCD_DDADDR|0x40);
+        }
+        if (lcdContents[lcdPos] != ch) {
+            // only if this character is different from old character
+            lcdContents[lcdPos] = ch;
+            lcd_write(LCD_DATA, ch);
+        }
+        else
+            lcd_set_pos(lcdPos+1);
+        lcdPos++;
+    }
 
 	// give up control
 	release(&lcd_lock);
@@ -273,9 +288,12 @@ lcd_set_pos(uint8_t p) {
 
 void 
 lcd_clear(void) {
+    int i;
 	acquire(&lcd_lock);
 	lcd_write(LCD_CTRL, LCD_CLR);
 	lcd_write(LCD_CTRL, LCD_HOME);
+    for(i=0;i<0x10;i++)
+        lcdContents[i] = ' ';
 	lcdPos = 0;
 	release(&lcd_lock);
 }
