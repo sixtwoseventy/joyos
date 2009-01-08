@@ -109,15 +109,15 @@ lcd_write(uint8_t is_data, uint8_t value) {
 	// set data/ctrl
 	LCD_RS(is_data);
 	// write high nibble
-	if (is_data) PORTD = (((value>>4)&0x0F)<<2) | _BV(LCD_PIN_E) | _BV(LCD_PIN_RS);
-	else PORTD = (((value>>4)&0x0F)<<2) | _BV(LCD_PIN_E);
+    if (is_data) PORTD = (PORTD & 0x03) | (((value>>4)&0x0F)<<2) | _BV(LCD_PIN_E) | _BV(LCD_PIN_RS);
+    else PORTD = (PORTD & 0x03) | (((value>>4)&0x0F)<<2) | _BV(LCD_PIN_E);
 	//GPIO_WRITE_PORT((NIBBLE_HI(value)<<2) | _BV(LCD_PIN_E), LCD_PORT, 0x7C);
 	lcd_wait();
 	LCD_E(0);
 	lcd_wait();
 	// write low nibble
-	if (is_data) PORTD = ((value&0x0F)<<2) | _BV(LCD_PIN_E) | _BV(LCD_PIN_RS);
-	else PORTD = ((value&0x0F)<<2) | _BV(LCD_PIN_E);
+    if (is_data) PORTD = (PORTD & 0x03) | ((value&0x0F)<<2) | _BV(LCD_PIN_E) | _BV(LCD_PIN_RS);
+    else PORTD = (PORTD & 0x03) | ((value&0x0F)<<2) | _BV(LCD_PIN_E);
 	//GPIO_WRITE_PORT((NIBBLE_LO(value)<<2) | _BV(LCD_PIN_E), LCD_PORT, 0x7C);
 	lcd_wait();
 	LCD_E(0);
