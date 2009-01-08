@@ -25,33 +25,37 @@
 
 #include <joyos.h>
 
-float _lsb_ms_per_deg = 0;
-volatile float _theta = 0;
+float _lsb_us_per_deg = 0;
+volatile int64_t _theta = 0;
+volatile int32_t _theta_fix = 0;
 uint8_t _port = 11;
 volatile uint8_t _gyro_enabled = 0;
-float _offset = 0;
+uint16_t _offset = 0, _offset_fix = 0;
+uint16_t _fix_divisor;
 struct lock gyro_lock;
 
 void
-gyro_init(uint8_t port, float lsb_ms_per_deg, uint32_t time_ms) {
+gyro_init(uint8_t port, float lsb_us_per_deg, uint32_t time_ms) {
 	uint32_t samples;
-	float sum;
+	uint32_t sum;
 	uint32_t start_time_ms;
 
 	_port = port;
-	_lsb_ms_per_deg = lsb_ms_per_deg;
+	_lsb_us_per_deg = lsb_us_per_deg;
 
 	// average some samples for offset
 	sum = 0.0;
 	samples = 0;
 	start_time_ms = get_time ();
 	while ( (get_time() - start_time_ms) < time_ms ) {
-		sum += (float) analog_read (_port);
+		sum += analog_read (_port);
 		samples ++;
 	}
 
-	_offset = sum / (float) samples;
-	_theta = 0.0;
+    _offset = (uint16_t)(sum / samples);
+    _offset_fix = (sum % samples);
+    _fix_divisor = samples;
+	_theta = 0;
 
 	init_lock (&gyro_lock, "gyro lock");
 	create_thread (&gyro_update, STACK_DEFAULT, 0, "gyro");
@@ -64,23 +68,34 @@ gyro_update(void) {
 	   1 deg = 0.256LSB * 1000ms = 256 (stored in lsb_ms_per_deg)
 	   To convert theta to degrees, divide by lsb_ms_per_deg. */
 
-	uint32_t delta_t_ms, new_time_ms, analog_value, time_ms;
+	uint32_t delta_t_us, new_time_us, time_us;
+    int32_t analog_value, fix_value;
 
-	time_ms = get_time();
+	time_us = get_time_us();
 
 	for(;;) {
-		analog_value = analog_read(_port);
-		new_time_ms = get_time();
-		delta_t_ms = (new_time_ms - time_ms);
-		float dTheta = ((float) analog_value - _offset) * (float) delta_t_ms;
+		analog_value = (int32_t)analog_read(_port) - _offset;
+		new_time_us = get_time_us();
+		delta_t_us = (new_time_us - time_us);
+		int32_t dtheta = analog_value * delta_t_us;
+        
+        fix_value = _offset_fix * delta_t_us;
 
 		/* This does the Riemann sum; CCW gyro output polarity is negative
 		   when the gyro is visible from the top of the robot. */
 		acquire (&gyro_lock);
-		_theta -= dTheta;
+        // accumulate fractional error
+        _theta_fix += fix_value;
+        // apply error correction
+        // negative because _offset is subtracted
+        // from dtheta
+        dtheta -= _theta_fix / _fix_divisor;
+        _theta_fix %= _fix_divisor;
+        // integrate angle
+		_theta -= dtheta;
 		release (&gyro_lock);
 
-		time_ms = new_time_ms;
+		time_us = new_time_us;
 		yield();
 	}
 
@@ -90,7 +105,7 @@ gyro_update(void) {
 float
 gyro_get_degrees (void) {
 	acquire (&gyro_lock);
-	float result = _theta / _lsb_ms_per_deg;
+	float result = _theta / _lsb_us_per_deg;
 	release (&gyro_lock);
 
 	return result;
@@ -99,7 +114,7 @@ gyro_get_degrees (void) {
 void
 gyro_set_degrees (float deg) {
 	acquire (&gyro_lock);
-	_theta = deg * _lsb_ms_per_deg;
+	_theta = deg * _lsb_us_per_deg;
 	release (&gyro_lock);
 }
 
