@@ -72,7 +72,8 @@
 // cmd 0x80 : set ddram address
 #define LCD_DDADDR		0x80
 
-#define lcd_wait()			delay_busy_ms(1)
+//#define lcd_wait()			delay_busy_ms(1)
+#define lcd_wait()			delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(48)
 //#define lcd_wait()			pause(2)
 
 unsigned char smileyData0[] PROGMEM	= { 
@@ -95,9 +96,10 @@ unsigned char dlData[] PROGMEM = {
 };	// bootloader
 
 uint8_t lcdPos = 0;
+uint8_t lcdPosActual = 0;
 uint8_t lcdClearFlag = 0;
 
-char lcdContents[0x10];
+char lcdContents[0x20];
 
 // setup LCD file descriptor (for printf)
 // NOTE: when printing directly to lcdout, lcd_lock should be held
@@ -156,7 +158,7 @@ lcd_init(void) {
 	lcd_set_custom_char(6,(uint8_t*)dlData);
 	lcd_write(LCD_CTRL, LCD_CLR); // 0x01
 	lcd_write(LCD_CTRL, LCD_HOME); // 0x02
-    for(i=0;i<0x10;i++)
+    for(i=0;i<0x20;i++)
         lcdContents[i] = ' ';
 	lcd_write(LCD_CTRL, LCD_ENTRYMODE | LCD_CURSINC); // 0x06
 	lcd_write(LCD_CTRL, LCD_DISPCTL | LCD_DISPON); // 0x0C
@@ -242,25 +244,22 @@ lcd_print_char(char ch, FILE *f) {
 
     if (lcdClearFlag) {
         lcd_clear();
-        lcd_set_pos(0);
         lcdClearFlag = 0;
     }
-    if (ch=='\n') {
-        lcdClearFlag = 1;
+    if (lcdPos==0x20)
         lcdPos = 0;
-    } else {
-        if (lcdPos>=0x10) {
-            lcd_clear();
-            lcd_set_pos(0);
-            //lcd_write(LCD_CTRL, LCD_DDADDR|0x40);
-        }
+    if (ch=='\n')
+        lcdClearFlag = 1;
+    else {
+        if (lcdPos == 0x10)
+            lcdPosActual = 0xFF;
         if (lcdContents[lcdPos] != ch) {
-            // only if this character is different from old character
             lcdContents[lcdPos] = ch;
+            if (lcdPosActual != lcdPos)
+                lcd_set_pos(lcdPos);
             lcd_write(LCD_DATA, ch);
+            lcdPosActual++;
         }
-        else
-            lcd_set_pos(lcdPos+1);
         lcdPos++;
     }
 
@@ -279,10 +278,13 @@ void
 lcd_set_pos(uint8_t p) {
 	acquire(&lcd_lock);
 	lcdPos = p;
-	if (p<16)
-		lcd_write(LCD_CTRL, LCD_DDADDR|p);
-	else
-		lcd_write(LCD_CTRL, LCD_DDADDR|(p+0x30));	
+    if (p != lcdPosActual) {
+        lcdPosActual = p;
+        if (p<16)
+            lcd_write(LCD_CTRL, LCD_DDADDR|p);
+        else
+            lcd_write(LCD_CTRL, LCD_DDADDR|(p+0x30));	
+    }
 	release(&lcd_lock);
 }
 
@@ -292,9 +294,10 @@ lcd_clear(void) {
 	acquire(&lcd_lock);
 	lcd_write(LCD_CTRL, LCD_CLR);
 	lcd_write(LCD_CTRL, LCD_HOME);
-    for(i=0;i<0x10;i++)
+    for(i=0;i<0x20;i++)
         lcdContents[i] = ' ';
 	lcdPos = 0;
+    lcdPosActual = 0;
 	release(&lcd_lock);
 }
 
