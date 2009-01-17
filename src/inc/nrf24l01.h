@@ -80,7 +80,10 @@
 #define NRF_REG_RF_SETUP		0x06
 
 #define NRF_BIT_PLL_LOCK		4
-#define NRF_BIT_RF_DR				3
+#define NRF_BIT_RF_DR_BASE  	3
+#define NRF_RF_DR_1MBPS         0
+#define NRF_RF_DR_2MBPS         1
+#define NRF_RF_DR_250KBPS       4
 #define NRF_RF_PWR_BASE			1
 #define NRF_RF_PWR_18DB			0
 #define NRF_RF_PWR_12DB			1
@@ -106,7 +109,7 @@
 #define NRF_ARC_CNT_BASE		0
 
 // Carrier Detect
-#define NRF_REG_CD					0x09
+#define NRF_REG_RPD				0x09
 
 // Receive Address Pipe 0
 #define NRF_REG_RX_ADDR_P0	0x0A
@@ -156,19 +159,43 @@
 #define NRF_BIT_FRX_FULL		1
 #define NRF_BIT_FRX_EMPTY		0
 
+// Dynamic payload length
+#define NRF_REG_DYNPD           0x1C
+
+#define NRF_BIT_DPL_P5          5
+#define NRF_BIT_DPL_P4          4
+#define NRF_BIT_DPL_P3          3
+#define NRF_BIT_DPL_P2          2
+#define NRF_BIT_DPL_P1          1
+#define NRF_BIT_DPL_P0          0
+
+// Features
+#define NRF_REG_FEATURE         0x1D
+
+#define NRF_BIT_EN_DPL          2
+#define NRF_BIT_ACK_PAY         1
+#define NRF_BIT_DYN_ACK         0
+
 // SPI Commands
-#define NRF_SPI_R_REGISTER		0x00
-#define NRF_SPI_W_REGISTER		0x20
-#define NRF_SPI_R_RX_PAYLOAD	0x61
-#define NRF_SPI_W_TX_PAYLOAD	0xA0
-#define NRF_SPI_FLUSH_TX			0xE1
-#define NRF_SPI_FLUSH_RX			0xE2
-#define NRF_SPI_REUSE_TX_PL		0xE3
-#define NRF_SPI_NOP						0xFF
+#define NRF_SPI_R_REGISTER          0x00
+#define NRF_SPI_W_REGISTER          0x20
+#define NRF_SPI_R_RX_PAYLOAD        0x61
+#define NRF_SPI_W_TX_PAYLOAD        0xA0
+#define NRF_SPI_FLUSH_TX            0xE1
+#define NRF_SPI_FLUSH_RX            0xE2
+#define NRF_SPI_REUSE_TX_PL         0xE3
+#define NRF_SPI_R_RX_LP_WID         0x60
+#define NRF_SPI_W_ACK_PAYLOAD       0xA8
+#define NRF_SPI_W_TX_PAYLOAD_NOACK  0xB0
+#define NRF_SPI_NOP                 0xFF
 
 uint8_t nrf_read_reg(uint8_t reg);
+void nrf_read_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len);
 void nrf_write_reg(uint8_t reg, uint8_t data);
+void nrf_write_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len);
 void nrf_read_rx_payload(uint8_t *data, uint8_t len);
+uint8_t nrf_read_rx_payload_len();
+void nrf_write_tx_payload(uint8_t *data, uint8_t len);
 void nrf_flush_tx();
 void nrf_flush_rx();
 void nrf_reuse_tx_pl();
