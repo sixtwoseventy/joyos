@@ -93,15 +93,13 @@ read_battery() {
 
 void 
 beep(uint16_t freq, uint16_t duration) {
-	uint32_t count=0;
-	uint16_t p = 2000000ul / freq;
-	uint32_t i = p >> 2;
-	while (count<(duration*300ul)) {
+	uint32_t count=(((uint32_t)duration)*freq)/1000ul;
+	uint16_t p = 500000ul / freq;
+	while (count--) {
 		BEEPER(1);
 		delay_busy_us(p);
 		BEEPER(0);
 		delay_busy_us(p);
-		count += i;
 	}
 }
 
