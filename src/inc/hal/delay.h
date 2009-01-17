@@ -33,10 +33,12 @@
  * \brief Simple busy-loop delays
  */ 
 
+void delay_busy_ms(uint32_t ms);
+void delay_busy_us(uint32_t us);
 
 /// Wait in milliseconds
-#define delay_busy_ms(ms) (_delay_ms(ms))
+//#define delay_busy_ms(ms) (_delay_ms(ms))
 /// Wait in in microseconds
-#define delay_busy_us(us) (_delay_us(us))
+//#define delay_busy_us(us) (_delay_us(us))
 
 #endif

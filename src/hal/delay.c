@@ -26,3 +26,22 @@
 #include "config.h"
 #include "hal/delay.h"
 
+// _delay_us maximum 96 us
+// _delay_ms maximum 262 ms
+
+void delay_busy_ms(uint32_t ms) {
+    while(ms > 262) {
+        _delay_ms(262);
+        ms -= 262;
+    }
+    _delay_ms(ms);
+}
+
+void delay_busy_us(uint32_t us) {
+    while(us > 96) {
+        _delay_us(96);
+        us -= 96;
+    }
+    _delay_us(us);
+}
+
