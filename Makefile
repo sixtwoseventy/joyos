@@ -55,6 +55,7 @@ DRIVERSRC = src/drivers/devices/fpga.c \
 			src/drivers/encoder.c \
 			src/drivers/buttons.c \
 			src/drivers/gyro.c \
+			src/drivers/rf.c \
 
 # Kernel source files
 KERNELSRC = src/kern/main.c \
