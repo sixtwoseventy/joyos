@@ -37,21 +37,25 @@ encoder_init (void) {
 	init_lock (&encoder_lock, "encoder lock");
 }
 
-void 
-encoder_reset(uint8_t encoder) {
-	encoder_zero[encoder-24] = encoder_read(encoder);
-}
-
-uint16_t 
-encoder_read(uint8_t encoder) {
+uint16_t encoder_read_raw(uint8_t encoder) {
 	acquire (&encoder_lock);
 	uint16_t hi,lo;
 	uint16_t result;
 	uint8_t ebase = FPGA_ENCODER_BASE + (encoder-24)*FPGA_ENCODER_SIZE;
 	lo = fpga_read_byte(ebase+FPGA_ENCODER_LO);
 	hi = fpga_read_byte(ebase+FPGA_ENCODER_HI);
-	result = ((hi<<8) | lo) - encoder_zero[encoder-24];
+	result = ((hi<<8) | lo);
 	release (&encoder_lock);
-	return result;
+    return result;
+}
+
+void 
+encoder_reset(uint8_t encoder) {
+	encoder_zero[encoder-24] = encoder_read_raw(encoder);
+}
+
+uint16_t 
+encoder_read(uint8_t encoder) {
+	return encoder_read_raw(encoder) - encoder_zero[encoder-24];
 }
 
