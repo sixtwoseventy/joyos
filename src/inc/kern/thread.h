@@ -192,7 +192,7 @@ void resume(struct thread *t);
  *
  * @param ms	Milliseconds to pause.
  */
-void pause(uint16_t ms);
+void pause(uint32_t ms);
 
 /**
  * Give up the processor to another thread until rescheduled.

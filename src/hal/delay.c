@@ -27,21 +27,26 @@
 #include "hal/delay.h"
 
 // _delay_us maximum 96 us
-// _delay_ms maximum 262 ms
+// _delay_ms maximum 32 ms
 
-void delay_busy_ms(uint32_t ms) {
-    while(ms > 262) {
-        _delay_ms(262);
-        ms -= 262;
-    }
-    _delay_ms(ms);
-}
+#define _delay_loop_1_max_us 96
+#define _delay_loop_1_max_ticks (uint8_t)(F_CPU*_delay_loop_1_max_us/3000000ul)
+#define _delay_loop_2_max_ms 32
+#define _delay_loop_2_max_ticks (uint16_t)(F_CPU*_delay_loop_2_max_ms/4000)
 
 void delay_busy_us(uint32_t us) {
-    while(us > 96) {
-        _delay_us(96);
-        us -= 96;
+    while(us > _delay_loop_1_max_us) {
+        _delay_loop_1(_delay_loop_1_max_ticks);
+        us -= _delay_loop_1_max_us;
     }
-    _delay_us(us);
+	_delay_loop_1((uint8_t)(F_CPU * us / 3000000ul));
+}
+
+void delay_busy_ms(uint32_t ms) {
+    while(ms > _delay_loop_2_max_ms) {
+        _delay_loop_2(_delay_loop_2_max_ticks);
+        ms -= _delay_loop_2_max_ms;
+    }
+	_delay_loop_2((uint16_t)(F_CPU * ms / 4000));
 }
 
