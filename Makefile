@@ -87,6 +87,7 @@ BOOTSRC = 	src/boot/hboot.c \
 			src/hal/spi.c \
 			src/hal/adc.c \
 			src/hal/io.c \
+			src/hal/delay.c \
 
 # ALL source files
 SRC = $(DRIVERSRC) $(KERNELSRC) $(HALSRC) $(USERSRC)
