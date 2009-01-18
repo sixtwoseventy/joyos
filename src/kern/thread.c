@@ -324,7 +324,7 @@ resume(struct thread *t) {
 }
 
 void
-pause(uint16_t ms) {
+pause(uint32_t ms) {
 	// if interrupts are disabled...
 	if (!(SREG & SREG_IF)) {
 		// spin for a while
