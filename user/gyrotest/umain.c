@@ -35,7 +35,9 @@
 #include <joyos.h>
 
 #define GYRO_PORT 		11
-#define LSB_MS_PER_DEG	1062.0
+#define LSB_US_PER_DEG	1400000
+
+uint8_t team_number={1,0};
 
 // usetup is called during the calibration period. It must return before the
 // period ends.
@@ -45,7 +47,7 @@ int usetup (void) {
 	printf_P (PSTR("\nStabilizing..."));
 	pause (500);
 	printf_P (PSTR("\nCalibrating     offset...\n"));
-	gyro_init (GYRO_PORT, LSB_MS_PER_DEG, 500L);
+	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);
 	return 0;
 }
 
