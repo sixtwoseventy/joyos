@@ -425,7 +425,7 @@ wakeup(void *channel) {
 
 void
 exit(int status) {
-	for (;;) yield();
+	//for (;;) yield();
 	// stop everything
 	cli();
 
