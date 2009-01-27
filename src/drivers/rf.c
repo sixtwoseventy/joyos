@@ -163,6 +163,7 @@ uint8_t rf_recv_pipe(uint8_t *data, uint8_t *len, uint8_t *pipe, uint8_t block) 
         *pipe = (status >> NRF_RX_P_NO_BASE) & 0x07;
         if ((status & _BV(NRF_BIT_RX_DR)) != 0 || *pipe != NRF_RX_P_NO_EMPTY)
             break;
+        yield();
     } while (block);
     uart_printf_P(PSTR("RX pipe: %02X\n"), *pipe);
     // return if no packet

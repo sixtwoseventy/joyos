@@ -48,6 +48,9 @@ struct thread *current_thread = NULL;
 volatile uint32_t global_time = 0;
 struct jbuf sched_jbuf;
 
+#define ATOMIC_BEGIN uint8_t _cli_was_enabled = SREG & SREG_IF; cli();
+#define ATOMIC_END SREG |= _cli_was_enabled;
+
 // idle thread -- should do nothing forever
 int
 idle(void) {
@@ -71,10 +74,9 @@ setup_timer(void) {
 uint32_t
 get_time (void) {
 	uint32_t current_time;
-	uint8_t was_enabled = SREG & SREG_IF;
-	cli();
+    ATOMIC_BEGIN {
 	current_time = global_time;
-	SREG |= was_enabled;
+    } ATOMIC_END;
 	return current_time;
 }
 
@@ -83,12 +85,11 @@ get_time (void) {
 long
 get_time_us (void) {
 	long current_time;
-	uint8_t was_enabled = SREG & SREG_IF;
-	cli();
+    ATOMIC_BEGIN {
 	current_time = global_time * 1000 + 
 		(uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
 	//current_time = global_time * 1000;
-	SREG |= was_enabled;
+    } ATOMIC_END;
 	return current_time;
 }
 
@@ -120,9 +121,11 @@ init_thread(void) {
 	if (threads[0].th_status == THREAD_FREE)
 		panic_P (PSTR("idle free"));
 
-	setjmp(TO_JMP_BUF(sched_jbuf));
-	sched_jbuf.sp = KSTACKTOP;
-	sched_jbuf.pc = (uint16_t) &schedule;
+    ATOMIC_BEGIN {
+        setjmp(TO_JMP_BUF(sched_jbuf));
+        sched_jbuf.sp = KSTACKTOP;
+        sched_jbuf.pc = (uint16_t) &schedule;
+    } ATOMIC_END;
 
 	setup_timer();
 }
@@ -330,17 +333,17 @@ pause(uint32_t ms) {
 		// spin for a while
 		delay_busy_ms(ms);
 		return;
-	}
+	} else {
+        cli();
 
-	cli();
+        current_thread->th_status = THREAD_PAUSED;
+        // XXX assumes clock period is 1 ms
+        current_thread->th_wakeup_time = global_time + ms;
 
-	current_thread->th_status = THREAD_PAUSED;
-	// XXX assumes clock period is 1 ms
-	current_thread->th_wakeup_time = global_time + ms;
+        yield();
 
-	yield();
-
-	// at this point interrupts are reenabled
+        // at this point interrupts are reenabled
+    }
 }
 
 void
@@ -414,9 +417,8 @@ wakeup(void *channel) {
 
 	int i;
 	for (i = 1; i < MAX_THREADS; i++)
-		if (threads[i].th_status == THREAD_SLEEPING)
-			if (threads[i].th_channel == channel)
-				threads[i].th_status = THREAD_RUNNABLE;
+		if (threads[i].th_status == THREAD_SLEEPING && threads[i].th_channel == channel)
+            threads[i].th_status = THREAD_RUNNABLE;
 
 	// unlock thread array
 	//release_threadtable();

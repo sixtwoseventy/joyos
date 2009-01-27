@@ -113,7 +113,7 @@ board_init (void) {
 	lcd_init();
 	stdout = &lcdout;
 	adc_init();
-    rf_init();
+    //rf_init();
 	isr_init();
 
 	// load config, or fail if invalid
