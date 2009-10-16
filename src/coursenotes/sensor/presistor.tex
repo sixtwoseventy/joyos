@@ -1,0 +1,45 @@
+\subsection{LED and Photoresistor}
+
+\begin{figure}[htbp]
+ \centerline{\epsfysize = 2.0in\epsffile{sensor/presistor.eps}}
+ \caption{LED and Photoresistor}
+ \label{ledpresistor}
+\end{figure}
+
+Measuring the color of the table is a common task that needs to be
+accomplished by the robot. In order to do this, some light sensor and
+a source of light to illuminate the table are needed. The source may
+be ambient light that comes from above the table and around the room,
+but this may not be enough to guarantee consistent readings because
+the light source is dependent upon a varying table environment.
+
+So, it is better for the robot to have its own light source. An LED,
+mounted next to a well-shielded photoresistor, can make a spot of light
+on the table that is significantly brighter than the ambient light.
+Consequently the brightness of the light will be fairly constant
+across the table, and discerning colors will be easier.
+
+Be sure to hook the LED to the connector correctly, as shown in Figure
+\ref{ledpresistor}.  The longer lead on the LED is the collector and
+should be connected to power through a 330\ohm resistor.  The shorter
+lead goes to ground.
+
+Because the analog sensor ports are powered continuously when the
+robot is on, the LED will also be on during the entire 60-second
+match. This is not necessary. In fact, the LED can be plugged into a
+motor output to conserve on-board battery power. Any number of LEDs
+can be plugged into a single motor port.
+
+A unique use of this sensor with the LED plugged to the motor port is
+to measure the color of the table by taking the {\it difference} of
+two light measurements, one with the LED on and one with it off. In
+this case there are two numbers instead of one, and a more reliable
+reading of the surface color can be expected. By computing the
+difference of these two values, the approximate amount of LED light
+that was reflected from the surface is being measured. By comparing
+the difference to a threshold, the robot can discern between different
+colors at more than six inches away from the table.
+
+The digital outputs can also be used for light measurements as
+well, but if you wish to try doing this, be sure to talk to Paul
+Grayson ({\tt pdg@mit.edu}).

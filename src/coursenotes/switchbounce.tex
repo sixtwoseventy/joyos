@@ -1,0 +1,25 @@
+When a mechanical switch closes, two conductive
+contacts are physically brought together.  When
+they first touch lightly, conduction may be
+intermittent due to the presence of insulating
+contaminants on the contact surfaces.  Even after
+good contact is established, the contacts may
+momentarily  separate and reconnect one or more
+times as a result of the movable contact bouncing
+after it lands (the moving part of a switch is
+usually somewhat springy and has nonzero mass, so
+it resonates).  Intermittent contact can also occur
+as a switch opens.  All of these phenomena are
+generally lumped under the heading of "switch
+bounce". They all give the appearance of multiple
+switch events when only one actually occurred.
+All of these effects also respond to the same
+treatment:  after the first detected closing or
+opening of a switch, wait an appropriate amount
+of time (10ms - 20ms is usually sufficient) and
+then check again to see if the contact is still
+closed (or open).  Adjust the delay time until
+you reliably detect a single event for a single
+motion of the switch.  It is also possible to check
+several times over shorter time intervals if time
+is critical in your application.

@@ -1,0 +1,429 @@
+\chapter{Robot Control}
+\begin{quote}
+To the uninitiated, the term ``robot'' conjures up images of machines
+with human-like abilities. Unfortunately, technology has not yet
+reached the point where robots can mimic the intelligence of
+humans. Instead, the robot that you will be constructing will require
+simple, step-by-step instructions for completing even the most simple
+of tasks.
+
+A robot's ability to interact with the environment centers around its
+sensors and control system. The sensors convert information about the
+environment into a form that can be used by a computer. They are
+limited in their abilities, however, and often give back information
+that is cryptic, ambiguous, or even inaccurrate. The control system
+must decode this information and determine the best course of
+action. The task of endowing the control system with these abilities
+falls to you, the programmer. This chapter will explore the design of
+systems for controlling a robot in a constantly changing and
+unpredictable environment.
+\end{quote}
+
+\section{Control Systems}
+Control systems is an entire field of study and reducing it to one
+section of one chapter of one book certainly does not do it justice.
+The material presented here covers only the very basic concepts, but
+for this course, it will be sufficient for your needs.  If you are
+interested in understanding these concepts in more depth, there are
+many relevant courses and a large body of literature dedicated to the
+subject.
+
+\subsection{Open Loop}
+
+The most obvious approach to programming a robot is to give it a
+sequence of instructions to follow. The robot then executes its orders
+without worrying about the consequences of its actions. Information
+flows only from the controller to the actuators to the world as shown
+in Figure \ref{openloop}.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/openloop.eps}
+ \caption{Open loop information flow}
+ \label{openloop}
+\end{center}
+\end{figure}
+
+Although the controller can send commands to the actuators, it cannot
+tell whether or not the correct action occurred. Information flows from
+the controller to the world, but not back again. For this reason, such a
+system is known as {\it open loop} control. Open loop control is rarely
+used in the real world because it lacks robustness. Small changes in the
+robot and environment cannot be accounted for, and after a while, error
+begins to build up. Even the smallest errors will eventually build up to
+a point that the robot becomes lost.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/openbot.eps}
+ \caption{A robot trying to navigate with open loop control}
+ \label{openbot}
+\end{center}
+\end{figure}
+
+Consider, for example, the path the robot must take to navigate the
+course in Figure \ref{openbot}. On the left is the path that the robot
+is supposed to follow labelled with the appropriate instructions. As
+the batteries lose power, though, the speed of the robot will
+decrease. Since the durations of each action are no longer valid, the
+robot might take the path shown at right, leading to a collision with
+the wall. Clearly, open loop control is not going to get the job done.
+
+\subsection{Feedback}
+
+To avoid the problem from above, the robot needs to take advantage of
+some of the information available in the environment. The robot can
+use its sensors to correct errors and compensate as needed before the
+situation gets out of control. This closes the loop of information
+flow, as shown in Figure \ref{feedback}.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/feedback.eps}
+ \caption{Closed loop (feedback) information flow}
+ \label{feedback}
+\end{center}
+\end{figure}
+
+The feedback approach requires a different way of thinking about the
+problem. Rather than performing a single action designed to move the
+robot to its goal, the robot repeatedly makes small corrective actions
+in response to its current situation. Through repetitive application
+of these small maneuvers, the robot eventually achieves its overall
+desired goal.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/feedbot.eps}
+ \caption{A robot using feedback to navigate}
+ \label{feedbot}
+\end{center}
+\end{figure}
+
+Figure \ref{feedbot} shows how the robot can apply feedback control to
+the situation from above. In this example, the robot is repeatedly
+applying the following set of rules:
+
+\begin{enumerate}
+
+\item If the front of the robot is in contact with a wall, back up to the right.
+\item If the left of the robot is in contact with a wall, turn right.
+\item If the right of the robot is in contact with a wall, turn left.
+\item Otherwise, drive forward.
+
+\end{enumerate}
+
+Rule 4 is the default behavior of the robot. Whenever it is out in the
+open, it simply drives forward. Rules 2 and 3 allow the robot to drive
+down a corridor. Whenever it bumps into one of the walls, it turns
+away from it and continues down the corridor. Rule 1 turns the robot
+when it reaches a corner. The robot repeatedly runs into the wall and
+backs away from it, each time turning a little bit more. After a few
+collisions, the robot completes the turn and continues down the next
+segment of the course.
+
+With this algorithm, a number of assumptions about the robot's
+performance have been relaxed. It does not matter how fast the robot
+moves or even if it drifts a bit to one side as it drives. The
+algorithm is now much more robust because there are less unseen
+factors in the environment and the robot that can make it perform
+incorrectly. The use of feedback has greatly improved the design.
+
+\subsection{Open Loop Revisited}
+
+The primary drawback to using feedback is that some tasks require a
+large amount of time to complete. In the feedback example above, the
+robot had to make a number of forward and backward motions in order to
+go around a corner. This takes a lot of time and can be a major
+handicap for speed-critical applications. It would be nice if there
+was a way to turn more quickly.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/hybbot.eps}
+ \caption{A robot combining open loop and feedback control}
+ \label{hybbot}
+\end{center}
+\end{figure}
+
+Fortunately, open loop control may be good enough for some
+situations. Instead of the feedback-only algorithm, a hybrid algorithm
+can be used as in Figure \ref{hybbot}. The robot navigates the
+corridor using the feedback algorithm, except that when it runs into a
+wall, it backs up a little and performs the quicker open loop turn
+instead of the bumping method. After completing the turn, it then
+returns to the feedback algorithm for navigating the next corridor.
+
+As long as the open loop turn is accurate enough that the robot does
+not get stuck in a corner, the feedback mechanism will be able to
+compensate for any error that it introduces. Since the error is erased
+in this manner before the next open loop command, it cannot snowball
+out of control like in the purely open loop algorithm. By using this
+clever sandwiching of open loop and feedback control, it is possible
+to develop an algorithm that has most of the efficiency of open loop
+control while only sacrificing a little of the robustness of feedback
+control.
+
+\section{Sensors}
+
+Sensors allow a robot to collect information about the
+environment. They convert physical measurements from the world into
+electrical signals that can be understood by the controller. This
+gives the robot a link to the real world allowing it to respond
+appropriately to changes in its environment.
+
+\subsection{Sensor Problems}
+
+The real world is a noisy place compared to the digital world of a
+computer, and in robotics, this noise can make sensor readings
+unreliable. Sensor data mirrors the nonideal nature of the robot's
+environment and must be interpreted by the computer. Below are a few
+of the common types of errors that appear when reading sensors:
+
+\begin{itemize}
+
+ \item {\bf Glitchy data} is often a problem due to faults in the
+ sensor hardware. When a glitch occurs, the sensor may return an
+ unexpected value or a value outside of the range of possible
+ values. Often, loose connector plugs or shorted wires can cause
+ spurious input by intermittantly losing or making contact. This can
+ be identified and fixed in software by ignoring values that fall
+ outside of the expected input.
+
+ \item {\bf Noisy data} is a problem for most sensors. The world is
+ full of flickering lights, uneven surfaces, and magnetic fields which
+ can all cause errors in measurements. Since noise tends to be a
+ random process, there is no way to predict it, but its effects can be
+ minimized by averaging multiple values together when reading a
+ sensor.
+
+ \item {\bf Drifting data} is often the result of sensors retaining
+ some sort of memory. This problem is particularly prominant in light
+ sensors which are affected by changes in the ambient lighting of the
+ room. As the robot moves from place to place, the amount of light
+ reaching the sensor can vary and change the range of the
+ measurements. Some light sensors are also sensitive to heat and
+ return different values as they warm up. These effects occur slowly
+ over time, so they can be very difficult to detect. One option is to
+ give the robot the ability to recalibrate itself whenever it finds
+ itself in a known situation. This way, calibration values can be
+ updated on the fly as the robot moves from one part of the
+ environment to another.
+
+\end{itemize}
+
+\subsection{Bouncing Switches}
+
+When a mechanical switch closes, two conductive contacts are
+physically brought together.  When they first touch lightly, conduction may be
+intermittent due to the presence of insulating contaminants on the
+contact surfaces.  Even after good contact is established, the
+contacts may momentarily separate and reconnect one or more times as a
+result of the movable contact bouncing after it lands (the moving part
+of a switch is usually somewhat springy and has nonzero mass, so it
+resonates).  Intermittent contact can also occur as a switch opens.
+All of these phenomena are generally lumped under the heading of
+"switch bounce". They all give the appearance of multiple switch
+events when only one actually occurred.  All of these effects also
+respond to the same treatment: after the first detected closing or
+opening of a switch, wait an appropriate amount of time (10ms - 20ms
+is usually sufficient) and then check again to see if the contact is
+still closed (or open).  Adjust the delay time until you reliably
+detect a single event for a single motion of the switch.  It is also
+possible to check several times over shorter time intervals if time is
+critical in your application.
+
+%% Most mechanical switches are afflicted with a phenomenon called {\it
+%% bouncing}. Wires are not ideal and instantaneous conductors, although
+%% they are often modelled that way. Instead, when a circuit is broken,
+%% the electricity continues to flow for a few microseconds. Since it has
+%% no place to go when it reaches the break, it bounces back and forth
+%% along the wire a few times before it settles down. This causes voltage
+%% levels to rise and fall, causing the sensor reading to transition a
+%% number of times (often dozens). A similar effect also causes the
+%% switch to bounce when the circuit is reconnected.
+
+%% In most circumstances, this does not cause a problem, but it can come
+%% into play for operations like counting the number of times a button is
+%% pressed. If sampling is performed too quickly, the computer can
+%% measure multiple counts when the button is pressed just once. This
+%% problem can be solved in software by ignoring other transitions that
+%% occur for a small amount of time after the first transition is
+%% detected. It can also be solved in hardware by the addition of
+%% appropriate circuitry, but usually the software fix will be
+%% sufficient.
+
+\subsection{Calibration}
+
+Light sensors are particularly sensitive to changes in the
+world. Differences in ambient lighting from one room to another can
+wreak havoc on the readings that the sensor returns. When the robot
+needs to be moved from one environment to another, calibration is
+often necessary to adjust the settings used to interpret the data.
+
+Even though most light sensors are analog in nature, you will often
+use them as if they were digital sensors. Rather than asking the
+question, ``How bright is it?,'' you will instead ask ``Is it light or
+dark?'' The goal of calibration, then, is to choose a threshold value
+which will separate light values from dark values.
+
+The most common way to choose a threshold is to take readings in a
+controlled situation, such as during a calibration routine. By
+averaging two readings, one for light and one for dark, a value can be
+chosen to separate the two conditions. Then, each time a the sensor
+takes a reading, it can be compared to the threshold to determine if
+the sensor is seeing light or dark.
+
+\section{Simple Navigation}
+
+Robot navigation is a difficult problem, but it can often be
+decomposed into a number of subtasks.  These simple tasks can be
+implemented with feedback mechanisms and represent the basic skills
+that most 6.270 robots utilize as part of their grand
+strategy. Calling them ``simple,'' however, is a bit misleading
+because, as you will see, making them work together reliably requires
+a lot of fine tuning and patience.
+
+\subsection{Wall Following}
+
+Imagine yourself in a dark hallway.  You have to get to the other end,
+but you cannot see anything.  What do you do? If you are like most
+people, you probably begin by finding one of the walls with your
+hand. Then, as you walk, whenever your hand detects that you are too
+close to the wall, you move farther from it, and when you are too far,
+you move closer.  This, it turns out, is pretty much the way your
+robot will do it.
+
+Wall following is very simple because it only requires a single sensor
+mounted on one of the front corners of your robot. This sensor will
+deliver just one bit of information which determines whether the robot
+is touching the wall or not.  To follow the wall, the robot then
+executes the algorithm mentioned above:
+
+\begin{itemize}
+
+\item If the robot is touching the wall, turn away from the wall.
+\item If the robot is not touching the wall, turn towards the wall.
+
+\end{itemize}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/wall.eps}
+ \caption{Wall following and a jammed robot}
+ \label{wall}
+\end{center}
+\end{figure}
+
+This will cause the robot to repeatedly bump into the wall, as shown
+on the left side of Figure \ref{wall}, alternately activating and
+releasing the sensor.  This oscillation can be minimized by tuning how
+sharply the robot turns or by using a sensor which gives more precise
+distance information.
+
+While following the wall is easy, finding it in the first place can
+often be difficult.  If the robot begins close enough to the wall, it
+can simply use the wall following algorithm to find it.  If the robot
+approaches the wall at a steep angle, however, it is likely to
+jam. When the robot's initial position is unpredictable, it is
+advisable to use some strategy for aligning with the wall before
+trying to follow it.
+
+\subsection{Line Following}
+
+Line following is usually accomplished by mounting one or more
+reflectance sensors on the underside of the robot.  By measuring the
+intensity of the reflection, these sensors can determine whether they
+are over a light or dark area.  By adding a little ``intelligence,''
+the robot can be made to follow lines.
+
+The number of sensors and the configuration used depends on the robot
+and application, but the method is almost always the same.  The
+sensors detect when the robot begins straying from the line, and the
+controller issues orders to correct for the error.  Developing this
+algorithm begins with constructing a chart of all possible
+combinations of sensor inputs and the appropriate action for each.
+This information can then easily be coded into the robot's program.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/linefollow.eps}
+ \caption{Line following with 3 reflectance sensors}
+ \label{linefollow3}
+\end{center}
+\end{figure}
+
+Figure \ref{linefollow3} shows the table for constructing a program
+for a robot with three reflectance sensors arranged in a line across
+the robot with the left and right ones spaced wider than the
+line. Whenever the robot begins to drift, one of the outer sensors
+detects the line and tells the robot to correct itself.  If the robot
+continues to stray, the middle sensor loses the line and tells it to
+turn sharper.  It is interesting to note that in theory, some of the
+states cannot occur, but in practice, erroneous sensor readings and
+unexpected situations can cause them to arise. It is usually wise to
+assign best-guess actions to these states to make sure that the robot
+always has something to do.
+
+\subsection{Shaft Encoders}
+
+Shaft encoders are a wonderful tool for robot navigation.  When placed
+on a wheel or in the wheel's accompanying gear box, encoders can very
+accurately measure the distance the wheel has travelled.  This
+provides the robot with a number of abilities, including measuring
+distances, driving straight, and turning accurately.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{control/shaft.eps}
+ \caption{Shaft encoding using a LEGO pulley wheel}
+ \label{shaft}
+\end{center}
+\end{figure}
+
+A shaft encoder is constructed from a breakbeam sensor and a Lego
+pulley wheel as shown in Figure \ref{shaft}. As the wheel turns, the
+holes in the wheel alternately allow and then block the light from
+hitting the detector in the sensor. The robot can then count the
+number of passing holes and compute how far the wheel has turned.
+
+If both sides of the robot are driven at the same rate, the robot will
+move in a straight line. For a robot with a differential drive system,
+the easiest way to do this is to place a shaft encoder into each of
+the drive trains and monitor the distance each wheel has travelled.
+Whenever one wheel gets ahead of the other, it is slowed down.
+
+The problem of driving straight can be solved with a very simple
+algorithm. Whenever the left side of the robot is ahead, the right
+wheel is driven faster, and the left is slowed down. When the right
+side of the robot is ahead, the opposite action is taken. The robot
+constantly corrects for small deviations allowing it to drive in a
+straight line.
+
+Shaft encoders are so useful that many robots make extensive use of
+them, but they are not the entire solution to robot navigation.  The
+feedback provided by the encoders comes not from the environment, but
+rather from within the robot. Slippage of the wheels on the floor is
+not accounted for, and can lead to measurement errors, especially when
+turning.  In order to correct for these errors, additional feedback
+mechanisms must be used in conjunction with the shaft encoders.
+
+\section{Timeouts}
+
+Control systems often fail when something unexpected happens, and the
+available sensor information is not able to account for the situation.
+Most of the time, when a robot gets lost, it will wind up stuck on
+some obstacle. If none of the sensors register the collision, the
+robot will not even know that anything is wrong. It will continue
+trying to drive, oblivious to the fact that it is not getting
+anywhere. If the robot does not reach its goal after a certain amount
+of time, though, it can usually assume that a problem has occurred
+along the way.
+
+When an action times out, the robot only knows that something has gone
+wrong, but not what it is. Regardless, the robot can often act to
+increase its chances of recovering. In many cases, backing up a little
+or thrashing around may be sufficient to free the robot from an
+obstacle so that it can continue on its course. In any case, detecting
+that something has gone wrong can considerably increase the robots
+ability to make the best of a bad situation.

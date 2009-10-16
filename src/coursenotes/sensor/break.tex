@@ -1,0 +1,24 @@
+\subsection{Breakbeam Sensor Package}
+
+\begin{figure}[htbp]
+\begin{center}
+\epsfysize = 2.0 in
+\epsfbox{sensor/break.eps}
+ \caption{Breakbeam sensor package}
+ \label{break}
+\end{center}
+\end{figure}
+
+The breakbeam sensor package is composed of an infrared LED and a phototransistor which is sensitive to the wavelength of light emitted by the LED. The two components are mounted in the package so that they face each other with a gap in between them. 
+
+The sensor should be wired as shown in Figure \ref{break}. As usual with LEDs, a 330\ohm resistor will be needed to limit the amount of current used to light it. Be sure to orient the sensor correctly, so that you do not confuse the phototransistor half with the LED half. The markings vary from one package to the next, but usually include one or more of the following:
+
+\begin{enumerate}
+\item an ``E'' (emitter) for the LED and a ``D'' (detector) for the phototransistor marked above each component.
+\item arrows on the top of the package which point towards the phototransistor side.
+\item a notch on the LED side of the package.
+\end{enumerate}
+
+The sensor is valuable for detecting the presense of opaque objects. Normally, light from the LED shines on the phototransistor, but when a object blocks the path, the phototransistor only sees darkness. This can be useful in constructing mechanisms which must be stopped after moving a certain distance. Also, shaft encoders can be built by using the sensor to count the number of holes in a wheel as it rotates.
+
+Although the breakbeam sensor is analog, it can often be used as a digital sensor. In most applications, the use of the sensor is digital in nature and involve measuring whether the light is blocked or not blocked. Conveniently, the sensor's output values for these two situations are valid digital signals, so the sensor can be used in a digital application.

@@ -1,0 +1,339 @@
+\section{The Competition}
+\label{compete}
+
+The competition will be a double elimination tournament.  Robots compete
+head to head in successive rounds until they lose twice.  When all but one
+robot has been eliminated, that robot will be crowned champion.
+
+In each round, if there are an odd number of robots, the robot that
+has scored the most cumulative points will face a placebo.  After that
+robot is paired, the robot with the next highest cumulative score is
+paired with the robot with the lowest cumulative score, and so forth.
+Ties are resolved randomly.  Note that this system is only used for
+deciding what opponent each robot will face -- the order in the round
+and the side of the table are still randomly selected.
+
+All rules are subject to change at any point during competition, at
+the discretion of the Organizers.  This power will be used sparingly.
+
+\begin{itemize}
+
+\item {\bf Contest, Qualifying Rounds.}
+The first two rounds of the contest serve as seeding rounds.  If
+a robot demonstrates the ability to score points, regardless of whether it wins
+or loses, it will be allowed to proceed to the competition rounds on Thursday.
+If it does not, modifications may be made, and it may attempt to qualify in lab
+against a non-competitive placebo.  If it cannot score points against the
+placebo, it will not qualify for the rest of the contest.  Robots may qualify
+until impounding.
+
+For the sake of efficiency, we will be publishing a schedule for the round
+matchups as soon as one is available.  We promise that each robot will not be
+asked to compete until the time that is posted.  If a team is not present when
+we are ready to start the match, the team automatically forfeits.
+
+\item {\bf Contest, Final Rounds.}  This is the main competition that
+  everyone comes to see.  Robots will compete until all but the winner
+  have been eliminated.  Once two teams remain in the contest, all
+  previous records will be erased and three rounds will be run.  The
+  team with more wins in the three rounds wins the competition.
+
+\end{itemize}
+
+\section{Rules}
+
+The following rules of play are meant to ensure a fair and interesting contest.
+Contestants are responsible for knowing and following these rules. If you have
+any questions or doubts about the legality of your robot, please ask the Rules
+Committee by emailing \verb^6.270-rules@mit.edu^ for an official ruling.
+
+\subsection{Period of Play}
+\begin{enumerate}
+
+
+\item The contestants will have a 60 second calibration period to setup their
+robot. A team can use this time to tune sensors to the table and enter the
+goal points for the match. A team {\bf cannot} use this time to enter any of
+the following information:
+
+\begin{enumerate}
+\item Starting orientation
+\item Starting color/side
+\item Specific strategy
+\item Opposing team
+\end{enumerate}
+
+Your robot must dynamically sense and make decisions during the round.
+
+\item By the end of the calibration period, teams must place their robots in
+the assigned starting zone and orient in the assigned direction. The direction
+will be one of four options: North, South, East, and West. The side marked
+``front'' must point in this direction.
+
+\item Robots may not supply power to their actuators at this point.  If a robot
+does, it has false-started. Also, if a team takes more than the alotted 60
+seconds for setup, this counts as a false start.  If a robot false-starts twice,
+it forfeits that match.
+
+\item The robots will recieve a radio signal informing them to start the match.
+After the start signal,the robots may turn on any motors or actuators and the
+robots have 90 seconds to compete and score points. Software to detect the
+signal will be provided.
+
+\item To start the match, contestants will be directed to press the ``Go''
+button on their robot. This is the only time contestants are allowed to touch
+their robot after calibration.
+
+\item During the match, the contestants must stand back from the table. Any
+contestant who touches the machines or otherwise interferes with the match will
+cause his machine to forfeit the match. All robots must be controlled solely by
+their onboard computer.
+
+\item At the end of 90 seconds, the robot must turn off electrical power to its
+actuators.  Any robot that fails to shutdown forfeits that match. Software is
+provided to do this.
+
+\item The match ends when all robots and game objects on the table come to a
+rest.
+
+\item If one of the robots forfeits the match for any reason, it will be
+replaced with a placebo and the match will continue.
+
+\end{enumerate}
+
+\subsection{Kits}
+\begin{enumerate}
+
+\item Some parts in the kit are considered tools and may not be used on the
+robot.
+
+\item Robots must be built only from the parts in the kit, except when
+explicitly allowed by other rules.
+
+\item Teams may trade only functionally identical components. This includes
+trading identical LEGO parts of different colors and replacing broken
+components. Any other trading is forbidden.
+
+\end{enumerate}
+
+\subsection{Robots}
+\begin{enumerate}
+
+\item The robot structure must fit within a one foot cube at the start of a
+match; however, they may expand once the match has begun.  Wires may be
+compressed, if necessary, to fit this measurement.
+
+\item All parts of a robot must be connected via LEGO. Robots may not separate
+or have a tendency to break into multiple parts.
+
+\item Decorations may be added to a robot provided they perform only an
+aesthetic function, and not a structural one.
+
+\item Robots may not intentionally damage, or attempt to damage, the opponent
+robot or its microprocessor board.
+
+\item No parts or substances may be deliberately dropped onto the playing field.
+
+\item Any robot that appears to be a safety hazard will be disqualified from the
+competition.
+
+\end{enumerate}
+
+\subsection{LEGO}
+\begin{enumerate}
+
+\item Only LEGO parts may be used as robot structure.
+
+\item A robot's structure may not be altered after impounding. Repairs may be
+made between rounds if time permits.
+
+\item LEGO pieces may not be modified in any way, with the following exceptions:
+
+\begin{itemize}
+
+\item The LEGO baseplate may be modified freely.
+
+\item LEGO pieces may be modified to facilitate the mounting of sensors and
+actuators. However, such modification cannot be structural.
+
+\item LEGO pieces may be modified to perform functions directly related to the
+operation of a sensor. For example, holes may be drilled in a LEGO wheel to help
+make an optical shaft encoder. Such modifications cannot be structural.
+
+\end{itemize}
+
+\item LEGO pieces may not be joined by adhesive.
+
+\item Lubricants of any kind are not permitted.
+
+\item Rubber band or tape may be applied to LEGO wheels and treads to alter the
+coefficient of friction.  See Section \ref{non-lego} for more details on the use
+of rubber bands.
+
+\item Wheels may be stuffed with any material within reason.  Students usually
+stuff them with rubber bands, LEGO, or hot glue.  Double-check with an Organizer
+before using another material.
+
+\end{enumerate}
+
+\subsection{Software}
+\begin{enumerate}
+
+\item A robot's program cannot be altered after impounding.
+
+\item In the event of a memory failure, a copy of the robot's program may be
+downloaded from an official computer between rounds. The program available for
+download will be the version submitted on impounding. Contestants are not
+permitted to download any code to the robot from their own computer or any other
+computer.
+
+\item A robot may not be told its position or be given information about its
+opponent. It may only deduce this information after the match has begun.
+
+\end{enumerate}
+
+\subsection{Non-LEGO parts}
+\label{non-lego}
+\begin{enumerate}
+
+\item Sensors, actuators, and other Non-LEGO parts may not be used as structural
+components.
+
+\item Non-LEGO parts may be attached to no more than five LEGO parts.
+
+\item Non-LEGO parts may be freely modified to assist in their operation.
+
+\item A reasonable amount of cardboard, other paper products, and tape may be
+used for the purpose of creating optical shields for sensors.
+
+\item Wire may only be used for electrical purposes and may not be dragged on
+the playing surface. Wires that extend outside of the robot should be tied back.
+
+\item String may be used to convey force between moving parts (i.e. pulley
+systems) but may not be used for structural support. String may also be used to
+stuff tires for stiffening purposes.
+
+\item Extraneous components may not be added to a robot for the purpose of
+adding weight.
+
+\item Rubber bands cannot be used for structural support.  Only thin rubber
+bands that are supplied by the organizers (\#16 and \#32) may be used.  Rubber
+bands may be used only for the following purposes:
+
+\begin{itemize} 
+
+\item Rubber bands may be used to store energy to affect the motion of moving
+parts. Rubber bands used for this purpose must be touching at least one piece of
+LEGO. LEGO pieces connected by a single rubber band or a chain of two rubber
+bands must move relative to each other.
+
+\item Rubber bands may be used to stuff tires for stiffening purposes.
+
+\item Rubber bands may be used to add strength to tread between chain.
+
+\item If you would like to use rubber bands for another purpose, please make
+sure you check with Rules Committee first.
+
+\end{itemize}
+\end{enumerate}
+
+\subsection{Placebos}
+
+Placebos are staff-built ``demo'' robots, which should not present
+significant competition to a well-built entry. In matches involving
+only one robot player, a placebo will stand in for the other.  Teams
+should consider a match against a placebo to be just like a match
+against any other robot. The placebo will conform to all rules.
+
+\section{Extra Electronics}
+
+Each team is given two pools of resources from which they can obtain more
+sensors and motors to their robots---20 sensor points and a 30 dollar allotment.
+A team's robot is disqualified if the total points of the sensors on the robot
+after impounding exceeds the sum of 20 points' worth of sensors and the basic
+set of sensors originally given in the kit, or if the electronics monetary value
+exceeds 30 dollars.
+
+\subsection{Electronic Modifications}
+
+Each team is free to modify any of the electronics or actuators. However, using
+electronics in a non-standard fashion is a risk that your team must consider
+before making any modifications. If electronics (including the Handy Board and
+expansion board) or actuators are broken because of these non-standard
+modifications, the team will not be given replacement parts. Any additional
+parts used for modifications count towards the 20 sensor points and 30 dollar
+limit.
+
+Before making any modifications, each team {\em must} consult an Organizer.
+Before making the modification, the team must turn in a list of all the parts
+(kit or non-kit) used for the modification. The team must also turn in a design
+report that includes a description of the modification, a schematic of all added
+circuitry. This design report must be turned in {\em before} the modification is
+made on the robot. 
+
+All modifications made by all teams will be posted online once the design report
+is given the Organizers.  Any questions or concerns about a potential
+modification must be emailed to
+\begin{verbatim}6.270-rules@mit.edu\end{verbatim}. 
+
+\subsection{The Sensor Store}
+
+In order to encourage variety in robot designs, each team will be
+given a sample set of sensors and an allowance of 20 sensor points
+with which they may obtain additional sensors from the Organizers. No
+refunds will be permitted, so contestants are encouraged to experiment
+with the sample sensors before making decisions on which sensors to
+get. Note that sensors purchased from the sensor store are considered
+kit parts and must be used in accordance with all applicable rules.
+
+Sensors can be traded as long as the following rules are observed:
+
+\begin{enumerate}
+
+ \item Teams are allowed to trade sensors of equal point value with
+ other teams.
+
+ \item A team can trade a sensor with the Sensor Store as long as the
+ sensor is returned in original condition.
+
+ \item A broken sensor may be traded in for a new sensor of the same
+ type at a cost of 5 dollars or the at-cost price of the sensor
+ rounded up to the nearest dollar, whichever is highest.  Paying for a
+ broken sensor this way does not count to the 30 dollar nor the 20
+ sensor point allotment.
+\end{enumerate}
+
+\subsection{30 Dollar Electronics Rule}
+
+A team may spend up to 30 dollars of its own funds to purchase
+electronic components from non-6.270 sources. This is not to be
+confused with the sensor points, which can only be used for the Sensor
+Store. Contestants are encouraged to use this rule to explore new ways
+of sensing or otherwise make their robot more interesting. Teams
+taking advantage of this provision, however, must abide by the
+following guidelines:
+
+\begin{enumerate}
+
+ \item Each team is required to submit receipts for every additional
+ component purchased. All receipts must be submitted at impounding.
+
+ \item If a team wishes to use parts obtained through means other than
+ retail purchase, an equivalent cost will be assigned by the
+ Organizers. This estimate must be obtained in writing from the
+ Organizers.
+
+ \item Resistors rated less than 1 watt and capacitors valued less
+ than 100 \u F may be used freely, without counting towards the 30 dollar
+ total.
+
+ \item Extra servos can be purchased from 6.270 staff at varying prices based on quality.
+
+ \item If a team needs a replacement servo, the team must pay for the
+ servo at retail price rounded up to the nearest dollar.  The
+ replacement fee does not count towards the 30 dollar allotment.
+
+ \item Only components on the actual impounded robot will count
+ towards the 30 dollar allotment.
+
+\end{enumerate}

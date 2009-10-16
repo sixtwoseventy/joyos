@@ -1,0 +1,36 @@
+\section{Scoring}
+
+The score that each robot receives is determined by the final state of
+the contest table after the match has been played.  Points are scored
+for each ball that is over the surface of a scoring area. To count,
+the center of the ball must be within the scoring area. Balls must
+touch the surface of the table in order to count. Balls stored inside
+your robot do not count unless they are touching the table.
+
+There are three scoring areas that are on the wall opposite from the
+starting area (black's scoring area is along east wall, white's
+scoring area is along the west wall). Small balls are worth 1 point
+each, and big balls are worth 3 points each.  The number next to each
+scoring area denotes a point multiplier for that area.  For example,
+having 2 small balls in each of the scoring areas on the east side
+will give the black robot 2*1 + 2*2 + 2*3 = 12 points.
+
+The team with the higher score at the end of the match wins the
+match. However, there is one caveat: A robot cannot win unless it has
+changed the score in its favor at some point during the
+match. Changing the score in your favor can be done by increasing your
+own score or decreasing your opponent's score. Therefore if your
+opponent scores some balls for you by mistake and you do nothing for
+the entire round, you cannot win even if you end up with more points
+at the end.
+
+In the event the scores for both robots are the same at the end of the
+match, your robot will be awarded win if it has changed the scored in
+its favor at some point during the match. Therefore, double-loss and
+double-win are possible outcomes. This applies even if the score is
+0-0.
+
+If one robot forfeits a match for any reason, it will receive a loss
+for that round and will be replaced with a placebo. The match will
+then run as it would normally. Therefore, a robot can never win a
+match without actually competing.

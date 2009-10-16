@@ -1,0 +1,388 @@
+%!
+%%BoundingBox: 141 632 399 735
+%%Title: pulleys
+%%CreationDate: Sat Nov 28 02:54:03 1998
+%%Creator: Tgif-3.0-p13 by William Chia-Wei Cheng (william@cs.UCLA.edu)
+
+/tgifdict 7 dict def
+tgifdict begin
+
+/tgifellipsedict 6 dict def
+tgifellipsedict /mtrx matrix put
+
+/tgifellipse
+ { tgifellipsedict begin
+      /yrad exch def
+      /xrad exch def
+      /y exch def
+      /x exch def
+      /savematrix mtrx currentmatrix def
+      x y translate
+      xrad yrad scale
+      0 0 1 0 360 arc
+      savematrix setmatrix
+   end
+ } def
+
+/tgifarcdict 8 dict def
+tgifarcdict /mtrx matrix put
+
+/tgifarcn
+ { tgifarcdict begin
+      /endangle exch def
+      /startangle exch def
+      /yrad exch def
+      /xrad exch def
+      /y exch def
+      /x exch def
+      /savematrix mtrx currentmatrix def
+      x y translate
+      xrad yrad scale
+      0 0 1 startangle endangle arc
+      savematrix setmatrix
+   end
+ } def
+
+/tgifarc
+ { tgifarcdict begin
+      /endangle exch def
+      /startangle exch def
+      /yrad exch def
+      /xrad exch def
+      /y exch def
+      /x exch def
+      /savematrix mtrx currentmatrix def
+      x y translate
+      xrad yrad scale
+      0 0 1 startangle endangle arcn
+      savematrix setmatrix
+   end
+ } def
+
+end
+
+%%PageBoundingBox: 141 632 399 735
+tgifdict begin
+/tgifsavedpage save def
+
+1 setmiterlimit
+1 setlinewidth
+
+0 setgray
+
+72 0 mul 72 11.00 mul translate
+72 128 div 100.000 mul 100 div dup neg scale
+
+gsave
+
+/tgiforigctm matrix currentmatrix def
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 620 192 88 88 tgifellipse
+      stroke
+   grestore
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+gsave
+   newpath
+      544 180 moveto
+      696 180 lineto
+   tgiforigctm setmatrix
+   1 setlinewidth
+   stroke
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+gsave
+   newpath
+      544 204 moveto
+      696 204 lineto
+   tgiforigctm setmatrix
+   1 setlinewidth
+   stroke
+grestore
+
+% OVAL
+0 setgray
+newpath 680 192 16 16 tgifellipse
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath 680 192 16 16 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+newpath 560 192 16 16 tgifellipse
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath 560 192 16 16 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+newpath 620 192 16 16 tgifellipse
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath 620 192 16 16 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 560 192 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 680 192 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% POLYGON/CLOSED-SPLINE
+0 setgray
+newpath
+   616 180 moveto
+   624 180 lineto
+   624 188 lineto
+   632 188 lineto
+   632 190 lineto
+   652 190 lineto
+   652 194 lineto
+   632 194 lineto
+   632 196 lineto
+   624 196 lineto
+   624 204 lineto
+   616 204 lineto
+   616 196 lineto
+   608 196 lineto
+   608 194 lineto
+   588 194 lineto
+   588 190 lineto
+   608 190 lineto
+   608 188 lineto
+   616 188 lineto
+closepath
+gsave
+   1 setgray eofill
+grestore
+gsave
+   stroke
+grestore
+
+% ARC
+0 setgray
+gsave
+   gsave
+      newpath
+         620 192 77 77 -8 -171 tgifarc
+      stroke
+   grestore
+grestore
+
+% ARC
+0 setgray
+gsave
+   gsave
+      newpath
+         620 192 77 77 171 8 tgifarc
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+newpath 408 192 60 60 tgifellipse
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath 408 192 60 60 tgifellipse
+      stroke
+   grestore
+grestore
+
+% POLYGON/CLOSED-SPLINE
+0 setgray
+newpath
+   404 180 moveto
+   412 180 lineto
+   412 188 lineto
+   424 188 lineto
+   424 196 lineto
+   412 196 lineto
+   412 204 lineto
+   404 204 lineto
+   404 196 lineto
+   392 196 lineto
+   392 188 lineto
+   404 188 lineto
+closepath
+gsave
+   1 setgray eofill
+grestore
+gsave
+   stroke
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 408 152 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 408 232 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 376 172 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 376 212 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 440 172 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+gsave
+   gsave
+      newpath 440 212 12 12 tgifellipse
+      stroke
+   grestore
+grestore
+
+% OVAL
+0 setgray
+newpath 272 192 18 18 tgifellipse
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath 272 192 18 18 tgifellipse
+      stroke
+   grestore
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+newpath
+   268 180 moveto
+   268 188 lineto
+   260 188 lineto
+closepath 1 setgray eofill
+0 setgray
+gsave
+   newpath
+      268 180 moveto
+      268 188 lineto
+      260 188 lineto
+   tgiforigctm setmatrix
+   1 setlinewidth
+   stroke
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+newpath
+   284 196 moveto
+   276 196 lineto
+   276 204 lineto
+closepath 1 setgray eofill
+0 setgray
+gsave
+   newpath
+      284 196 moveto
+      276 196 lineto
+      276 204 lineto
+   tgiforigctm setmatrix
+   1 setlinewidth
+   stroke
+grestore
+
+% ARC
+0 setgray
+newpath
+   272 192 moveto
+   272 192 13 13 -108 18 tgifarcn
+   272 192 lineto
+   closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath
+         272 192 13 13 -108 18 tgifarcn
+      stroke
+   grestore
+grestore
+
+% ARC
+0 setgray
+newpath
+   272 192 moveto
+   272 192 13 13 -161 -289 tgifarc
+   272 192 lineto
+   closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath
+         272 192 13 13 -161 -289 tgifarc
+      stroke
+   grestore
+grestore
+
+grestore
+tgifsavedpage restore
+end
+%MatchingCreationDate: Sat Nov 28 02:54:03 1998

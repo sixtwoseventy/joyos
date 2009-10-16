@@ -1,0 +1,461 @@
+\chapter{Electronic Assembly}
+
+This chapter presents an introduction to electronic assembly followed by
+step-by-step instructions for assembling the hardware used in 6.270. The
+instructions assume no prior background in electronics and should provide enough
+information to get you started. It is recommended that you assemble the
+components in the order presented by this chapter. The sections are arranged to
+give you a gentle introduction before you go on to tackle the tougher tasks.
+
+\begin{quote}
+If ever there was a place in life where neatness counts, it is in electronic
+assembly. A neatly built and carefully soldered circuit will perform well for
+years. A sloppily and hastily assembled circuit, however, will cause ongoing
+problems and failures at inopportune times. It is well worth the extra effort to
+make sure you get it right the first time.
+\end{quote}
+
+\subsection{Mounting Components}
+
+When mounting components on a circuit board, the general rule is to
+try to mount them as close to the board as possible. The primary
+exceptions to this rule are components that must be bent or folded
+over before being soldered. Resistors and diodes often fall into this
+category.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{assembly/axial.eps}
+\caption{Axial component mounting}
+\label{axial}
+\end{center}
+\end{figure}
+
+Components come in two standard packing types: radial and axial. The
+leads on radial components all point in the same direction and
+generally fit into the holes in the circuit board. The leads of axial
+components must be bent or modified for mounting. If space has been
+provided to mount the component flat, then do so. Otherwise, just bend
+one lead over parallel to the component and mount it
+vertically. Figure \ref{axial} shows how to mount an axial component.
+
+After soldering the component into place, use a pair of cutters to
+clip off the extra length of each lead. When clipping the leads, face
+the board and the lead down into a garbage can or into your
+hand. Leads tend to shoot off at high speeds and can fly into
+someone's eye.
+
+\subsection{Desoldering}
+
+Desoldering a component takes about ten times as long as it does to
+mount it in the first place, so you want to be very careful during the
+assembly process. Regardless of how meticulous you are, though,
+mistakes are inevitable and components can burn-out, so it is
+important to know how to fix them. Fortunately, two tools, desoldering
+pumps and desoldering wick, are available to help.
+
+Desoldering pumps work by sucking up molten solder. You begin by
+depressing the plunger until it latches. Hold the desoldering pump in
+one hand and the soldering iron in the other. Use the soldering iron
+to melt the solder and then quickly remove the iron as you bring in
+the pump. Immediately trigger the pump to suck up the solder before it
+resolidifies. The next time the plunger is depressed, the collected
+solder will be ejected from the pump. The tip of the desoldering pump
+is made of Teflon so that solder cannot stick to it. While Teflon is
+heat-resistant, it is not invincible, so be careful not to touch the
+Teflon tip directly to the soldering iron.
+
+Another option for removing solder is to use desoldering wick. The
+wick is composed of a number of small braided wires and is used in
+conjunction with the soldering iron to pick up solder. You simply melt
+the solder with the iron and touch the wick to it. Solder has a strong
+attraction to the wick, so the molten solder will flow into the
+braid. This allows you to collect the solder, but once the solder wick
+is used, that part of it cannot be used again.
+
+\section{Components}
+
+Electronic circuits are constructed from a number of different types
+of building blocks. These components come in all different shapes and
+sizes and have a variety of functions. Building them into a working
+circuit requires being able to identify their packages and read their
+values.
+
+Some components are also {\it polarized}. They must be mounted in the
+correct orientation otherwise they will not function correctly and
+might even explode. Being able to reliably read the markings which
+identify the polarity of a device can save hours of frustration.
+
+\subsection{Resistors}
+
+Resistors are usually small cylindrical devices with color-coded bands
+indicating their value. Most of the resistors that you will use are
+1/8 watt, which is a very low power rating, thus they are rather tiny
+devices. Resistors with higher power ratings tend to be much larger. A
+2 watt resistor is a large cylinder, while a 5 watt resistor has a
+large rectangular package. Regardless of size, all resistors are
+nonpolarized, so they may be installed in either direction without
+causing problems.
+
+The largest resistors often have their value printed on them, but all
+other resistors are labelled using a standard color code. The code
+consists of four colored bands around the resistor package. The first
+two bands form the mantissa, and the third is the exponent. The
+resistance is read by taking the number formed by the mantissa values
+and multiplying it by ten raised to the power of the exponent. The
+fourth band represents the tolerance of the resistor. It can be either
+silver for 10\% tolerance or gold for 5\% tolerance. If the fourth band
+is missing, then the tolerance is 20\%.
+
+\begin{figure}[htbp]
+ \begin{center}
+ \begin{tabular}{c|cc}
+	&	mantissa&multiplier\\
+	color&	value&	value\\ \hline
+	black&	0&	1\\
+	brown&	1&	10\\
+	red&	2&	100\\
+	orange&	3&	1,000\\
+	yellow&	4&	10,000\\
+	green&	5&	100,000\\
+	blue&	6&	1,000,000\\
+	violet&	7\\
+	gray&	8\\
+	white&	9
+ \end{tabular}
+ \end{center}
+ \caption{Resistor color code}
+ \label{resistorcolor}
+\end{figure}
+
+Figure \ref{resistorcolor} shows the meaning of the colors. A few
+examples should demonstrate how to read a resistor:
+\begin{itemize}
+ \item {\it brown, black, red}: 1,000\ohm or 1k\ohm
+ \item {\it yellow, violet, orange}: 47,000\ohm or 47k\ohm
+ \item {\it red, red, yellow}: 220,000\ohm or 220k\ohm
+\end{itemize}
+
+\subsection{Resistor Packs}
+
+Resistor packs are a collection of resistors in a flat, rectangular
+package. The two basic types of resistor packs are shown in Figure
+\ref{rpack}:
+
+\begin{itemize}
+
+ \item {\bf Isolated Element} resistor packs contain three to five
+ discrete resistors. The pack is labelled with a ``V'' in front of the
+ resistance value, such as ``V47k\ohm.'' These devices are not polarized
+ and can be installed in either direction.
+
+ \item {\bf Common Terminal} resistor packs contain anywhere from
+ three to nine resistors per package with each resistor connected to
+ the common terminal. The pack is labelled with an ``E'' in front of the
+ resistance value, such as ``E47k\ohm.'' These devices are polarized and
+ are marked with either a dot or bar at the end of the package with
+ the common pin.
+
+\end{itemize}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{assembly/rpack.eps}
+\caption{Resistor pack internal wiring}
+\label{rpack}
+\end{center}
+\end{figure}
+
+\subsection{Capacitors}
+
+Capacitors are available in a variety of types and values:
+
+\begin{itemize}
+
+ \item {\bf Monolithic} capacitors are small components about the size
+ and shape of the head of a match. They are excellent choices when
+ small values (1.0\uF or less) are needed because they are compact and
+ inexpensive. They are never polarized.
+
+ \item {\bf Electrolytic} capacitors look like minature tin cans with
+ a plastic wrapper. They are available in large values (1.0\uF or
+ greater), but become quite bulky as the value increases. They are
+ fairly inexpensive, so they are a common choice for many
+ applications. Except for a few special cases, electrolytics are
+ usually polarized.
+
+ \item {\bf Tantalum} capacitors are compact, bulb-shaped
+ components. They are excellent for larger values (1.0\uF or greater),
+ since they are smaller and more reliable than
+ electrolytic. Unfortunately, though, they are also much more
+ expensive. They are always polarized.
+
+\end{itemize}
+
+Polarized capacitors have a tendency to explode when they are mounted
+backwards, so it is important to know how to read them correctly. Some
+of them are easy and have one or both of the leads marked with a plus
+(+) or minus (-). Others have the positive lead marked with either a
+dot or a vertical bar. This should not be confused with the stripe
+with several minus signs on it which marks the negative lead on some
+electrolytics.
+
+Reading capacitor values can be even more confusing than determining
+their polarity. Capacitors often have numbers printed on the package
+which have nothing to do with the value, so the first task is to
+figure out which are the relevant numbers.
+
+For large capacitors ($1.0\mu{\rm F}$ or greater), the value is often printed
+plainly on the packages, such as $4.7\mu{\rm F}$. In some cases, the \u
+symbol acts as a decimal point like 4\u7 for a $4.7\mu{\rm F}$ value. Small
+capacitors ($1.0\mu{\rm F}$ or less) have their values printed in picofarads
+($1,000,000p{\rm F}$ = $1\mu{\rm F}$). These values are coded in a manner similar to
+resistor values where there are two digits of mantissa followed by one
+digit of exponent. Hence, the value 473 represents $47,000p{\rm F}$ or
+$0.047\mu{\rm F}$.
+
+\subsection{Diodes and LEDs}
+
+Diodes and LEDs (Light Emitting Diodes) have two leads, called the
+{\it anode} and {\it cathode}. When the anode is connected to a
+positive voltage with respect to the cathode, current flows. If the
+polarity is reversed, no current will flow. Figure \ref{diodes} shows
+how to identify the leads.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{assembly/diodes.eps}
+\caption{Identifying diode leads}
+\label{diodes}
+\end{center}
+\end{figure}
+
+Diodes usually come in small cylindrical packages similar to
+resistors. Most diodes have a marking, usually a band around the
+package, which identifies the cathode.
+
+LEDs are special types of diodes that light up when current flows
+through them. The cathode is marked either by a small flat edge along
+the circumference of the casing or by the shorter of the two
+leads. The LED must be mounted in the correct direction or it will not
+work.
+
+\subsection{Integrated Circuits}
+
+Integrated Circuits (ICs) are packages containing complex
+circuits. They come in a variety of shapes and sizes, but the most
+commonly used variety for manually assembled circuit boards are DIPs
+(Dual-Inline Packages).
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{assembly/ic.eps}
+%\centerline{\psfig{file=assembly/ic.eps}}
+\caption{Top view of a 14-pin DIP}
+\label{ic}
+\end{center}
+\end{figure}
+
+A marking on the component identifies pin 1 of the component's
+circuit, as shown in Figure \ref{ic}. This may be a small dot, notch,
+or ridge in the package. After pin 1 is identified, pin numbering
+proceeds counterclockwise around the chip.
+
+Instead of soldering the IC directly to the circuit board, a socket is
+often installed in its place. The IC is then mounted into the socket,
+so that it can be easily replaced if it fails. This also protects the
+delicate chip from the heat of soldering.
+
+Sockets are not polarized, but they often carry a marking similar to
+the chips that they will be holding. Installing the socket with the
+notch in the proper orientation will make it easier to install the IC
+correctly.
+
+\section{Connectors}
+
+Sensors and actuators must be connected to the controller board using
+wires. Since it is desirable to be able to plug and unplug them,
+connectors are used which fit into the various ports. This provides a
+simple, modular design.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{assembly/connectors.eps}
+\caption{6.270 connector standard}
+\label{connectors}
+\end{center}
+\end{figure}
+
+In order to keep connectors from being plugged into the wrong port,
+different types of components are built with different
+connectors. Figure \ref{connectors} shows the configuration used for
+each device. When building connectors for polarized devices, it is
+important to attach the wires to the pins in the correct order.
+
+\begin{enumerate}
+
+ \item Cut a length of ribbon cable with the appropriate number of
+ wires for the device you are building.  ``Unzip'' the ribbon cable by
+ separating the individual wires.
+
+ \item Strip and tin both ends of the wires. Remove just enough
+ insulation from the ends of the wires to allow them to be soldered.
+
+ \item With your fingers, twist the threads of each individual wire
+ end tightly.
+
+ \item Slip each wire through a $\frac{1}{4}''$ length of
+ $\frac{1}{16}''$ heat shrink.
+
+ \item Cut a connector with the necessary number of pins from a piece
+ of male header. Clip out any unneeded pins with a pair of cutters.
+
+ \item Solder the wires to the connector.
+
+ \item Slip the heat shrink over the soldered wire and connector. Use
+ a heat gun to shrink the wrap tightly over the connection. A match or
+ butane lighter may be used if a heat gun is unavailable, but beware
+ of burning the insulation.  Hold the joint so the heat shrink tubing
+ is about $1''$ above the tip of the flame.
+
+ \item If heat shrink is unavailable, hot glue may instead be used to
+ strengthen and insulate the connection.
+
+ \begin{enumerate}
+
+  \item Apply the glue to fill the void between the wires.
+
+  \item While the glue is still hot, use a pair of pliers to flatten
+  it. The pliers will also work as a heatsink to cool the glue faster.
+
+  \item After ten seconds, carefully peel the connector from the
+  pliers being careful not to break it. Trim off any excess glue.
+
+ \end{enumerate}
+
+\end{enumerate}
+
+\section{Motors}
+
+The DC motors used in 6.270 are great for building robots because they
+are compact and powerful. Unfortunately, though they are not designed
+to be used with LEGO parts. To make them compatible with your robot,
+you will have to {\it legoize} them.
+
+\begin{enumerate}
+
+\item Mount a LEGO gear on the motor shaft
+
+\begin{enumerate}
+
+ \item If the motor comes with a metal gear on its shaft, remove it
+ with a pair of wire strippers. Place the jaws of the strippers
+ between the motor and gear and squeeze. When the strippers close, the
+ bevel in the cutters should pry the gear off.
+
+ \item Shrink a piece of $\frac{1}{16}''$ heat-shrink tubing onto the
+ motor's shaft. Then shrink two additional $\frac{1}{8}''$ pieces
+ around that. An 8-tooth LEGO gear should now fit snugly over the
+ tubing.
+
+ \item Push an 8-tooth gear over the head-shrink tubing. Make sure
+ that it goes all the way on and that it is aligned correctly.
+
+ \item Cut off any excess tubing which sticks out from the end of the
+ gear.
+
+\end{enumerate}
+
+\item Legoize the motor
+
+\begin{enumerate}
+ 
+ \item Construct the jig shown in Figure \ref{motorjig}. It requires 4
+ $1\times10$ beams, 2 $1\times6$ beams, 1 $1\times4$ beam, 2 $1\times2$ beams, 1 $2\times2$
+ brick, 4 $2\times4$ plates, 10 black connectors, 2 axle connectors, 1
+ 40-tooth gear, and 1 24-tooth gear. If you are left-handed, you might
+ find it more useful to construct the mirror image of the jig.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{assembly/motorjig.eps}
+\caption{Jig for motor assembly}
+\label{motorjig}
+\end{center}
+\end{figure}
+
+ \item Open the jig by disconnecting the top beams at the left side
+ and flipping the top to the right.
+
+ \item Attach a piece of double-sided foam tape to the top of a
+ $2\times4$ plate. This will become the bottom of the legoized
+ motor. Mount this into the bottom of the jig, at the spot marked,
+ ``mount 1.''
+
+ \item Attach the motor to the $2\times4$ LEGO plate prepared in the previous
+ step. Make sure that the gear on the motor's shaft lines up correctly
+ with the 40-tooth gear on the jig.
+
+ \item Attach a piece of double-sided foam tape to the bottom of
+ another $2\times4$ plate. This will become the top of the legoized
+ motor. Mount this onto the top of the jig which you earlier flipped
+ open, so that it will align with the top of the motor.
+
+ \item Close the top of the jig to press the top onto the
+ motor. Carefully remove the completed motor from the jig.
+
+ \item You should then place the motor at ``mount 2'' to test that it
+ meshes correctly with the 24-tooth gear. If it does not, you will
+ need to figure out what went wrong.
+
+ {\bf Note:} If you are building a non-standard 6.270 motor, you can
+ use ``mount 2'' to determine the proper vertical spacing and revise
+ the instructions above appropriately.
+
+\end{enumerate}
+
+ \item Wire a connector to the motor
+
+\begin{enumerate}
+
+ \item Cut a length of ribbon cable with two strands of wire.
+
+ \item On the side of the motor are two metal leads or pads. Solder
+ one wire to each.
+
+ \item Solder the other end of the wire to a connector appropriate for
+ a motor.
+
+ \item Glue the wire to the case of the motor using hot glue. This
+ will provide stress relief to protect the solder joints.
+
+\end{enumerate}
+
+\end{enumerate}
+
+
+\section{Servo}
+
+A servo is an electric motor with an internal gear train, position
+sensor, and driver circuitry which allows the motor to be positioned
+with reasonable precision based upon the input signal. It can be moved
+to any orientation in an approximately 180 degree range.
+
+Fortunately, the servo already has the appropriate female header needed to connect it to the expansion board for the Handy Board. Because the servo is polarized, be {\it extremely} careful when attaching the servo to the expansion board. Make sure the black wire goes to ground (marked as ``-'' on the expansion board) and {\it not} to signal (marked ``s'').
+
+
+\section{The Happyboard and Expansion Board}
+
+The ``brain'' of your robot is Ross Glashan's Happyboard, a controller
+based on the Atmel ATMega128 processor.
+
+\begin{enumerate}
+\item Sixteen analog inputs and eight digital inputs.
+\item Six bi-directional motor ports.
+\item Six servo ports.
+\item Four shaft encoder ports.
+\item An LCD screen for debugging output.
+\end{enumerate}
+
+Instructions for assembling the expansion board will be found in the assignment
+documents.

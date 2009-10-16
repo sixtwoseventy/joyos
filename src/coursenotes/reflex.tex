@@ -1,0 +1,31 @@
+\section{The Model}
+
+talk about feedback and small error corrections
+
+\subsection{Reflexes}
+
+All Reflex Control programs are built up from collections of simple rules, called {\it reflexes}. These rules specify actions to be taken in response to specific situations. Consider what happens when you touch a hot frying pan. Without thinking, you will react by pullying your hand away. A robot can be programmed with similar rules, such as one which detects that the robot has collided with a wall and directs the robot to turn away from it.
+
+Reflexes can be written as if-then rules which connect a stimulus to a response. The stimulus corresponds to a particular sensor state which might arise during the robot's operation. The response usually takes the form of a direct command to the actuators, though as will be discussed later, it can also transfer control to another behavior. For example, the reflex,
+
+\begin{quote}
+{\bf if} the left side bumper is pressed {\bf then} turn right
+\end{quote}
+
+will cause the robot to turn away when it scrapes up against a wall.
+
+\subsection{Behaviors}
+
+{\bf wall_follow_left} while front bumper is not pressed
+  if the left side bumper is pressed then turn right
+  otherwise turn left
+
+\subsection{Scripts}
+
+\begin{enumerate}
+\item wall_follow_left
+\item right_turn
+\item wall_follow_left
+\end{enumerate}
+
+\subsection{Reactive Algorithms}

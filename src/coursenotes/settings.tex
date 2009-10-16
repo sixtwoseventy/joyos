@@ -1,0 +1,96 @@
+% User Defined Settings
+\def\iapyear{2009} % Contest year
+\def\iapstart{4}   % Date of first Sunday
+
+% Macros
+\def \ohm{$\Omega$ }
+\def \u{$\mu$ }
+\def \uF{$\mu F$ }
+\def \pF{$pF$ }
+
+% Margins
+%\usepackage{fullpage}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8in}
+\setlength{\oddsidemargin}{.25in}
+\setlength{\evensidemargin}{0in}
+\setlength{\textwidth}{6.25in}
+
+% Preface macros
+\newcommand{\titlep}{
+\thispagestyle{empty}
+\vspace*{\stretch{1}}
+\rule{\textwidth}{2pt}
+{\Huge\bf \begin{center}
+2009 Autonomous Robot Design Competition \\
+One Small Step \\
+\end{center}
+}
+\rule{\textwidth}{2pt}
+\vspace*{\stretch{1}}
+{\sf
+\begin{flushright}
+ {\Large \sf Course Notes}\\[1mm]
+  Last Updated: \today
+\end{flushright}
+}
+\vspace*{\stretch{2}}
+
+\begin{center}
+{\footnotesize Massachusetts Institute of Technology\\
+{\tt http://web.mit.edu/6.270/www/}}
+\end{center}
+\cleardoublepage
+}
+
+\newcommand{\beforepreface}{
+\pagenumbering{roman}
+\pagestyle{plain}
+\titlep
+}
+
+\newcommand{\prefacesection}[1]{
+	\chapter*{#1}
+	\addcontentsline{toc}{chapter}{#1}
+}
+
+\newcommand{\afterpreface}{
+\newpage
+\pagenumbering{arabic}
+\pagestyle{headings}}
+
+\newcommand{\contents}{
+\newpage
+\tableofcontents
+\newpage
+{\addvspace{10pt}
+\let\saveaddvspace=\addvspace
+\def\addvspace##1{}
+
+\listoffigures
+\let\addvspace=\saveaddvspace}
+\newpage
+}
+
+% Settings
+%\pssilent ##outdated latex input
+\newcounter{boxcnt}
+\newenvironment{boxlist}{\begin{list}{{\bf \arabic{boxcnt}--}{\Large $\Box$}}{\usecounter{boxcnt}}}{\end{list}}
+\newenvironment{circlist}{\begin{list}{$\bigcirc$}{}}{\end{list}}
+
+\def \iapdate#1{
+ \newcount\x\newcount\y
+ \x=#1\advance\x by -1
+ \y=\x\divide\y by 7\multiply\y by 7\advance\x by -\y
+ \ifcase\x Sunday\or Monday\or Tuesday\or Wednesday\or
+  Thursday\or Friday\or Saturday\fi,
+ \x=#1 \advance\x by \iapstart \advance\x by -1
+ \ifnum\x<32 January \else February \advance\x by -31 \fi
+ \number\x
+ \y=\x \divide\y by 10 \multiply\y by 10 \advance\x by -\y
+ \ifnum \x>3 \x=0 \fi
+ \ifnum \y=10 \x=0 \fi
+ \ifcase\x th\or st\or nd\or rd\fi
+}
+
+

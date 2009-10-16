@@ -1,0 +1,263 @@
+%!
+%%BoundingBox: 70 538 433 721
+%%Title: feedback
+%%CreationDate: Sun May 23 18:02:37 1999
+%%Creator: Tgif-3.0-p13 by William Chia-Wei Cheng (william@cs.UCLA.edu)
+
+/tgifdict 36 dict def
+tgifdict begin
+
+/tgifpatdict 10 dict def
+
+/tgifpatbyte
+ { currentdict /retstr get exch
+   pat i cellsz mod get put
+ } def
+
+/tgifpatproc
+ { 0 1 widthlim {tgifpatbyte} for retstr
+   /i i 1 add def
+ } def
+
+/tgifpatfill
+ { tgifpatdict begin
+      /h exch def
+      /w exch def
+      /lty exch def
+      /ltx exch def
+      /cellsz exch def
+      /pat exch def
+
+      /widthlim w cellsz div cvi 1 sub def
+      /retstr widthlim 1 add string def
+      /i 0 def
+
+      tgiforigctm setmatrix
+      ltx lty translate
+      w h true [1 0 0 1 0 0] {tgifpatproc} imagemask
+      ltx neg lty neg translate
+   end
+ } def
+
+/pat3 <8000000008000000> def
+/pat4 <8800000022000000> def
+/pat5 <8800220088002200> def
+/pat6 <8822882288228822> def
+/pat7 <aa55aa55aa55aa55> def
+/pat8 <77dd77dd77dd77dd> def
+/pat9 <77ffddff77ffddff> def
+/pat10 <77ffffff77ffffff> def
+/pat11 <7fffffff7fffffff> def
+/pat12 <8040200002040800> def
+/pat13 <40a00000040a0000> def
+/pat14 <ff888888ff888888> def
+/pat15 <ff808080ff080808> def
+/pat16 <f87422478f172271> def
+/pat17 <038448300c020101> def
+/pat18 <081c22c180010204> def
+/pat19 <8080413e080814e3> def
+/pat20 <8040201008040201> def
+/pat21 <8844221188442211> def
+/pat22 <77bbddee77bbddee> def
+/pat23 <c1e070381c0e0783> def
+/pat24 <7fbfdfeff7fbfdfe> def
+/pat25 <3e1f8fc7e3f1f87c> def
+/pat26 <0102040810204080> def
+/pat27 <1122448811224488> def
+/pat28 <eeddbb77eeddbb77> def
+/pat29 <83070e1c3870e0c1> def
+/pat30 <fefdfbf7efdfbf7f> def
+/pat31 <7cf8f1e3c78f1f3e> def
+
+/tgifcentertext { dup stringwidth pop 2 div neg 0 rmoveto } def
+
+end
+
+%%PageBoundingBox: 70 538 433 721
+tgifdict begin
+/tgifsavedpage save def
+
+1 setmiterlimit
+1 setlinewidth
+
+0 setgray
+
+72 0 mul 72 11.00 mul translate
+72 128 div 100.000 mul 100 div dup neg scale
+
+gsave
+
+/tgiforigctm matrix currentmatrix def
+
+% BOX
+0 setgray
+gsave
+   10 setmiterlimit
+   gsave
+      newpath
+         128 128 moveto 256 128 lineto 256 256 lineto 128 256 lineto
+      closepath
+      stroke
+   grestore
+grestore
+
+% BOX
+0 setgray
+gsave
+   10 setmiterlimit
+   gsave
+      newpath
+         384 128 moveto 512 128 lineto 512 256 lineto 384 256 lineto
+      closepath
+      stroke
+   grestore
+grestore
+
+% BOX
+0 setgray
+gsave
+   10 setmiterlimit
+   gsave
+      newpath
+         640 128 moveto 768 128 lineto 768 256 lineto 640 256 lineto
+      closepath
+      stroke
+   grestore
+grestore
+
+% BOX
+0 setgray
+gsave
+   10 setmiterlimit
+   gsave
+      newpath
+         384 320 moveto 512 320 lineto 512 448 lineto 384 448 lineto
+      closepath
+      stroke
+   grestore
+grestore
+
+% POLYGON/CLOSED-SPLINE
+0 setgray
+newpath
+   272 184 moveto
+   272 200 lineto
+   336 200 lineto
+   336 216 lineto
+   368 192 lineto
+   336 168 lineto
+   336 184 lineto
+closepath
+gsave
+   1 setgray eofill
+grestore
+gsave
+   eoclip newpath
+   pat6 8 264 160 112 64 tgifpatfill
+grestore
+gsave
+   stroke
+grestore
+
+% POLYGON/CLOSED-SPLINE
+0 setgray
+newpath
+   528 184 moveto
+   528 200 lineto
+   592 200 lineto
+   592 216 lineto
+   624 192 lineto
+   592 168 lineto
+   592 184 lineto
+closepath
+gsave
+   1 setgray eofill
+grestore
+gsave
+   eoclip newpath
+   pat6 8 520 160 112 64 tgifpatfill
+grestore
+gsave
+   stroke
+grestore
+
+% TEXT
+0 setgray
+/Helvetica findfont [24 0 0 -24 0 0] makefont setfont
+   gsave
+      192 200 moveto (controller) tgifcentertext show
+   grestore
+
+% TEXT
+0 setgray
+/Helvetica findfont [24 0 0 -24 0 0] makefont setfont
+   gsave
+      448 200 moveto (actuators) tgifcentertext show
+   grestore
+
+% TEXT
+0 setgray
+/Helvetica findfont [24 0 0 -24 0 0] makefont setfont
+   gsave
+      704 200 moveto (world) tgifcentertext show
+   grestore
+
+% POLYGON/CLOSED-SPLINE
+0 setgray
+newpath
+   696 272 moveto
+   712 272 lineto
+   712 392 lineto
+   560 392 lineto
+   560 408 lineto
+   528 384 lineto
+   560 360 lineto
+   560 376 lineto
+   696 376 lineto
+closepath
+gsave
+   1 setgray eofill
+grestore
+gsave
+   eoclip newpath
+   pat6 8 520 264 200 152 tgifpatfill
+grestore
+gsave
+   stroke
+grestore
+
+% POLYGON/CLOSED-SPLINE
+0 setgray
+newpath
+   368 376 moveto
+   368 392 lineto
+   184 392 lineto
+   184 304 lineto
+   168 304 lineto
+   192 272 lineto
+   216 304 lineto
+   200 304 lineto
+   200 376 lineto
+closepath
+gsave
+   1 setgray eofill
+grestore
+gsave
+   eoclip newpath
+   pat6 8 160 264 216 136 tgifpatfill
+grestore
+gsave
+   stroke
+grestore
+
+% TEXT
+0 setgray
+/Helvetica findfont [24 0 0 -24 0 0] makefont setfont
+   gsave
+      448 392 moveto (sensors) tgifcentertext show
+   grestore
+
+grestore
+tgifsavedpage restore
+end
+%MatchingCreationDate: Sun May 23 18:02:37 1999

@@ -1,0 +1,33 @@
+\subsection{IR LED and Phototransistor}
+
+\begin{figure}[htbp]
+ \centerline{\epsfysize = 2.0in\epsffile{sensor/ptransistor.eps}}
+ \caption{IR LED and Phototransistor}
+ \label{ledptransistor}
+\end{figure}
+
+The IR phototransistor's output characteristics are perfect for use with
+the analog sensor ports, and in some cases, can be relied upon to produce
+digital signals. It responds very well to the accompanying LED, but
+barely responds to visible light. Since the components are tuned to
+work with each other, best results will be achieved when they are used
+together, as shown here.
+
+The IR LED (part \#LTE-4208) has a clear package, and its two leads have different lengths.  The shorter lead on the flat side of the LED package is the cathode, and
+ should be connected with the 330\ohm resistor to ground.  
+
+The IR phototransistor (part \#LTR-3208E) also has two leads, but its package is dark.  The flat side of the phototransistor corresponds to the collector, and should be connected to the Signal header pin.  (The longer lead on the rounded side is the emitter, and should be connected to ground, as shown above).
+
+Because the phototransistor is so sensitive, it might be helpful to wrap
+some black heat shrink or electrical tape around it if you're having difficulty getting distinct readings for light and dark.  This also useful when
+looking for light in a particular direction.
+
+Once again, realize that the LED does not have to be perpetually on
+during the 90 seconds the robot competes.  The LED can be plugged into
+a motor output to allow differential light measurements.  And remember
+any number of LEDs can be plugged into a single motor port.
+
+These 5mm LEDs and phototransistors are particularly convenient when working with LEGO
+because they are just the right size to fit into the LEGO axle holes.
+It is very easy to mount this sensor into your robot when constructing
+breakbeam sensors and shaft encoders.

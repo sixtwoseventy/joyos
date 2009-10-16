@@ -1,0 +1,114 @@
+\chapter{Sensors}
+\begin{quote}
+The concept of a sensor should already be familiar to you. You have an
+array of sensors which you use to feel, see, hear, taste, and
+smell. You rely on these senses for just about everything you
+do. Without them, you would be incapable of performing even the most
+simple tasks.
+
+Robots are no different. Without sensors, they are merely machines,
+incapable of adapting to any change in the environment. Sensors give
+your robot the ability to collect information about the world around
+it and to choose an action appropriate to the situation.
+
+After reading this chapter, you should take some time to play with
+your sensors. Wire at least one of each type and learn how it works,
+what values it returns, and under what conditions it will production
+those values. Every sensor has its own little quirks, and only through
+experimentation will you acquire the expertise necessary to integrate
+them into your robot.
+\end{quote}
+
+\section{Digital Sensors}
+Digital sensors work a lot like light switches. The switch can either
+be in the ``on'' position or the ``off'' position, but never in
+between. Even if you hold it in the center, the light will be either
+on or off. When a digital sensor is on, it returns a voltage which the
+controller interprets as a value of one. When it is off, the value is
+zero.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{sensor/digsense.eps}
+\caption{Digital Sensor Circuit}
+\label{digsense}
+\end{center}
+\end{figure}
+All digital sensors can be modelled as if they were switches. When
+plugged into a sensor port, digital sensors resemble one of the
+circuits shown in figure \ref{digsense}. When the switch is closed,
+electrical current flows freely through it, and the output is pulled
+down to GND. When the switch is open, the pullup resistor causes the
+signal line to float to Vcc. While Vcc usually represents a logic one,
+the value is inverted in software so that the value one represents the
+situation where the sensor is activated.
+\input{sensor/switches}
+
+\section{Resistive Analog Sensors}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{sensor/ressense.eps}
+\caption{Resistive Analog Sensor Circuit}
+\label{ressense}
+\end{center}
+\end{figure}
+
+Resistive sensors change resistance with changes in the
+environment. When plugged into a sensor port, the sensor and pullup
+resistor form a voltage divider which determines the voltage at the
+signal input as shown in figure \ref{ressense}. When the resistance of
+the sensor is high, little current flows through the circuit, and the
+voltage across the pullup resistor is small, causing the signal
+voltage to approach Vcc. When the sensor's resitance is low, more
+current flows and the pullup resistor causes the signal voltage to
+drop.
+
+\input{sensor/pot}
+
+\section{Transistive Analog Sensors}
+
+All transistors have three leads, the base, collector, and
+emitter. The voltage level present at the base determines how much
+current is allowed to flow from the collector to the emitter. This is
+easy to visualize in terms of a water faucet. As the knob (base) is
+turned, water is allowed to flow through the faucet.
+
+Transistive sensors are analog and work just like regular transistors,
+except that the base is replaced with an element sensitive to some
+stimulus (usually light). When the sensor is exposed to this stimulus,
+the faucet opens, and current is allowed to flow from the collector to
+the emitter.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{sensor/trasense.eps}
+\caption{Transistive Analog Sensor Circuit}
+\label{trasense}
+\end{center}
+\end{figure}
+
+Figure \ref{trasense} shows a circuit diagram of a phototransistor
+plugged into a sensor port. When the sensor is in the dark, no current
+flows through the circuit. This causes the reading on the sensor port
+to be pulled up to Vcc through the resistor. As the light level
+increases, however, current begins to flow from Vcc through the
+resistor to GND. The current causes a voltage drop across the resistor
+which decreases the voltage measured at the port. When the transistor
+is fully open, the measured voltage will hover around GND.
+
+\input{sensor/ptransistor}
+\input{sensor/break}
+\input{sensor/distance}
+
+\section{Gyroscopes}
+
+From year to year we try out new sensors to improve the robots'
+performance.
+
+\input{sensor/gyro1.tex}
+
+
+
+
+

@@ -1,0 +1,6 @@
+you can plug the LED into a motor output instead of letting it be on
+all the time.  this conservese onboard battery power and allows
+differential light measurements, which are much more sensitive.  any
+number of leds can be plugged into a single motor port.  the digital
+outputs can also be used for this purpose, but we should recommend
+that people come talk to paul if they want to do it that way.

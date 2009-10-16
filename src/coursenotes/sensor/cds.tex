@@ -1,0 +1,22 @@
+\subsection{CDS Cell}
+
+\begin{figure}[htbp]
+\begin{center}
+\epsfysize = 1.0 in
+\epsfbox{sensor/cds.eps}
+ \caption{CDS Cell}
+ \label{cds}
+\end{center}
+\end{figure}
+
+The CDS Cell is a nonpolarized device which responds to visible light. It contains a chemical whose electrical resistance decreases as more light hits it. The output of the sensor is an analog voltage which corresponds to the intensity of the light hitting it. Lower light levels yield higher output values.
+
+The CDS Cell can operate over a large range of light intensities. In
+absolute darkness, the resistance is around $1{\rm M}\Omega$ and in
+direct sunlight, the resistance falls to around $1{\rm k}\Omega$. In indoor
+conditions where your robot will most likely operate, the resistance
+will vary from around $10{\rm k}\Omega$ to $100{\rm k}\Omega$. The $47{\rm k}\Omega$ pullup
+resistors built into the sensor ports are ideally suited to this range
+and will yield good results with the proper shielding.
+
+Photoresistors are probably the easiest light sensors to build and use. Since they are responsive to white light they can be used for detecting visible light sources external to the robot or measuring ambient lighting conditions. These same properties also mean that they must be well-shielded in order to return usable values.

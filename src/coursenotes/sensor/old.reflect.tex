@@ -1,0 +1,13 @@
+\subsection{Reflectance Sensor Package}
+
+\begin{figure}[htbp]
+ \centerline{\psfig{file=sensor/reflect.eps}}
+ \caption{Reflectance sensor package}
+ \label{reflect}
+\end{figure}
+
+The reflectance sensor package is convenient for measuring the brightness of surfaces. It consists of an LED and phototransistor which both work on the same wavelength of light. The two components are mounted so that the light from the LED can be reflected back into the phototransistor by holding it near a flat surface. As usual, the LED will need to wired in series with a 330\ohm resistor. Figure \ref{reflect} shows how to wire the sensor. Before wiring, be sure to identify which side is which, so you do not confuse the LED with the phototransistor.
+
+To be used most effectively, the sensor must be placed at the ideal distance dictated by the angle at which the components are mounted from the surface to be measured. This distance is usually around 5mm but varies greatly between different models, so you will have to experiment to find the correct placement. The best way to tune the sensor is to hold it over a reflective surface and move the sensor up and down until you find the brightest reading.
+
+Reflectance sensors are most commonly used for navigation. By aiming the sensor at the ground, the robot can detect the difference between light and dark areas and use this information to determine where it is. A small number of these sensors may be used to implement line following algorithms which allow the robot to follow lines marked on the floor.

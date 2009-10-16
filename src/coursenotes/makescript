@@ -1,0 +1,4 @@
+latex notes.tex;
+dvips notes.dvi -o notes.ps;
+ps2pdf notes.ps;
+cp notes.p* ../../../www/contestants/coursenotes/

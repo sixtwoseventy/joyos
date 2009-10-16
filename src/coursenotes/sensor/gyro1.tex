@@ -1,0 +1,53 @@
+For this year's competition, Analog Devices is making available surface-micromachined
+integrated circuit gyroscopes which can be used to measure your robot's rate of turn or
+(with some numerical integration) angle of turn, which can be a signicant aid to navigation.
+These devices integrate the mechanical parts of the gyro along with the necessary
+circuitry on a single chip, so they are very small (about 7mm square). To make them
+easier to handle and use, the gyros are supplied on 1.25" square printed-circuit boards
+containing all necessary external components and a pin header for connections.
+A complete data sheet for the gyros (ADXRS300) can be found on the Analog Devices
+website, www.analog.com (select iMEMs Gyroscopes under the MEMs Technology
+category). However, most or all of what you need to know to use the gyros successfully
+in your robot will be presented here and in a lecture during the First week of the course.
+
+A gyro measures rate of turn, and these gyros have a full-scale range of +/-300 degrees
+per second. They operate on a single 5V power supply, as supplied by the Handyboard's
+I/O channels, and produce a single voltage output in the range of 0 to 5V, so they are
+wired and used like most other three-wire sensors (they are not, however, ratiometric to
+the power supply like accelerometers or potentiometers). The output of the gyro when
+it is not rotating is nominally 2.5V, midscale on the Handyboard's A/D converter. The
+nominal sensitivity of the gyro is 5mV per degree per second of rotation. (Calibration
+routines may be used to take out the gyro's offset and sensitivity errors at the beginning
+of a run.)
+
+Since the A/D converter converts its whole 0 to 5V input range into 256 total codes,
+its resolution is only a bit better than 20mV. This means that the A/D can only resolve
+the output of the gyro to within about 4 degrees per second. To improve the resolution of
+gyro, Analog has designed and built a specialised board for 6.270. This board introduces 
+some noise into the gyro output voltage, which allows us to "dither" the reading,
+increasing the effective resolution of the gyro.
+
+To get from rate of turn to swept angle, it is necessary to take a series of readings 
+of the gyro's output and do a simple numerical integration. Techniques and code for 
+performing the integration will be presented in lecture and in a handout.
+
+Figure \ref{gyro1} shows the mechanical configuration of the gyro board and the
+necessary connections.  To operate properly, the gyro board should be
+mounted in an approximately horizontal position, assuming that you
+intend to measure the turn angle (yaw) of your robot.  It can be
+fastened in place with double-sided-sticky tape.
+
+%Contacts (all at Analog Devices):
+
+%\noindent Jack Memishian \verb^(john.memishian@analog.com)^\\
+%Mark Nelson \verb^(mark.nelson@analog.com)^\\
+%Howard Samuels \verb^(howard.samuels@analog.com)^\\
+
+\epsfysize = 2.0in
+\begin{figure}[htp]
+\begin{center}
+\epsfbox{sensor/gyro1.eps}
+\caption{Mechanical configuration of the gyro board.}
+\label{gyro1}
+\end{center}
+\end{figure}

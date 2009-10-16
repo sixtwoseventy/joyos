@@ -1,0 +1,346 @@
+\documentclass{article}
+\usepackage{fullpage}
+%\usepackage{psfig}
+\usepackage{epsf}
+
+\begin{document}
+
+\subsection{Accelerometer}
+
+The accelerometers available for the 2003 6.270 competition are Analog
+Devices ADXL202E dual-axis, surface-micromachined IC accelerometers
+premounted on small ADXL202EB evaluation boards, on which can be
+mounted a few external components which set the application properties
+of the accelerometer.  Each measurement axis has a +/-2gee range and
+can measure accelerations from dc (such as the force of gravity) to
+several KHz, with a user-settable low-pass filter available on each
+axis.
+
+\subsubsection{What's It Good For?}
+
+The most important application of the XL202 in the 2003 competition
+will probably be tilt sensing,since the game surface contains both
+sloped and level terrain. Accelerometers measure tilt by measuring the
+acceleration due to gravity as the sensing axis tilts from horizontal
+(0gee) to vertical (1gee), (a sinusiodal function of angle).  It is
+also possible to use the accelerometer to measure speed (by
+integrating acceleration in the direction of motion) or impact.  These
+are probably less useful to robots, but the fact that they are
+possible points up the fact that virtually all motions of the robot
+are potential error sources in tilt measurement, and steps must be
+taken to minimize their effects.
+
+\subsubsection{How Is It Used?}
+
+The XL202 is powered from a single power supply in the range of 3V to
+6V, so it will work directly from the Handyboard's 5V.  Each axis
+output consists of a periodic rectangular logic waveform (Figure
+\ref{outputwave}) 
+whose duty cycle (ratio of pulse width to period) is a measure of
+acceleration at a nominal scale factor of 12.5\%/gee, with 50\% nominal
+duty cycle (squarewave) at 0gee.  These outputs are easily read by the
+"input capture" function of the Handyboard 68HC11 MCU's
+Timer/Counters.  Software drivers are available which support
+continuous measurement of one or two axes' pulse widths and periods
+into C variables.  (The design of the XL202 is such that the output
+period is common to both axes, but the drivers make separate
+measurements.)
+
+\epsfysize=2.0 in
+\begin{figure}[htbp]
+\begin{center}
+\epsfbox{outputwave.eps}
+%\centerline{psfig{file=./outputwave.eps}}
+\caption{Output of XL202}
+\label{outputwave}
+\end{center}
+\end{figure}
+
+The unusual output format of the XL202 was chosen to permit
+high-resolution measurements, such as tilt, to be accomplished without
+requiring a high-resolution A/D converter.  To see this, consider what
+would happen if the device instead had an analog voltage output which
+could be measured by the 8-bit A/D converter present in the 'HC11.  If
+the XL202's +/-2gee span were mapped into the converter's full
+256-count range, then each count would represent an increment of about
+15.6 milligee (mgee), which corresponds to about 1.1deg of tilt for
+small angles.  For an application such as the 2003 6.270 competition,
+where the tilt angle can range from 0 to about 6.5 degrees, this would
+clearly be a very low-resolution measurement.
+
+The resolution obtainable with the duty-cycle outputs is dependent
+upon the period of the output signal (which is user-selectable with a
+resistor), the clock speed of the counter used to measure the duty
+cycle, and the resolution of the counter. The Handyboard MCU's
+counter/timers are 16 bits long with 0.5us resolution, and a good
+XL202 setup for use with that would be an output period of 10ms.  With
+this period, the nominal output "hi" time of either XL202 axis will be
+5ms at 50\% duty cycle (0gee).  The 0.5us counter/timer can resolve
+this pulsewidth to one
+count in 10,000, and 1gee, at 12.5\%/gee, will occupy 2500 counts.  In
+this world, a 6.5 degree tilt measurement range will span about 285
+counts (approx. 23mdeg/count), a far better result than the 6 counts
+that would be had using the 8-bit A/D.
+
+\subsubsection{Noise and Bandwidth}
+
+The XL202 has a nominal output noise of about 0.25mgee(rms)/sqrtHz of
+bandwidth.  If the measurement bandwidth is set large enough, the
+total noise over that bandwidth may be enough to corrupt the
+measurement.  In the example above, using a 16-bit timer/counter to
+measure the output, each count represents about 0.4mgee, so, even at a
+1Hz bandwidth, device noise will cause the output to flicker by a few
+counts since, taking a ratio (for white noise) of 3:1 peak to rms, the
+XL202 will output 1.5mgee pk-pk noise in 1Hz, or roughly +/-2 counts.
+This really wouldn't be an issue in the 6.270 application, since there
+is much more counter resolution than can be meaningfully used to
+measure tilt, and, in fact, if the bandwidth were opened up to 10Hz,
+resulting in sqrt(10) times more noise, the resolution would still be
+adequate.
+
+\subsubsection{Aliasing}
+
+The XL202's user-settable lowpass filters on each channel can be used
+to reduce the effects of aliasing in applications where it is
+important.  The duty-cycle output can be thought of as a sampler at
+the rate of the output period.  At the 10ms period mentioned above,
+the sampling rate is 100Hz, so theory says that any signals (or noise)
+of frequency greater than 50Hz (the Nyquist frequency) will appear in
+the (sampled) output to be signals of 50Hz and below; that is,
+indistinguishable (and inseparable) from real in-band (lower than 50Hz) signals.
+The filter pins on the XL202 precede the duty-cycle modulators, and
+therefore the sampling process, and can be used to filter out
+high-frequency signals that might alias with the chosen output period.
+Since the filters are only single-pole, they offer only 20dB of
+attenuation per decade, so they should be set for a much lower corner
+frequency than the Nyquist frequency (= half the output rate).
+
+As a practical matter, though, aliasing is usually not a serious
+application concern.   In tilt sensing, for example, only near-dc
+signals are of interest, and out-of-band signals like transients are
+lost to the filter or to sample averaging.  Only an unwanted signal
+with sustained frequency components at integer multiples of the
+Nyquist rate would be mistaken for dc, and such signals are rare.
+There may be many disturbances of the readings of a robot's tilt
+sensor (impacts, acceleration, bounce) but they are as likely to be
+within the chosen measurement band as they are to be aliasing into it.
+So it is usually sufficient to set the filters for an acceptable noise
+floor and not give further consideration to aliasing unless experience
+shows that it is an issue.
+
+\subsubsection{Configuring the XL202}
+
+The XL202EB evaluation board contains mounting locations for:
+\begin{itemize}
+\item
+ A resistor to set the period of the output waveforms (only one
+   for both axes),
+\item
+ Two capacitors, C2 to set the bandwidth of the X axis and C3 for
+   the Y axis.
+\end{itemize}
+
+The resistor has the value 124Megohm x period (seconds).  Thus a
+1.24Meg resistor will set the 10ms period used in the examples above.
+The resistor does not have to be particularly accurate, since the
+period is not very critical, and can be measured by the software if
+necessary (more on this later).  (NOTE: The supplied drivers require
+that the output period be no longer than 32ms.  Please see the section
+on drivers below.)  The capacitors have the value 4.7uF/BW (Hz), so
+that a 0.47uf capacitor will set the 10Hz bandwidth used in the
+examples.  (There are 2200pf capacitors on the board in parallel with
+the user-supplied capacitor locations, but they can be ignored for the
+small bandwidths that will be needed for robot work).  Either polar
+(like tantalum) or non-polar (such as ceramic) capacitors can be used,
+but in the case of a polar type the "+" end must be connected to the
+pads closest to the accelerometer on the board.  Aluminum electrolytic
+capacitors should be avoided, as they tend to corrupt readings in
+terrible ways.
+
+\subsubsection{Connecting the XL202}
+
+There are three digital inputs with counter/timer capability on the
+68HC11 used on the Handyboard.  Timer/counter TIC1 is used by the
+on-board infrared receiver, leaving TIC2/PA1 and TIC3/PA0 free for use
+with the XL202.  These inputs are available whether or not the
+expansion board is used.  Both inputs have 47Kohm pullup resistors
+which are not necessary for the XL202, but do no harm and can be left
+in place.  A single timer/counter can be used for one axis of
+measurement, or both channels can be used to read both axes.  The
+location of the timer/counter inputs on the Handyboard is shown in
+Figure \ref{HBinput} and the appropriate wiring for the ADXL202EB is shown in
+Figure \ref{XLwiring}.  The ribbon cable supplies +5V power and ground from one of
+the TIC channels; the connector for the other channel connects only
+the channel signal.
+
+\epsfysize=1.0 in
+\begin{figure}[htbp]
+\begin{center}
+\epsfbox{HBinput.eps}
+\caption{Timer and counter inputs on Handyboard}
+\label{HBinput}
+\end{center}
+\end{figure}
+
+%\begin{figure}[htbp]
+%\centerline{psfig{file=./HBinput.eps}}
+%\caption{Timer and counter inputs on Handyboard}
+%\label{HBinput}
+%\end{figure}
+
+\epsfysize=2.0in
+\begin{figure}[htbp]
+\begin{center}
+\epsfbox{XLwiring.eps}
+\caption{Wiring diagram for XL202}
+\label{XLwiring}
+\end{center}
+\end{figure}
+
+%\begin{figure}[htbp]
+%\centerline{psfig{file=./XLwiring.eps}}
+%\caption{Wiring diagram for XL202}
+%\label{XLwiring}
+%\end{figure}
+
+Figure \ref{sensingaxes} shows a component-side view of the ADXL202EB
+and indicates 
+the axes of sensing and the locations for user-installed components.
+Since the accelerometer uses the acceleration due to gravity to sense
+tilt, the output of the appropriate axis will increase (longer
+pulsewidth) when the + end of that axis is elevated with respect to
+the - end.
+
+\epsfysize=2.0in
+\begin{figure}[htbp]
+\begin{center}
+\epsfbox{sensingaxes.eps}
+\caption{Component view showing the sensing axes of the XL202}
+\label{sensingaxes}
+\end{center}
+\end{figure}
+
+%\begin{figure}[htbp]
+%\centerline{psfig{file=./sensingaxes.eps}}
+%\caption{Component view showing the sensing axes of the XL202}
+%\label{sensingaxes}
+%\end{figure}
+
+\subsubsection{Calibration and measurement details}
+
+The outputs of the XL202 are duty-cycle outputs, so the correct way to
+read an axis is to read a pulsewidth and divide it by the period
+obtained at the same time.  In practice, though, the division is
+usually unnecessary, since the period is quite stable with power
+supply and temperature.  In fact, since the period measurement also
+has a small amount of noise, dividing by the period actually adds
+noise to the measurement.  The divide operation also consumes CPU
+resources and takes time.  For all these reasons, it is common to
+obtain the scale factor that relates output duty cycle to applied
+acceleration by a calibration routine using the earth's gravity as a
+1gee test signal.  This calibration will be useful even if the
+duty-cycle division is done, since it will remove the accelerometer's
+sensitivity tolerance of +/-20\%. 
+
+Offset should be calibrated first.  Since each axis of the XL202 can
+have up to +/-1gee of offset, it is necessary to perform a calibration
+before its output can be meaningful in an absolute sense.  This is
+easily accomplished in software by running a routine, with zero
+acceleraion or tilt present, which stores the output values of the
+accelerometer under those conditions.  To minimize the effect of
+noise, it might be useful to average 10 or 16 readings.  The resulting
+offset calibration constants are then used to correct all subsequent
+readings simply by subtracting the appropriate (X or Y) calibration
+constant from the reading.  Since offset calibration can be performed
+with the robot in its normal orientation and quiescent, it can be done
+even at the time of the contest. 
+
+Once offset is calibrated out, sensitivity can be calibrated if
+desired.  Using a test routine which corrects readings by subtracting
+the offset calibration numbers, orient the robot to point the + axis
+of each axis away from the earth in turn, noting the offset-corrected
+readings.  These are the values that correspond to 1 gee. 
+Software scale factors that convert the offset-corrected output
+readings into gees can be calculated from these readings.  Note that
+the orientations of the sensor for these calibrations need not be
+perfect:  sensitivity to tilt is very small near vertical due to the
+sinusoidal relationship between tilt and output. 
+
+\subsubsection{Mounting and Orientation}
+
+To measure tilt, the ADXL202EB board should be mounted horizontally
+(maximum tilt sensitivity occurs at small angles).  To minimize
+mounting resonances which may turn small shocks into long-term ringing
+disturbances, make the mounting as stiff as possible, and highly
+damped.  Sticking the bottom of the board to a structural LEGO
+component such as a beam with double-sticky tape, leaving the pins in
+the clear, is probably the best strategy.  You will probably want to
+mount the board so that the axes of the sensor correspond to the axes
+of the robot, to make two-axis tilt measurements meaningful.  An
+alternative strategy is to mount the board "on edge", using the two
+axis outputs to measure tilt in one direction, but allowing 360 degree
+measurement.  This will probably not be a useful strategy for 6.270
+robots. 
+
+\subsubsection{Using the Drivers}
+
+Software drivers are provided for two-axis measurements using both
+Timer/Counter 2 and Timer/Counter 3, and for single-axis applications
+using either Timer/Counter 2 or Timer/Counter 3.  These drivers are
+named, respectively, accelxy.icb, accel2.icb and accel3.icb, and need
+only be loaded (preferably before the C routines that use their
+outputs) to be used.  Corresponding .asm files are provided for each.
+The drivers provide several routines which can be invoked from C and
+one routine (initialize\_module) which runs whenever a reset occurs.
+The actual measurements of the accelerometer outputs are
+interrupt-driven (at the rate of the accelerometer's user-set output
+period) so there is no routine to explicitly make a measurement:
+measurements are made continuously and the appropriate C-accessible
+variables are updated in the background. 
+
+The routines callable from C (in every version of the drivers) are:
+\begin{description}
+  \item{start\_accel}, which turns on the background measurement process, and
+  \item{stop\_accel}, which turns it off.
+\end{description}
+
+The C variables in which the measurement results appear have different
+names for the two-axis and one-axis cases.  For the two-axis driver
+accelxy.icb, the variables are: 
+\begin{description}
+  \item{xpw and ypw}, the x and y pulsewidths, respectively, and
+  \item{xperiod and yperiod}, the period measurements obtained during each
+  axis measurement. 
+\end{description}
+
+As mentioned above, the XL202 outputs really have a common period, but
+the drivers don't take advantage of that. 
+
+For the single-axis drivers accel2.icb and accel3.icb, the variables are:
+\begin{description}
+  \item{pw}, the pulsewidth
+  \item{period}, the period.
+\end{description}
+
+The units of these outputs are time, 16 bits long with the least
+significant bit representing 0.5us.  The drivers are greatly
+simplified by the assumption that the period of the waveform will not
+exceed 32ms, the length of the Counter/Timers.  Users must therefore
+not select a period-setting resistor for the ADXL202EB of more than
+about 3.3Mohm if the supplied drivers are to be used. 
+
+The drivers do not do any calibration upon reset; they simply set up
+the necessary interrupt mechanisms.  Once the interrupts are enabled by
+start\_accel, the routines wait for positive and negative edges alternately
+and do the subtractions necessary to obtain pulse width and period.
+
+The interrupt routines take 100us of processor time per axis per accel
+output period.  So if the period is set to 10ms, then these routines
+take 1\% of the processor's time for one axis, or 2\% for two axes.  If
+this is not acceptable, and processor time is saved by turning the
+measurement process (interrupts) off and on as needed, remember that
+there will be a one-period latency before the data can be trusted.
+Waiting out this interval for each reading may be more inefficient
+than leaving the measurement process on.
+
+\end{document}

@@ -1,0 +1,965 @@
+%!
+%%BoundingBox: 70 574 407 703
+%%Title: drives
+%%CreationDate: Fri Dec 29 18:56:36 2000
+%%Creator: Tgif-3.0-p13 by William Chia-Wei Cheng (william@cs.UCLA.edu)
+
+/tgifdict 36 dict def
+tgifdict begin
+
+/tgifpatdict 10 dict def
+
+/tgifpatbyte
+ { currentdict /retstr get exch
+   pat i cellsz mod get put
+ } def
+
+/tgifpatproc
+ { 0 1 widthlim {tgifpatbyte} for retstr
+   /i i 1 add def
+ } def
+
+/tgifpatfill
+ { tgifpatdict begin
+      /h exch def
+      /w exch def
+      /lty exch def
+      /ltx exch def
+      /cellsz exch def
+      /pat exch def
+
+      /widthlim w cellsz div cvi 1 sub def
+      /retstr widthlim 1 add string def
+      /i 0 def
+
+      tgiforigctm setmatrix
+      ltx lty translate
+      w h true [1 0 0 1 0 0] {tgifpatproc} imagemask
+      ltx neg lty neg translate
+   end
+ } def
+
+/pat3 <8000000008000000> def
+/pat4 <8800000022000000> def
+/pat5 <8800220088002200> def
+/pat6 <8822882288228822> def
+/pat7 <aa55aa55aa55aa55> def
+/pat8 <77dd77dd77dd77dd> def
+/pat9 <77ffddff77ffddff> def
+/pat10 <77ffffff77ffffff> def
+/pat11 <7fffffff7fffffff> def
+/pat12 <8040200002040800> def
+/pat13 <40a00000040a0000> def
+/pat14 <ff888888ff888888> def
+/pat15 <ff808080ff080808> def
+/pat16 <f87422478f172271> def
+/pat17 <038448300c020101> def
+/pat18 <081c22c180010204> def
+/pat19 <8080413e080814e3> def
+/pat20 <8040201008040201> def
+/pat21 <8844221188442211> def
+/pat22 <77bbddee77bbddee> def
+/pat23 <c1e070381c0e0783> def
+/pat24 <7fbfdfeff7fbfdfe> def
+/pat25 <3e1f8fc7e3f1f87c> def
+/pat26 <0102040810204080> def
+/pat27 <1122448811224488> def
+/pat28 <eeddbb77eeddbb77> def
+/pat29 <83070e1c3870e0c1> def
+/pat30 <fefdfbf7efdfbf7f> def
+/pat31 <7cf8f1e3c78f1f3e> def
+
+/tgifcentertext { dup stringwidth pop 2 div neg 0 rmoveto } def
+
+end
+
+%%PageBoundingBox: 70 574 407 703
+tgifdict begin
+/tgifsavedpage save def
+
+1 setmiterlimit
+1 setlinewidth
+
+0 setgray
+
+72 0 mul 72 11.00 mul translate
+72 128 div 100.000 mul 100 div dup neg scale
+
+gsave
+
+/tgiforigctm matrix currentmatrix def
+
+% TEXT
+0 setgray
+/Helvetica findfont [18 0 0 -18 0 0] makefont setfont
+   gsave
+      192 178 moveto (differential) tgifcentertext show
+   grestore
+
+% TEXT
+0 setgray
+/Helvetica findfont [18 0 0 -18 0 0] makefont setfont
+   gsave
+      352 178 moveto (steering) tgifcentertext show
+   grestore
+
+% TEXT
+0 setgray
+/Helvetica findfont [18 0 0 -18 0 0] makefont setfont
+   gsave
+      512 178 moveto (synchro) tgifcentertext show
+   grestore
+
+% TEXT
+0 setgray
+/Courier findfont [14 0 0 -14 0 0] makefont setfont
+   gsave
+      640 205 moveto (drive) show
+      640 221 moveto ( wheel) show
+   grestore
+
+% TEXT
+0 setgray
+/Courier findfont [14 0 0 -14 0 0] makefont setfont
+   gsave
+      640 269 moveto (steering) show
+      640 285 moveto ( wheel) show
+   grestore
+
+% TEXT
+0 setgray
+/Courier findfont [14 0 0 -14 0 0] makefont setfont
+   gsave
+      640 333 moveto (steering) show
+      640 349 moveto (and drive) show
+      640 365 moveto ( wheel) show
+   grestore
+
+% RCBOX
+0 setgray
+gsave
+   newpath
+      620 192 moveto
+      624 192 624 240 4 arcto 4 {pop} repeat
+      624 236 lineto
+      624 240 608 240 4 arcto 4 {pop} repeat
+      612 240 lineto
+      608 240 608 192 4 arcto 4 {pop} repeat
+      608 196 lineto
+      608 192 624 192 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      620 192 moveto
+      624 192 624 240 4 arcto 4 {pop} repeat
+      624 236 lineto
+      624 240 608 240 4 arcto 4 {pop} repeat
+      612 240 lineto
+      608 240 608 192 4 arcto 4 {pop} repeat
+      608 196 lineto
+      608 192 624 192 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 600 184 32 64 tgifpatfill
+grestore
+gsave
+   gsave
+      newpath
+         620 192 moveto
+         624 192 624 240 4 arcto 4 {pop} repeat
+         624 236 lineto
+         624 240 608 240 4 arcto 4 {pop} repeat
+         612 240 lineto
+         608 240 608 192 4 arcto 4 {pop} repeat
+         608 196 lineto
+         608 192 624 192 4 arcto 4 {pop} repeat
+      closepath
+      stroke
+   grestore
+grestore
+
+% RCBOX
+0 setgray
+newpath
+   620 256 moveto
+   624 256 624 304 4 arcto 4 {pop} repeat
+   624 300 lineto
+   624 304 608 304 4 arcto 4 {pop} repeat
+   612 304 lineto
+   608 304 608 256 4 arcto 4 {pop} repeat
+   608 260 lineto
+   608 256 624 256 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath
+         620 256 moveto
+         624 256 624 304 4 arcto 4 {pop} repeat
+         624 300 lineto
+         624 304 608 304 4 arcto 4 {pop} repeat
+         612 304 lineto
+         608 304 608 256 4 arcto 4 {pop} repeat
+         608 260 lineto
+         608 256 624 256 4 arcto 4 {pop} repeat
+      closepath
+      stroke
+   grestore
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+gsave
+   newpath
+      512 240 moveto
+      555 336 lineto
+      469 336 lineto
+      512 240 lineto
+   tgiforigctm setmatrix
+   4 setlinewidth
+   stroke
+   1 setlinewidth
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   gsave
+      newpath
+         572 192 moveto
+         576 192 576 384 4 arcto 4 {pop} repeat
+         576 380 lineto
+         576 384 448 384 4 arcto 4 {pop} repeat
+         452 384 lineto
+         448 384 448 192 4 arcto 4 {pop} repeat
+         448 196 lineto
+         448 192 576 192 4 arcto 4 {pop} repeat
+      closepath
+      2 setlinewidth
+      stroke
+   grestore
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   gsave
+      newpath
+         252 192 moveto
+         256 192 256 384 4 arcto 4 {pop} repeat
+         256 380 lineto
+         256 384 128 384 4 arcto 4 {pop} repeat
+         132 384 lineto
+         128 384 128 192 4 arcto 4 {pop} repeat
+         128 196 lineto
+         128 192 256 192 4 arcto 4 {pop} repeat
+      closepath
+      2 setlinewidth
+      stroke
+   grestore
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   newpath
+      156 264 moveto
+      160 264 160 312 4 arcto 4 {pop} repeat
+      160 308 lineto
+      160 312 144 312 4 arcto 4 {pop} repeat
+      148 312 lineto
+      144 312 144 264 4 arcto 4 {pop} repeat
+      144 268 lineto
+      144 264 160 264 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      156 264 moveto
+      160 264 160 312 4 arcto 4 {pop} repeat
+      160 308 lineto
+      160 312 144 312 4 arcto 4 {pop} repeat
+      148 312 lineto
+      144 312 144 264 4 arcto 4 {pop} repeat
+      144 268 lineto
+      144 264 160 264 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 136 256 32 64 tgifpatfill
+grestore
+gsave
+   gsave
+      newpath
+         156 264 moveto
+         160 264 160 312 4 arcto 4 {pop} repeat
+         160 308 lineto
+         160 312 144 312 4 arcto 4 {pop} repeat
+         148 312 lineto
+         144 312 144 264 4 arcto 4 {pop} repeat
+         144 268 lineto
+         144 264 160 264 4 arcto 4 {pop} repeat
+      closepath
+      stroke
+   grestore
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   newpath
+      236 264 moveto
+      240 264 240 312 4 arcto 4 {pop} repeat
+      240 308 lineto
+      240 312 224 312 4 arcto 4 {pop} repeat
+      228 312 lineto
+      224 312 224 264 4 arcto 4 {pop} repeat
+      224 268 lineto
+      224 264 240 264 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      236 264 moveto
+      240 264 240 312 4 arcto 4 {pop} repeat
+      240 308 lineto
+      240 312 224 312 4 arcto 4 {pop} repeat
+      228 312 lineto
+      224 312 224 264 4 arcto 4 {pop} repeat
+      224 268 lineto
+      224 264 240 264 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 216 256 32 64 tgifpatfill
+grestore
+gsave
+   gsave
+      newpath
+         236 264 moveto
+         240 264 240 312 4 arcto 4 {pop} repeat
+         240 308 lineto
+         240 312 224 312 4 arcto 4 {pop} repeat
+         228 312 lineto
+         224 312 224 264 4 arcto 4 {pop} repeat
+         224 268 lineto
+         224 264 240 264 4 arcto 4 {pop} repeat
+      closepath
+      stroke
+   grestore
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   gsave
+      newpath
+         412 192 moveto
+         416 192 416 384 4 arcto 4 {pop} repeat
+         416 380 lineto
+         416 384 288 384 4 arcto 4 {pop} repeat
+         292 384 lineto
+         288 384 288 192 4 arcto 4 {pop} repeat
+         288 196 lineto
+         288 192 416 192 4 arcto 4 {pop} repeat
+      closepath
+      2 setlinewidth
+      stroke
+   grestore
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+gsave
+   newpath
+      309 336 moveto
+      395 336 lineto
+   tgiforigctm setmatrix
+   4 setlinewidth
+   stroke
+   1 setlinewidth
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   newpath
+      316 312 moveto
+      320 312 320 360 4 arcto 4 {pop} repeat
+      320 356 lineto
+      320 360 304 360 4 arcto 4 {pop} repeat
+      308 360 lineto
+      304 360 304 312 4 arcto 4 {pop} repeat
+      304 316 lineto
+      304 312 320 312 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      316 312 moveto
+      320 312 320 360 4 arcto 4 {pop} repeat
+      320 356 lineto
+      320 360 304 360 4 arcto 4 {pop} repeat
+      308 360 lineto
+      304 360 304 312 4 arcto 4 {pop} repeat
+      304 316 lineto
+      304 312 320 312 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 296 304 32 64 tgifpatfill
+grestore
+gsave
+   gsave
+      newpath
+         316 312 moveto
+         320 312 320 360 4 arcto 4 {pop} repeat
+         320 356 lineto
+         320 360 304 360 4 arcto 4 {pop} repeat
+         308 360 lineto
+         304 360 304 312 4 arcto 4 {pop} repeat
+         304 316 lineto
+         304 312 320 312 4 arcto 4 {pop} repeat
+      closepath
+      stroke
+   grestore
+grestore
+
+% RCBOX
+0 setgray
+gsave
+   newpath
+      396 312 moveto
+      400 312 400 360 4 arcto 4 {pop} repeat
+      400 356 lineto
+      400 360 384 360 4 arcto 4 {pop} repeat
+      388 360 lineto
+      384 360 384 312 4 arcto 4 {pop} repeat
+      384 316 lineto
+      384 312 400 312 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      396 312 moveto
+      400 312 400 360 4 arcto 4 {pop} repeat
+      400 356 lineto
+      400 360 384 360 4 arcto 4 {pop} repeat
+      388 360 lineto
+      384 360 384 312 4 arcto 4 {pop} repeat
+      384 316 lineto
+      384 312 400 312 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 376 304 32 64 tgifpatfill
+grestore
+gsave
+   gsave
+      newpath
+         396 312 moveto
+         400 312 400 360 4 arcto 4 {pop} repeat
+         400 356 lineto
+         400 360 384 360 4 arcto 4 {pop} repeat
+         388 360 lineto
+         384 360 384 312 4 arcto 4 {pop} repeat
+         384 316 lineto
+         384 312 400 312 4 arcto 4 {pop} repeat
+      closepath
+      stroke
+   grestore
+grestore
+
+% POLY/OPEN-SPLINE
+0 setgray
+gsave
+   newpath
+      309 240 moveto
+      395 240 lineto
+   tgiforigctm setmatrix
+   4 setlinewidth
+   stroke
+   1 setlinewidth
+grestore
+
+% RCBOX
+gsave
+   310 217 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   310 neg 217 neg translate
+0 setgray
+newpath
+   322 217 moveto
+   326 217 326 265 4 arcto 4 {pop} repeat
+   326 261 lineto
+   326 265 310 265 4 arcto 4 {pop} repeat
+   314 265 lineto
+   310 265 310 217 4 arcto 4 {pop} repeat
+   310 221 lineto
+   310 217 326 217 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath
+         322 217 moveto
+         326 217 326 265 4 arcto 4 {pop} repeat
+         326 261 lineto
+         326 265 310 265 4 arcto 4 {pop} repeat
+         314 265 lineto
+         310 265 310 217 4 arcto 4 {pop} repeat
+         310 221 lineto
+         310 217 326 217 4 arcto 4 {pop} repeat
+      closepath
+      tgiforigctm setmatrix
+      stroke
+   grestore
+grestore
+grestore
+
+% RCBOX
+gsave
+   390 217 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   390 neg 217 neg translate
+0 setgray
+newpath
+   402 217 moveto
+   406 217 406 265 4 arcto 4 {pop} repeat
+   406 261 lineto
+   406 265 390 265 4 arcto 4 {pop} repeat
+   394 265 lineto
+   390 265 390 217 4 arcto 4 {pop} repeat
+   390 221 lineto
+   390 217 406 217 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+gsave
+   gsave
+      newpath
+         402 217 moveto
+         406 217 406 265 4 arcto 4 {pop} repeat
+         406 261 lineto
+         406 265 390 265 4 arcto 4 {pop} repeat
+         394 265 lineto
+         390 265 390 217 4 arcto 4 {pop} repeat
+         390 221 lineto
+         390 217 406 217 4 arcto 4 {pop} repeat
+      closepath
+      tgiforigctm setmatrix
+      stroke
+   grestore
+grestore
+grestore
+
+% RCBOX
+gsave
+   510 249 translate
+   [0.966 0.259 -0.259 0.966 -8 -3] concat
+   510 neg 249 neg translate
+0 setgray
+gsave
+   newpath
+      522 249 moveto
+      526 249 526 265 4 arcto 4 {pop} repeat
+      526 261 lineto
+      526 265 510 265 4 arcto 4 {pop} repeat
+      514 265 lineto
+      510 265 510 249 4 arcto 4 {pop} repeat
+      510 253 lineto
+      510 249 526 249 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      522 249 moveto
+      526 249 526 265 4 arcto 4 {pop} repeat
+      526 261 lineto
+      526 265 510 265 4 arcto 4 {pop} repeat
+      514 265 lineto
+      510 265 510 249 4 arcto 4 {pop} repeat
+      510 253 lineto
+      510 249 526 249 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 496 240 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   510 241 translate
+   [0.966 0.259 -0.259 0.966 -6 -3] concat
+   510 neg 241 neg translate
+0 setgray
+gsave
+   newpath
+   510 241 moveto 526 241 lineto 526 257 lineto 510 257 lineto
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      510 241 moveto 526 241 lineto 526 257 lineto 510 257 lineto
+   closepath eoclip newpath
+   pat26 8 496 232 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   510 225 translate
+   [0.966 0.259 -0.259 0.966 -2 -2] concat
+   510 neg 225 neg translate
+0 setgray
+newpath
+   510 225 moveto 526 225 lineto 526 241 lineto 510 241 lineto
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   510 217 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   510 neg 217 neg translate
+0 setgray
+newpath
+   522 217 moveto
+   526 217 526 233 4 arcto 4 {pop} repeat
+   526 229 lineto
+   526 233 510 233 4 arcto 4 {pop} repeat
+   514 233 lineto
+   510 233 510 217 4 arcto 4 {pop} repeat
+   510 221 lineto
+   510 217 526 217 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   510 217 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   510 neg 217 neg translate
+0 setgray
+gsave
+   gsave
+      newpath
+         522 217 moveto
+         526 217 526 265 4 arcto 4 {pop} repeat
+         526 261 lineto
+         526 265 510 265 4 arcto 4 {pop} repeat
+         514 265 lineto
+         510 265 510 217 4 arcto 4 {pop} repeat
+         510 221 lineto
+         510 217 526 217 4 arcto 4 {pop} repeat
+      closepath
+      tgiforigctm setmatrix
+      stroke
+   grestore
+grestore
+grestore
+
+% RCBOX
+gsave
+   550 345 translate
+   [0.966 0.259 -0.259 0.966 -8 -3] concat
+   550 neg 345 neg translate
+0 setgray
+gsave
+   newpath
+      562 345 moveto
+      566 345 566 361 4 arcto 4 {pop} repeat
+      566 357 lineto
+      566 361 550 361 4 arcto 4 {pop} repeat
+      554 361 lineto
+      550 361 550 345 4 arcto 4 {pop} repeat
+      550 349 lineto
+      550 345 566 345 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      562 345 moveto
+      566 345 566 361 4 arcto 4 {pop} repeat
+      566 357 lineto
+      566 361 550 361 4 arcto 4 {pop} repeat
+      554 361 lineto
+      550 361 550 345 4 arcto 4 {pop} repeat
+      550 349 lineto
+      550 345 566 345 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 536 336 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   550 337 translate
+   [0.966 0.259 -0.259 0.966 -6 -3] concat
+   550 neg 337 neg translate
+0 setgray
+gsave
+   newpath
+   550 337 moveto 566 337 lineto 566 353 lineto 550 353 lineto
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      550 337 moveto 566 337 lineto 566 353 lineto 550 353 lineto
+   closepath eoclip newpath
+   pat26 8 536 328 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   550 321 translate
+   [0.966 0.259 -0.259 0.966 -2 -2] concat
+   550 neg 321 neg translate
+0 setgray
+newpath
+   550 321 moveto 566 321 lineto 566 337 lineto 550 337 lineto
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   550 313 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   550 neg 313 neg translate
+0 setgray
+newpath
+   562 313 moveto
+   566 313 566 329 4 arcto 4 {pop} repeat
+   566 325 lineto
+   566 329 550 329 4 arcto 4 {pop} repeat
+   554 329 lineto
+   550 329 550 313 4 arcto 4 {pop} repeat
+   550 317 lineto
+   550 313 566 313 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   550 313 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   550 neg 313 neg translate
+0 setgray
+gsave
+   gsave
+      newpath
+         562 313 moveto
+         566 313 566 361 4 arcto 4 {pop} repeat
+         566 357 lineto
+         566 361 550 361 4 arcto 4 {pop} repeat
+         554 361 lineto
+         550 361 550 313 4 arcto 4 {pop} repeat
+         550 317 lineto
+         550 313 566 313 4 arcto 4 {pop} repeat
+      closepath
+      tgiforigctm setmatrix
+      stroke
+   grestore
+grestore
+grestore
+
+% RCBOX
+gsave
+   470 345 translate
+   [0.966 0.259 -0.259 0.966 -8 -3] concat
+   470 neg 345 neg translate
+0 setgray
+gsave
+   newpath
+      482 345 moveto
+      486 345 486 361 4 arcto 4 {pop} repeat
+      486 357 lineto
+      486 361 470 361 4 arcto 4 {pop} repeat
+      474 361 lineto
+      470 361 470 345 4 arcto 4 {pop} repeat
+      470 349 lineto
+      470 345 486 345 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      482 345 moveto
+      486 345 486 361 4 arcto 4 {pop} repeat
+      486 357 lineto
+      486 361 470 361 4 arcto 4 {pop} repeat
+      474 361 lineto
+      470 361 470 345 4 arcto 4 {pop} repeat
+      470 349 lineto
+      470 345 486 345 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 456 336 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   470 337 translate
+   [0.966 0.259 -0.259 0.966 -6 -3] concat
+   470 neg 337 neg translate
+0 setgray
+gsave
+   newpath
+   470 337 moveto 486 337 lineto 486 353 lineto 470 353 lineto
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      470 337 moveto 486 337 lineto 486 353 lineto 470 353 lineto
+   closepath eoclip newpath
+   pat26 8 456 328 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   470 321 translate
+   [0.966 0.259 -0.259 0.966 -2 -2] concat
+   470 neg 321 neg translate
+0 setgray
+newpath
+   470 321 moveto 486 321 lineto 486 337 lineto 470 337 lineto
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   470 313 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   470 neg 313 neg translate
+0 setgray
+newpath
+   482 313 moveto
+   486 313 486 329 4 arcto 4 {pop} repeat
+   486 325 lineto
+   486 329 470 329 4 arcto 4 {pop} repeat
+   474 329 lineto
+   470 329 470 313 4 arcto 4 {pop} repeat
+   470 317 lineto
+   470 313 486 313 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   470 313 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   470 neg 313 neg translate
+0 setgray
+gsave
+   gsave
+      newpath
+         482 313 moveto
+         486 313 486 361 4 arcto 4 {pop} repeat
+         486 357 lineto
+         486 361 470 361 4 arcto 4 {pop} repeat
+         474 361 lineto
+         470 361 470 313 4 arcto 4 {pop} repeat
+         470 317 lineto
+         470 313 486 313 4 arcto 4 {pop} repeat
+      closepath
+      tgiforigctm setmatrix
+      stroke
+   grestore
+grestore
+grestore
+
+% RCBOX
+gsave
+   614 353 translate
+   [0.966 0.259 -0.259 0.966 -8 -3] concat
+   614 neg 353 neg translate
+0 setgray
+gsave
+   newpath
+      626 353 moveto
+      630 353 630 369 4 arcto 4 {pop} repeat
+      630 365 lineto
+      630 369 614 369 4 arcto 4 {pop} repeat
+      618 369 lineto
+      614 369 614 353 4 arcto 4 {pop} repeat
+      614 357 lineto
+      614 353 630 353 4 arcto 4 {pop} repeat
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      626 353 moveto
+      630 353 630 369 4 arcto 4 {pop} repeat
+      630 365 lineto
+      630 369 614 369 4 arcto 4 {pop} repeat
+      618 369 lineto
+      614 369 614 353 4 arcto 4 {pop} repeat
+      614 357 lineto
+      614 353 630 353 4 arcto 4 {pop} repeat
+   closepath eoclip newpath
+   pat26 8 600 344 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   614 345 translate
+   [0.966 0.259 -0.259 0.966 -6 -3] concat
+   614 neg 345 neg translate
+0 setgray
+gsave
+   newpath
+   614 345 moveto 630 345 lineto 630 361 lineto 614 361 lineto
+   closepath 1 setgray fill
+   0 setgray
+   newpath
+      614 345 moveto 630 345 lineto 630 361 lineto 614 361 lineto
+   closepath eoclip newpath
+   pat26 8 600 336 24 32 tgifpatfill
+grestore
+grestore
+
+% BOX
+gsave
+   614 329 translate
+   [0.966 0.259 -0.259 0.966 -2 -2] concat
+   614 neg 329 neg translate
+0 setgray
+newpath
+   614 329 moveto 630 329 lineto 630 345 lineto 614 345 lineto
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   614 321 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   614 neg 321 neg translate
+0 setgray
+newpath
+   626 321 moveto
+   630 321 630 337 4 arcto 4 {pop} repeat
+   630 333 lineto
+   630 337 614 337 4 arcto 4 {pop} repeat
+   618 337 lineto
+   614 337 614 321 4 arcto 4 {pop} repeat
+   614 325 lineto
+   614 321 630 321 4 arcto 4 {pop} repeat
+closepath 1 setgray fill
+   0 setgray
+grestore
+
+% RCBOX
+gsave
+   614 321 translate
+   [0.966 0.259 -0.259 0.966 0 -2] concat
+   614 neg 321 neg translate
+0 setgray
+gsave
+   gsave
+      newpath
+         626 321 moveto
+         630 321 630 369 4 arcto 4 {pop} repeat
+         630 365 lineto
+         630 369 614 369 4 arcto 4 {pop} repeat
+         618 369 lineto
+         614 369 614 321 4 arcto 4 {pop} repeat
+         614 325 lineto
+         614 321 630 321 4 arcto 4 {pop} repeat
+      closepath
+      tgiforigctm setmatrix
+      stroke
+   grestore
+grestore
+grestore
+
+grestore
+tgifsavedpage restore
+end
+%MatchingCreationDate: Fri Dec 29 18:56:36 2000

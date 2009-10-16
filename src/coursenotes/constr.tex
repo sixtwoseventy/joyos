@@ -1,0 +1,339 @@
+\chapter{Robot Construction}
+\begin{quote}
+Most people consider LEGO to be a childhood toy, but the LEGO Technic
+system provides an excellent construction material for building
+robots. Since the pieces can be taken apart as easily as they are put
+together, no design must ever be final.  It frees you from drawing out
+detailed plans and machining parts, so you can spend more time
+learning about and designing your robot.  You can experiment with
+building, redesigning, and rebuilding components of your robot until
+you are satisfied with the results.
+
+The best way to learn how to build with LEGO pieces is to play with
+them, but this chapter will present an introduction to a number of
+building techniques and design ideas.  It is meant to provide you with
+the basic knowledge you will need to begin exploring and learning on
+your own.  Reading this chapter, however, is no substitute for actual
+hands-on experience.
+\end{quote}
+
+\section{Design Concepts}
+
+When beginning work on a task as complex as building a robot, it helps
+to follow good design techniques.  Although it requires continual
+practice to hone these skills, keeping the following ideas in mind
+while you build can help you produce a successful robot:
+
+\begin{itemize}
+
+ \item{\bf Simplicity.} The best way to build a reliable robot is to
+ keep it as simple as is reasonably possible.  In general, the more
+ complicated a design is, the harder it is to build, and the more
+ prone it is to failure.  Try to minimize the number of moving parts
+ and the overall complexity of the robot.
+
+ \item{\bf Strength.} During the course of operating and transporting
+ your robot, it will be bumped and handled quite often.  This can
+ easily damage the robot and cause its performance to degrade over
+ time.  Building a strong robot will minimize the amount of time spent
+ on repairs and will improve its overall performance.
+
+ \item{\bf Modularity.} Often, it will be necessary to upgrade or
+ repair a component of the robot, but if the robot is built as one
+ monolithic unit this may make it necessary to disassemble a
+ substantial portion of the structure.  If, however, you design your
+ robot as a group of connected modules, the appropriate module can
+ simply be removed and rebuilt.
+
+\end{itemize}
+
+\section{The LEGO Technic System}
+
+The Technic system is similar to the LEGO parts that you may have
+played with as a child, except that in addition to the regular bricks
+and plates, this set includes pieces for building more complicated
+structures and moving parts.  These components allow you to create
+robots and other wonderful things, but you must become familiar with
+their functions before you can use them effectively.
+
+\subsection{LEGO dimensions}
+
+The first thing you will notice about the LEGO parts in your kit is
+that the structural pieces come in a variety of sizes and shapes, but
+can be roughly grouped into two sets according to their height.  The
+taller ones, bricks and beams, are $\frac{3}{8}''$ tall, while the
+shorter ones, flats and plates, are $\frac{1}{8}''$ tall.  These are
+convenient measurements, since three flats can be stacked to equal the
+height of one brick.  The dimensions of these basic LEGO pieces are
+shown in Figure \ref{legodim}.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{constr/legodim.eps}
+\caption{LEGO Dimensions}
+\label{legodim}
+\end{center}
+\end{figure}
+
+The curse of LEGO is that neither of these heights is the same as the
+standard LEGO width.  Instead, this distance, the fundamental LEGO
+unit (FLU), is $\frac{5}{16}''$, making the ratio of height to width
+of a LEGO beam 6:5.  All is not lost, though, because with some
+creative stacking, you can make vertical spacings which are integral
+multiples of horizontal spacings.
+
+The simplest such stack is one beam and two flats.  This yields a
+structure with a height of 2 FLU ($\frac{3}{8}'' + \frac{1}{8}'' +
+\frac{1}{8}'' = 2\times\frac{5}{16}'' = 2$ FLU).  This, as you will
+find, is a very important property, and you should remember it.  With
+a little experimentation, you can construct any other even number of
+FLUs, though odd heights are not possible.
+
+\subsection{Beams, Connectors, and Axles}
+
+One of the most important types of parts in the LEGO Technic system is
+the beam.  Beams are long structural pieces with holes through their
+sides.  Besides their obvious use as structure components, they can be
+used in conjunction with other pieces to build elaborate structures.
+
+The connectors fit into the holes in the side of the beams and allow
+them to be joined side to side. This frees you from only being able to
+stack pieces on top of one another, thus opening up the ability to
+build significantly more complicated structures. Since the connections
+created in this manner can be rotated to any angle, you can even
+introduce diagnol constructs to your robot or create moving joints.
+
+Note that the two types of connector are functionally different. The
+black ones fit more snugly into the holes and resist rotation. The
+gray ones, on the other hand, rotate freely inside the holes for use
+in moving parts. It is alright to use the gray connectors in place of
+the black ones, but using a black connector in a moving joint will
+damage the connector and hole.
+
+The holes through the beams also serve a further function when coupled
+with axles.  The axles can be passed through a hole, and if supported
+properly between multiple beams, can rotate freely.  This allows for
+the construction of the gearboxes necessary to drive the robot, as
+will be discussed later in this chapter.
+
+\section{Bracing}
+
+In order to build a strong robot, you will have to master the
+technique of bracing. Structures built simply by connecting pieces
+together with their nubs will not be able to handle the stresses
+imposed on them by the operation of the robot. Instead, you must find
+a way to augment the structure with braces to make it stronger.
+
+The basic idea of bracing is to create a stack of pieces between two
+beams so that the holes in the top and bottom beams are separated by
+an integral FLU spacing (actually, only even numbers are
+possible). Then, using the connectors, you attach a beam vertically
+alongside the stack so that it holds the pieces together. Such a stack
+can be built in a number of ways, but a simple one is shown in Figure
+\ref{brace}. The concept is simple but important for building an
+effective robot.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{constr/brace.eps}
+\caption{A Simple Braced Structure}
+\label{brace}
+\end{center}
+\end{figure}
+
+Since bracing imposes constraints on how a structure can be built, it
+will be necessary to consider how your robot's structure will be
+braced from very early on in the design process. With experience, you
+will be able to build robots which can carry heavy loads and resist
+falling apart even when dropped on the floor. You will also be able to
+determine where braces are needed (and also of importance, where they
+are not).
+
+\subsection{Drop Testing}
+
+How do you know if your structure is strong or not?  If you are
+daring, drop it on the floor from about waist height.  If it shatters
+into little pieces, it failed the test.  If it only suffers minor
+damage which can be easily repaired, you can be fairly certain that it
+can handle the rigors of everyday life.  In the past, some
+particularly strong robots have been known to drive off of tables and
+still be in working condition.
+
+{\it Drop test at your own risk.}
+
+\section{Gears}
+
+Most electric motors are really lacking in torque, or in other words,
+they cannot push very hard. If you hook a wheel directly up to the
+motor's shaft, you will find that it can hardly turn the wheel, let
+alone budge an entire robot. What they do have a lot of, though, is
+speed. In fact, when you let the shaft run freely, it can spin at a
+rate of thousands of revolutions per minute. This is much faster than
+you want your robot to drive anyway, so you will have to build
+gearboxes to trade some of this speed for more torque.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{constr/gears.eps}
+\caption{LEGO Gears}
+\label{gears}
+\end{center}
+\end{figure}
+
+The LEGO Technic system contains a wide variety of gears with varying
+functions, but for building simple gearboxes, you will mostly rely on
+the 8, 24, and 40-tooth gears shown in \ref{gears}. These are the most
+efficient and easiest to use of the bunch because their diameters are
+chosen such that they can be meshed with each other at regular LEGO
+distances. It is recommended that you begin by using only these gears
+at first, and then only use the other gears when you become an
+experienced builder.
+
+\subsection{Gearboxes}
+
+Gear reductions allow you to convert speed into torque (or vice versa
+by applying this technique in reverse). Suppose an 8-tooth gear is
+used to turn a 24-tooth gear. Since the smaller gear must rotate three
+times to turn the large one once, the axle with the 24-tooth gear
+spins slower than the other. In exchange for this decrease in speed,
+the axle is able to exert three times as much torque. This produces a
+gear reduction of 3:1, which means that you are giving up a factor of
+three of speed in exchange for producing three times the torque.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{constr/gearbox.eps}
+\caption{A LEGO Gearbox}
+\label{gearbox}
+\end{center}
+\end{figure}
+
+When a single gear reduction is not enough, it is possible to cascade
+a number of reductions in a gear box to achieve a higher gear
+ratio. For example, in Figure \ref{gearbox}, two 3:1 and one 5:1 gear
+reductions are combined to create a 45:1 (3x3x5:1) gearbox. This means
+that the leftmost axle must turn 45 times in order to turn the
+rightmost axle (the output shaft) one time. If a motor with an 8-tooth
+gear was used to turn the 24-tooth gear on the leftmost axle, this
+would add another 3:1 reduction, bringing the total reduction 135:1.
+
+There is no simple guide for choosing the gear ratio of a gearbox
+because it depends very heavily on the application. For heavy loads,
+high gear ratios will provide more force, but at the expense of
+speed. For fast, light robots, however, a lower gear ratio would be
+more appropriate. In order to find the correct match for your robot,
+you will have to experiment with a number of possible ratios.
+
+\subsection{Strange Gears}
+
+Occasionally, you will run into situations where the basic three gears
+are inadequate.  In these cases, you may find that one of the strange
+gears will fit the purpose.  You should use these gears sparingly,
+since they tend to be inefficient and prone to mechanical failure, but
+when they are needed, they can be life savers.
+
+\begin{itemize}
+
+ \item {\it 16-tooth gears} are just like the basic three described
+ above, except that they only mesh straightforwardly with other
+ 16-tooth gears.  They are very efficient, but because of their
+ antisocial behavior are only really useful for transferring force
+ with no gear reduction.
+
+ \item {\it Worm gears} look like cylinders with a screw thread wound
+ around them.  They act like a 1-tooth gear and are useful for
+ building small, high-ratio gearboxes. They are extremely inefficient
+ and tend to wear down quickly when subject to anything but the
+ lightest loads.  Avoid using these gears whenever possible and never
+ use them in a robot's drive train.
+
+ \item {\it Angle and crown gears} look similar to the standard gears,
+ except that they have angled teeth.  This allows them to be meshed at
+ 90 degree angles with other gears, so they can transfer force around
+ a corner. Since it is awkward to brace such a structure, working with
+ these gears can be difficult as well as inefficient.
+
+ \item {\it Differentials} allow two axles in the gearbox to divide
+ the force between them while turning at different speeds.  The
+ differentials in your kit must be assembled by placing three angle
+ gears inside the differential casing.  Because of their complexity,
+ they can be difficult to build into a gearbox, but they do fulfill a
+ purpose that no other gear can peform.
+
+\end{itemize}
+
+\subsection{Chain Drives and Pulleys}
+
+The chain drive is an invaluable tool for transferring motion from one place to another. It is assembled from the small connectable links and two or more regular gears (usually the 24 or 40-tooth gears). This allows it to transfer force from one gear to another.  Unfortunately, though, the chain links are not sized to standard LEGO dimensions, so trial and error is often necessary to find a workable gear spacing.  If the chain is too loose, it may skip under heavy load, and if it is too tight, you will lose power.  Since the chain drive tends to be a bit inefficient, it is best when used in the lower stages of a geartrain.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{constr/pulleys.eps}
+\caption{LEGO Pulleys}
+\label{pulleys}
+\end{center}
+\end{figure}
+
+Pulley systems work in a similar manner and can be built using the pulley wheels shown in Figure \ref{pulleys} with a string or rubberband.  They allow a great deal more flexibility in their arrangement than the chain drive, but they tend to slip easily under a load.  They work best when used in the upper stages of a geartrain where there is the least amount of force.  Be sure to make the string or rubberband the correct length.  If it is the slightest bit too loose, it tends to slip, and if it is too tight, it will lose efficiency.
+
+\subsection{Efficiency}
+
+The biggest enemy of any gearbox is friction. Every place where
+something rubs, energy is lost which makes your robot slower and weaker.
+In the short-run, this causes your robot to perform poorly, but in the
+long-run, it will cause wear and tear on the moving parts. More damage
+means more friction, and after a while, the gearbox will stop working.
+In order to minimize the amount of friction in your gearbox and maximize
+its efficiency, follow the tips below:
+
+\begin{enumerate}
+
+\item The spacing between gears is very important. If they are too close to each other, they will bind up. If they are too far, the teeth will slip past each other. Make sure that gears are spaced at exact LEGO dimensions and avoid meshing gears at an angle. 
+
+\item The axles are made out of plastic and can bend if not properly supported. Try to always support the axle between two beams and do not place a gear more than one space outside of the supports.
+
+\item The gearbox will often be subjected to stresses when used within a robot. Make sure that the beams supporting the axles are attached to each other with more than one cross-support and that the whole structure is braced. If the beams are not perfectly parallel, the axles will rub against the insides of the holes. 
+
+\item During operation the gears can slide along the axle or bump into nearby gears. Use spacers to fill in any empty spots along the axle. 
+
+\item Make sure that the axles can slide back and forth a tiny bit. If they cannot, the gears or spacers are probably pushing up against a beam. This is probably the most common (and easiest to fix) mistake which saps efficiency from a gearbox. 
+
+\end{enumerate}
+
+If you want to know how good your gearbox is, try backdriving it. Remove the motor and try to turn the output shaft (the slow axle) by hand. If your geartrain is efficient, you will be able to turn all the gears this way, and if it is really efficient, they should continue spinning for a second or two after you let go. If your gearbox cannot be backdriven, something may be wrong with it.
+
+\section{Drive Mechanisms}
+
+Perhaps the single most important aspect of a robot's physical design is its drive system.  It is responsible for moving the robot from place to place by providing the appropriate motive force and steering mechanisms.  Figure \ref{drives} shows the three most popular drive arrangements.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{constr/drives.eps}
+\caption{Popular Drive Arrangements}
+\label{drives}
+\end{center}
+\end{figure}
+
+\subsection{Differential Drive}
+
+A differential drive is much like the drive mechanism on a tank.  It consists of two independently driven wheels arranged side by side.  When both wheels are driven at the same rate in the same direction, the robot will move straight.  When the wheels are driven at the same rate in opposite directions, the robot will spin in place.  By varying the relative speeds of the two wheels, any turning radius is achievable.  Since this system minimizes the number of moving parts, it tends to be the simplest and most robust.  The complexity is increased slightly, though, by the need for a caster in the front or back of the robot to keep it from tipping over.
+
+An especially useful property of this drive system is that the change in orientation of the robot depends only on the difference between the distances travelled by each of the wheels.  It does not matter if the left wheel moves forward 10cm and the right back 10cm, or if only the left wheel moves forward 20cm; the final location will be different, but the orientation will be the same (ignoring slippage).  This greatly simplifies the process of turning, by making the final orientation of the robot easily predictable.
+
+The differential drive is the most popular because of its simplicity, though it does have some limitations.  Since it is difficult to calculate the final location of the robot if it turns and moves at the same time, most navigation algorithms consist of driving straight for a distance, turning through a specified angle in place, and then driving straight again. More sophisticated algorithms allow the robot to turn while moving, but typically, such turns are still constrained to easily calculated curves.
+
+\subsection{Steering System}
+
+Steering systems should already be familiar to you because they are widely used in automobiles.  They usually consist of one or two steerable wheels at the front of the robot and two powered wheels at the rear.  The turning radius is determined by the angle of the steerable wheels, but the robot must be moving in order to make a turn.  This means that it cannot turn in place and can only make turns of limited sharpness while driving.
+
+The advantage to using a steering system comes from the separation of the steering and drive mechanisms.  Such robots tend to be quick and fairly agile.  They are well-suited to driving in open spaces or performing "follow" tasks since these tasks usually require making course corrections to the left and right as the robot drives.  When a steering robot turns, though, the two rear wheels will take paths of different lengths.  The outer one will travel a longer distance than the inner one, so it is helpful to use a differential in the gearbox to transfer force between the wheels in order to avoid slippage.
+
+\subsection{Synchro Drive}
+
+The synchro drive is an exotic mechanism where all the wheels are driven and steered together.  Usually, there is one gearbox which turns the wheels to the desired orientation and then another which drives the robot in that direction.  This may seem strange, but it allows the robot's instructions to be phrased in terms of world coordinates, instead of having to compute everything in terms of the robot's perspective.  The robot can also be commanded to move in any direction, making this the most mobile of the drive systems.
+
+This mechanism simplifies control at the expense of complexity in construction.  All the wheels must be both steerable and drivable, so building drivetrains for such a system often requires an elaborate system of gears and chain drives. Also, since only the wheels turn, the robot's body remains in a fixed orientation, unless it is also turned.  This makes it inconvenient for such a robot to have a front as many applications require.
+
+\subsection{Legs}
+
+Robots with articulate legs can do everything that a wheeled robot can do and more.  This includes walking in arbitrary directions, turning in place, and even climbing over otherwise inaccessible terrain. Unfortunately, though, legged robots are prohibitively difficult to build out of LEGO and comparably difficult to control.  In fact, a great deal of research is currently being performed to study ways of making robots walk. If you think you are up to the challenge, a legged robot makes a very exciting project, but be warned that building legs can be much more difficult than it appears.

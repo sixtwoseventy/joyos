@@ -1,0 +1,38 @@
+\subsection{Sharp Distance Sensor}
+
+\begin{figure}[htbp]
+ \centerline{\epsfysize = 2.0in\epsffile{sensor/distance.eps}}
+ \caption{Sharp Distance Sensor}
+ \label{distance}
+\end{figure}
+
+The Sharp GP2D12 Distance Sensor is capable of precisely measuring
+distances to walls or objects, using near-infrared light.
+Commercially, devices like these are used in a variety of places, from
+automatic toilets and sinks to photocopiers; your robot can use it to
+follow walls and avoid obstacles. This sensor is the only one which can detect things more than a few inches away---it has a useful range from about~$6.5''$ to several feet.
+The package has two parts:
+
+\begin{enumerate}
+\item an emitter that emits a narrow beam of barely visible light; and
+\item an array of detectors that measure the angle of the spot the
+      emitter projects on the wall.
+\end{enumerate}
+
+Unlike other devices used in 6.270, this device supplies an analog
+value on its own, without the use of a pull-up resistor.  Therefore,
+to use the sensor, you must make a slight, reversible modification to
+the Handy Board---cut the trace on the bottom of the main board that
+connects an analog input to its pull-up resistor.  Please see a member
+of the staff for help with this procedure.
+
+The sensor does not give you the distance in any type of standard
+unit.  Instead, the value read on the analog input it is connected to
+varies smoothly from~0 to~255 as the distance decreases.  Tests have
+found that the function
+$$ f[n] = -3.16'' + { 950.'' \over 8.58+n } $$
+gives an accurate estimate of the distance as a function of the analog
+value~$n$, and that the reading is fairly independent of lighting,
+object color, or battery power level.  However, the numeric parameters
+may have to be recalibrated for each individual sensor if an accurate
+measurement is desired.

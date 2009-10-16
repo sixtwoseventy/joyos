@@ -1,0 +1,41 @@
+\subsection{Switches and buttons}
+
+\begin{figure}[htbp]
+ \centerline{\epsfysize = 2.0in\epsffile{sensor/switches.eps}}
+ \caption{Switches and buttons}
+ \label{switches}
+\end{figure}
+
+Switches and buttons are probably the easiest and most intuitive
+sensors to use. They are digital in nature and make great object
+detectors as long as you are only worried about whether the robot is
+touching something. Fortunately, this is usually enough for detecting
+when the robot has run into a wall or some other obstacle. They can
+also be used for limiting the motion of a mechanism by providing
+feedback about when to stop it.
+
+Switches and buttons come in a wide variety of styles. Some have
+levers or rollers. Some look very much like computer keys. Some are
+computer keys. Whatever they look like, it should be obvious which of
+your sensors are switches.
+
+Switches have two important properties which describe how they are
+wired inside: number of poles and number of positions (throw). The
+number of poles tells how many connections get switched when the
+switch is activated. The throw represents how many different positions
+the switch can be placed into. The most common types are SPST (single
+pole, single throw) and SPDT (single pole, double throw). Most buttons
+fall into the SPST category.
+
+An SPST switch has two terminals which are connected when the switch
+is activated and disconnected otherwise. An SPDT switch has three
+terminals: common (labelled ``C''), normally open (``NO''), and
+normally closed (``NC''). When the switch is activated, common is
+connected to normally open, and when it is not, common is connected to
+normally closed. An SPDT switch can be used as an SPST switch by
+ignoring the normally closed terminal.
+
+Switches and buttons should be wired as shown in Figure
+\ref{switches}. SPST switches are not polarized, so it does not matter
+which terminal is connected to signal. SPDT switches, when not used as
+SPST switches, should have the common terminal connected to signal.

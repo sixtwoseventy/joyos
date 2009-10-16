@@ -1,0 +1,99 @@
+\chapter{IC commands for 6.270}
+
+{\sl The Interactive C Manual For the Handy Board\/} describes the basic
+set of commands you will 
+have access to on the Handy Board.  In addition, to make use of the
+6.270 expansion board, you will need to use several extensions to the
+standard IC library, described in this appendix.
+
+\section{Expansion Board: Motors, Analog Inputs, Digital Outputs}
+
+There are two motor ports on the expansion board, numbered 4 and~5.
+You can use them just as you use the motors on the main board:
+\begin{quote}
+\begin{verbatim}
+fd(4);
+motor(5,-100);
+/* etc... */
+\end{verbatim}
+\end{quote}
+Since the expansion board motors are not speed-controlled, all
+positive speeds and all negative speeds are equivalent to 100
+and~-100, respectively.
+
+The expansion board add 16 analog inputs, labelled~16--31.  They are
+used just like the analog ports on the main board:
+\begin{quote}
+\begin{verbatim}
+analog(23);
+\end{verbatim}
+\end{quote}
+When the expansion board is in use, ports 1 and~2 on the main board
+can't be used.
+
+There are three digital outputs: \texttt{do0}, \texttt{do1},
+and~\texttt{do2}, which correspond to ports 8, 7, and~6 in software respectively. To turn the three digital outputs on and off, use the following commands:
+\begin{quote}
+\begin{verbatim}
+set_digital_out(p);
+clear_digital_out(p);
+\end{verbatim}
+\end{quote}
+where \verb^p^ is replaced by whatever port you wish to control.
+
+\section{Expansion Board: Servos}
+
+The expansion board has the ability to control up to six servos.
+To turn on the servos, run the following command:
+\begin{quote}
+\begin{verbatim}
+enable_servos();
+\end{verbatim}
+\end{quote}
+To turn off servo power, run this:
+\begin{quote}
+\begin{verbatim}
+disable_servos();
+\end{verbatim}
+\end{quote}
+
+The function \verb^servo(int port, int period)^ sets the servo to an
+angle that depends on \texttt{period}, which can vary from 0 to 4000.
+
+\section{Using the RF Reciever}
+Connect your RF receiver to the phone jack on your handyboard using the telephone cable.  To enable the RF receiver, use the following command:
+
+\begin{verbatim}
+    rf_team = YOURTEAMNUMBER;
+    rf_enable();
+\end{verbatim}
+
+The IC libraries include code to detect the start of the match.  Call the procedure \verb+start_machine()+ when your robot is ready to begin.  The code will walk you through the starting routine, consisting of the following
+steps:
+
+\begin{itemize}
+\item Your LCD will display a message as soon as it has heard an announcement from the RF system.  This should happen within a second.
+
+\item Announce "ready to go" and step back.
+
+\item When the match begins, \verb+start_machine()+ will return.  Start doing stuff!
+
+\item When the match ends, \verb+start_machine()+ will automatically shut down your robot.
+\end{itemize}
+
+The following is the basic outline for a program that follows the rules of 6.270.
+
+\begin{verbatim}
+void main() {
+  rf_team = 1;
+  rf_enable();
+
+  /* calibrate your robot... */
+
+  start_machine();
+
+  printf("GO!\n");
+
+  /* your code goes here... */
+}
+\end{verbatim}
