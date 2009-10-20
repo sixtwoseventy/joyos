@@ -1,31 +1,30 @@
-For this year's competition, Analog Devices is making available surface-micromachined
-integrated circuit gyroscopes which can be used to measure your robot's rate of turn or
-(with some numerical integration) angle of turn, which can be a signicant aid to navigation.
-These devices integrate the mechanical parts of the gyro along with the necessary
-circuitry on a single chip, so they are very small (about 7mm square). To make them
-easier to handle and use, the gyros are supplied on 1.25" square printed-circuit boards
-containing all necessary external components and a pin header for connections.
-A complete data sheet for the gyros (ADXRS300) can be found on the Analog Devices
-website, www.analog.com (select iMEMs Gyroscopes under the MEMs Technology
-category). However, most or all of what you need to know to use the gyros successfully
-in your robot will be presented here and in a lecture during the First week of the course.
+Analog Devices and Intempco provide surface-micromachined integrated circuit gyroscopes mounted 
+on Happyboard-compatible printed-circuit boards. The gyro can be used to measure your robot's 
+rate of turn or (with some numerical integration) angular orientation, which can be a signicant
+aid to navigation. These devices integrate the mechanical parts of the gyro along with the
+necessary circuitry on a single chip, so they are very small (about 7mm square). To make them
+easier to handle and use, the gyros are supplied on small printed-circuit boards
+containing all necessary external components to which you solder pins.  The pins plug directly
+into the Happyboard sensor input connector.
 
-A gyro measures rate of turn, and these gyros have a full-scale range of +/-300 degrees
-per second. They operate on a single 5V power supply, as supplied by the Handyboard's
-I/O channels, and produce a single voltage output in the range of 0 to 5V, so they are
-wired and used like most other three-wire sensors (they are not, however, ratiometric to
-the power supply like accelerometers or potentiometers). The output of the gyro when
-it is not rotating is nominally 2.5V, midscale on the Handyboard's A/D converter. The
-nominal sensitivity of the gyro is 5mV per degree per second of rotation. (Calibration
-routines may be used to take out the gyro's offset and sensitivity errors at the beginning
-of a run.)
+Your gyro board may have one of a few different gyros.  They will be one of the ADXRS300, ADXRS610,
+ADXRS622, or AD22307.  The most significant difference between them is the full-scale range (or
+sensitivity), which will be $250\,^{\circ}\mathrm{/s}$ or $300\,^{\circ}\mathrm{/s}$, or $5-7\mathrm{mV/}\,^{\circ}\mathrm{/s}$.  The data sheet for your gyro is 
+available at www.analog.com.  The AD22307 is a specially-branded version of the ADXRS622. 
 
-Since the A/D converter converts its whole 0 to 5V input range into 256 total codes,
-its resolution is only a bit better than 20mV. This means that the A/D can only resolve
-the output of the gyro to within about 4 degrees per second. To improve the resolution of
-gyro, Analog has designed and built a specialised board for 6.270. This board introduces 
-some noise into the gyro output voltage, which allows us to "dither" the reading,
-increasing the effective resolution of the gyro.
+A gyro measures rate of turn.  Our gyros operate on a single 5V power supply, as supplied by the
+Happyboard's analog input connectors.  They produce a single voltage output in the range of 0 to 5V,
+so they are wired and used like most other three-wire sensors. They are not, however, ratiometric to
+the power supply like accelerometers or potentiometers. The output of the gyro when
+it is not rotating is nominally 2.5V, midscale on the Happyboard's A/D converter. The
+nominal sensitivity of the gyro is 5-7mV per degree per second of rotation, depending on which
+gyro you have. You should calibrate your gyro's sensitivity, and make sure that the robot never
+turns faster than the full-scale range.  Calibrate the gyro's offset at the beginning of each run.
+
+Some gyro boards may say 'MIT Noisy Gyro' on them.  This doesn't mean that the gyro is noisy; rather 
+that noise is explicitly injected into the signal path to improve the effective resolution of the A/D 
+converter.  This was more important on the older 6.270 controllers which had an
+8-bit A/D converter, but has no detrimental effect when used with the Happyboard.
 
 To get from rate of turn to swept angle, it is necessary to take a series of readings 
 of the gyro's output and do a simple numerical integration. Techniques and code for 
@@ -33,9 +32,10 @@ performing the integration will be presented in lecture and in a handout.
 
 Figure \ref{gyro1} shows the mechanical configuration of the gyro board and the
 necessary connections.  To operate properly, the gyro board should be
-mounted in an approximately horizontal position, assuming that you
-intend to measure the turn angle (yaw) of your robot.  It can be
-fastened in place with double-sided-sticky tape.
+mounted in an approximately horizontal position (parallel to the surface of the earth), 
+assuming that you intend to measure the turn angle (yaw) of your robot.  It can be
+plugged directly into the Happyboard sensor input connector, or it can be fastened in place 
+with double-sided-sticky tape elsewhere on your robot.
 
 %Contacts (all at Analog Devices):
 
