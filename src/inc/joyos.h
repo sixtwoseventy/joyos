@@ -12,6 +12,7 @@
 #include <lcd.h>
 #include <motor.h>
 #include <servo.h>
+#include <rf.h>
 
 #include <hal/adc.h>
 #include <hal/delay.h>

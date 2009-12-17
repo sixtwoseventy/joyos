@@ -79,7 +79,7 @@ int main(void) {
 	uint16_t w;
 
 	io_init();
-	LED_PWR(1);
+//	LED_PWR(1);
 	LED_COMM(1);
 	lcd_init();
 	

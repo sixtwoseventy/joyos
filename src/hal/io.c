@@ -38,8 +38,8 @@ io_init() {
 	PORTB |= _BV(6);
 	// PORT D: I2C, switches, leds
 	DDRD = 0xFC; 
-	// PORTE: uart, lcd
-	DDRE = 0xCE;
+	// PORTE: uart, lcd, RF
+	DDRE = 0x4E;
 	PORTE |= _BV(4) | _BV(5);
 	// PORTF: ADC, JTAG
 	DDRF = 0x0D;

@@ -22,152 +22,281 @@
  * THE SOFTWARE.
  *
  */
+ 
+ //TODO: Logic is still bit-banged, should clean up with SPI module
 
-#include "config.h"
-#include "hal/io.h"
-#include "hal/spi.h"
-#include "nrf24l01.h"
+#include <stdio.h>
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
+#include <kern/thread.h>
+#include <kern/global.h>
+#include <hal/delay.h>
+#include <nrf24l01.h>
 
-uint8_t
-nrf_read_reg(uint8_t reg) {
-    spi_acquire ();
-    uint8_t cmd[2];
-    cmd[0] = NRF_SPI_R_REGISTER | reg;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,2);
-    SPI_RF_SS(1);
-    spi_release ();
-    return cmd[1];
+#define L01_PORT		PORTB
+#define L01_PORT_PIN	PINB
+#define L01_PORT_DD	DDRB
+
+#define L01_SCK	1 //Output
+#define MOSI	2 //Output
+#define MISO 3 //Input
+
+#define L01_CE_PORT	PORTF
+#define L01_CE_DD	DDRF
+
+#define L01_CSN_PORT	PORTE
+#define L01_CSN_DD	DDRE
+
+#define L01_CE	3 //Output
+#define L01_CSN	3 //Output
+
+#define RF_DELAY	5
+
+#define RX_IRQ	7 //Input
+#define L01_IRQ_PORT	PORTE
+#define L01_IRQ_PIN	PINE
+
+#define sbi(var, mask)   ((var) |= (uint8_t)(1 << mask))
+#define cbi(var, mask)   ((var) &= (uint8_t)(~(1 << mask)))
+
+//Initializes ATMega168 pins
+void init_24L01_pins(void)
+{
+	SPCR &= ~_BV(SPE);
+	ADCSRA &= ~_BV(ADEN);
+
+	//1 = Output, 0 = Input
+	L01_PORT_DD |= _BV(PB1) | _BV(PB2);
+	L01_PORT_DD &= ~_BV(PB3);
+
+
+	L01_CE_DD |= (1<<L01_CE);
+
+	L01_CSN_DD |= (1<<L01_CSN);
+
+
+	//Enable pull-up resistors (page 74)
+//	L01_PORT = 0b11111111;
+
+	sbi(L01_CSN_PORT, L01_CSN);
+	cbi(L01_CE_PORT, L01_CE); //Stand by mode
+	
+	for (uint8_t x = 0; x < 20; x++)
+	{
+		cbi(L01_CSN_PORT, L01_CSN); //Select chip
+		tx_spi_byte(0xFF);
+		sbi(L01_CSN_PORT, L01_CSN); //Deselect chip
+		delay_busy_ms(50);
+	}
 }
 
-void
-nrf_read_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
-    spi_acquire ();
-    uint8_t cmd[6];
-    cmd[0] = NRF_SPI_R_REGISTER | reg;
-    uint8_t i;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,len+1);
-    SPI_RF_SS(1);
-    spi_release ();
-    for(i=0;i<len;i++)
-        data[i] = cmd[i+1];
+
+//Sends a string out through nRF
+void transmit_string(char * string_out)
+{
+	uint8_t i;
+	
+	for(i = 0 ; string_out[i] != '\0' ; i++)
+	{
+		rf_tx_array[1] = string_out[i];
+		tx_data_nRF24L01();
+		delay_busy_ms(5);
+	}
+
+	rf_tx_array[1] = '\0';
+	tx_data_nRF24L01();
+	delay_busy_ms(5);
 }
 
-void
-nrf_write_reg(uint8_t reg, uint8_t data) {
-    spi_acquire ();
-    uint8_t cmd[2];
-    cmd[0] = NRF_SPI_W_REGISTER | reg;
-    cmd[1] = data;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,2);
-    SPI_RF_SS(1);
-    spi_release ();
+//This sends out the data stored in the data_array
+//data_array must be setup before calling this function
+void tx_data_nRF24L01(void)
+{
+	send_command(0x27, 0x7E); //Clear any interrupts
+	
+	send_command(0x20, 0x7A); //Power up and be a transmitter
+
+	send_byte(0xE1); //Clear TX Fifo
+	
+	tx_send_payload(0xA0, PAYLOAD_SIZE); //Clock in 4 byte payload of data_array
+
+    sbi(L01_CE_PORT, L01_CE); //Pulse CE to start transmission
+    delay_busy_ms(1);
+    cbi(L01_CE_PORT, L01_CE);
 }
 
-void
-nrf_write_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
-    spi_acquire ();
-    uint8_t cmd[6];
-    cmd[0] = NRF_SPI_W_REGISTER | reg;
-    uint8_t i;
-    for(i=0;i<len;i++)
-        cmd[i+1] = data[i];
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,len+1);
-    SPI_RF_SS(1);
-    spi_release ();
+//Set up nRF24L01 as a transmitter, does not actually send the data,
+//(need to call tx_data_nRF24L01() for that)
+uint8_t config_tx_nRF24L01(void)
+{
+    cbi(L01_CE_PORT, L01_CE); //Go into standby mode
+	
+	send_command(0x20, 0x7C); //16 bit CRC enabled, be a transmitter
+
+	send_command(0x21, 0x00); //Disable auto acknowledge on all pipes
+
+	send_command(0x24, 0x00); //Disable auto-retransmit
+
+	send_command(0x23, 0x03); //Set address width to 5bytes (default, not really needed)
+
+	send_command(0x26, 0x07); //Air data rate 1Mbit, 0dBm, Setup LNA
+
+	send_command(0x25, 0x02); //RF Channel 2 (default, not really needed)
+	
+	for (int x = 0; x < PAYLOAD_SIZE; x++) {
+		rf_tx_array[x] = 0xE7;
+	}
+	tx_send_payload(0x30, 5); //Set TX address
+	
+	send_command(0x20, 0x7A); //Power up, be a transmitter
+
+	return(send_byte(0xFF));
 }
 
-uint8_t nrf_read_rx_payload_len() {
-    spi_acquire ();
-    uint8_t cmd[2];
-    cmd[0] = NRF_SPI_R_RX_LP_WID;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,2);
-    SPI_RF_SS(1);
-    spi_release ();
-    return cmd[1];
+//Sends a number of bytes of payload
+void tx_send_payload(uint8_t cmd, uint8_t bytes)
+{
+	uint8_t i;
+
+	cbi(L01_CSN_PORT, L01_CSN); //Select chip
+	tx_spi_byte(cmd);
+	
+	for(i = 0 ; i < bytes ; i++){
+		tx_spi_byte(rf_tx_array[i]);
+	}
+	sbi(L01_CSN_PORT, L01_CSN); //Deselect chip
 }
 
-void
-nrf_read_rx_payload(uint8_t *data, uint8_t len) {
-    spi_acquire ();
-    uint8_t cmd[9];
-    cmd[0] = NRF_SPI_R_RX_PAYLOAD;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,len+1);
-    SPI_RF_SS(1);
-    spi_release ();
-    uint8_t i;
-    for (i=0;i<len;i++)
-        data[i] = cmd[i+1];
+//Sends command to nRF, returns status byte
+uint8_t send_command(uint8_t cmd, uint8_t data)
+{
+	uint8_t status;
+
+	cbi(L01_CSN_PORT, L01_CSN); //Select chip
+	tx_spi_byte(cmd);
+	status = tx_spi_byte(data);
+	sbi(L01_CSN_PORT, L01_CSN); //Deselect chip
+
+	return(status);
 }
 
-void
-nrf_flush_tx() {
-    spi_acquire ();
-    uint8_t cmd[1];
-    cmd[0] = NRF_SPI_FLUSH_TX;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,1);
-    SPI_RF_SS(1);
-    spi_release ();
+//Sends one byte to nRF
+uint8_t send_byte(uint8_t cmd)
+{
+	uint8_t status;
+	
+	cbi(L01_CSN_PORT, L01_CSN); //Select chip
+	status = tx_spi_byte(cmd);
+	sbi(L01_CSN_PORT, L01_CSN); //Deselect chip
+	
+	return(status);
 }
 
-void
-nrf_flush_rx() {
-    spi_acquire ();
-    uint8_t cmd[1];
-    cmd[0] = NRF_SPI_FLUSH_RX;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,1);
-    SPI_RF_SS(1);
-    spi_release ();
+//Basic SPI to nRF24L01
+uint8_t tx_spi_byte(uint8_t outgoing)
+{
+    uint8_t i, incoming;
+	incoming = 0;
+	
+
+    //Send outgoing byte
+    for(i = 0 ; i < 8 ; i++)
+    {
+		
+		if(outgoing & 0b10000000)
+			sbi(L01_PORT, MOSI);
+		else
+			cbi(L01_PORT, MOSI);
+
+		sbi(L01_PORT, L01_SCK); //L01_SCK = 1;
+		delay_busy_us(RF_DELAY);
+		
+		//MISO bit is valid after clock goes going high
+		incoming <<= 1;
+		if(L01_PORT_PIN & (1<<MISO)) incoming |= 0x01; //this line is fucking up
+		
+		cbi(L01_PORT, L01_SCK); //L01_SCK = 0; 
+		delay_busy_us(RF_DELAY);
+		
+        outgoing <<= 1;
+		
+    }
+	
+
+	return(incoming);
 }
 
-void
-nrf_reuse_tx_pl() {
-    spi_acquire ();
-    uint8_t cmd[1];
-    cmd[0] = NRF_SPI_REUSE_TX_PL;
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,1);
-    SPI_RF_SS(1);
-    spi_release ();
+//Configures nRF24L01 for recieve mode
+void config_rx_nRF24L01(void)
+{
+	cbi(L01_CE_PORT, L01_CE);//CE = 0
+    
+	send_command(0x20, 0x3D);//PRX, 16 bit CRC enabled===========================================================
+	
+    send_command(0x21, 0);//dissable auto-ack for all channels====================================================
+	
+    send_command(0x26, 0x07);//data rate = 1MB ===============================================================
+    
+    send_command(0x31, PAYLOAD_SIZE);//4 byte payload ==============================================================
+	
+    send_command(0x20, 0x3B);//PWR_UP = 1 ================================================================
+    
+	sbi(L01_CE_PORT, L01_CE);//CE = 1
+
 }
 
-void
-nrf_write_tx_payload(uint8_t *data, uint8_t len) {
-    spi_acquire ();
-    uint8_t cmd[9];
-    cmd[0] = NRF_SPI_W_TX_PAYLOAD;
-    uint8_t i;
-    for(i=0;i<len;i++)
-        cmd[i+1] = data[i];
-    spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
-    SPI_RF_SS(0);
-    spi_transfer_sync(cmd,len+1);
-    SPI_RF_SS(1);
-    spi_release ();
-}
+//Gets data from 24L01 and puts it in rf_rx_array, resets all ints
+void rx_data_nRF24L01(void)
+{
+    uint8_t i, j, data, cmd;
 
-void
-nrf_init_rx() {
-    spi_acquire ();
-    nrf_write_reg(NRF_REG_EN_AA,        0x00); // set pipe0 for auto-ack
-    nrf_write_reg(NRF_REG_EN_RXADDR,    0x01); // set pipe0 for reception
-    nrf_write_reg(NRF_REG_RX_PW_P0,     0x07); // set pipe0 for 1 byte payload
-    nrf_write_reg(NRF_REG_CONFIG,       0x0B); // EN_CRC|PWR_UP|PRIM_RX
-    spi_release ();
+    cmd = 0x61; //Read RX payload ==========================================================================================
+    
+	cbi(L01_CSN_PORT, L01_CSN);//CSN = 0
+	delay_busy_us(RF_DELAY);
+    
+    for(i = 0 ; i < 8 ; i++)
+    {
+		if(cmd & 0b10000000)
+			sbi(L01_PORT, MOSI);
+		else
+			cbi(L01_PORT, MOSI);
+		
+		sbi(L01_PORT, L01_SCK); //L01_SCK = 1;
+		delay_busy_us(RF_DELAY);
+
+		cbi(L01_PORT, L01_SCK); //L01_SCK = 0; 
+		delay_busy_us(RF_DELAY);
+		
+        cmd <<= 1;
+		
+    }
+    
+    for (j = 0; j < PAYLOAD_SIZE; j++)
+    {
+        data = 0;
+        
+        for(i = 0 ; i < 8 ; i++)
+        {
+            data <<= 1;
+            if(L01_PORT_PIN & (1<<MISO) ) data |= 0x01;
+			else data &= 0xFE;
+
+			sbi(L01_PORT, L01_SCK); //L01_SCK = 1;
+			delay_busy_us(RF_DELAY);
+            
+			cbi(L01_PORT, L01_SCK); //L01_SCK = 0; 
+			delay_busy_us(RF_DELAY);
+        }
+		
+		rf_rx_array[j] = data;
+ 
+    }
+    
+    sbi(L01_CSN_PORT, L01_CSN);//CSN = 1
+    
+    send_byte(0xE2);//Flush RX FIFO =============================================================
+
+	send_command(0x27, 0x40);//reset int =========================================================
+
 }

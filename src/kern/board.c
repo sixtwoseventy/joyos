@@ -33,7 +33,6 @@
 #include <kern/lock.h>
 #include <kern/isr.h>
 #include <at45db011.h>
-#include <rf.h>
 #include <util/crc16.h>
 
 #define FAIL_MSG_BUF_LEN	17
@@ -98,7 +97,7 @@ board_init (void) {
 
 	// Init GPIOs
 	io_init();
-	LED_PWR(1);
+//	LED_PWR(1);
 	// init uart
 	uart_init(BAUD_RATE);
 	stderr = &uartout;
@@ -113,7 +112,6 @@ board_init (void) {
 	lcd_init();
 	stdout = &lcdout;
 	adc_init();
-    //rf_init();
 	isr_init();
 
 	// load config, or fail if invalid
@@ -152,5 +150,8 @@ board_init (void) {
 	LED_COMM(0);
 	// beep
 	beep(880,1000);
+	
+	//Initialize RF
+    rf_init();
 }
 

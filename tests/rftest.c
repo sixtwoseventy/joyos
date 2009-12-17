@@ -23,44 +23,35 @@
  *
  */
 
-#ifndef __INCLUDE_BOARD_H__
-#define __INCLUDE_BOARD_H__
+// Include headers from OS
+#include <joyos.h>
 
-#include <hal/uart.h>
-#include <lcd.h>
-#include <fpga.h>
-#include <servo.h>
-#include <analog.h>
-#include <digital.h>
-#include <encoder.h>
-#include <motor.h>
-#include <buttons.h>
-#include <rf.h>
+// usetup is called during the calibration period. It must return before the
+// period ends.
+int usetup (void) {
+	set_auto_halt(0);
+	return 0;
+}
 
-/**
- * \file board.h
- * \brief Common board functionality.
- * 
- * This file includes all the drivers for the happyboard and should be 
- * included from user code. 
- */
+// Entry point to contestant code.
+// Create threads and return 0.
+int
+umain (void) {	
 
-#define BOARD_CONFIG_ADDRESS 0
-#define FPGA_CONFIG_ADDRESS 256
+	//This loop prints out its position, which is set by RF
+	//When go is pressed, a position is sent out, and other happyboards will update their position accordingly
+	//Thus, this demo needs two happyboards to witness in action
+	while(1)
+	{
+		uart_printf("\n(%f,%f)",self_position[0],self_position[1]);
+		if (go_press()) {
+			transmit_position_packet(1,get_time()/1000.0,3.14159); //1 is the index of the receiving robot.  For now, this is 1 for all robots
+		}
+		pause(100);
+	}
+	
+	// Will never return, but the compiler complains without a return
+	// statement.
+	return 0;
+}
 
-/**
- * Happyboard configuration structure stores basic board config
- */
-typedef struct {
-    uint16_t version;       ///< Happyboard hardware version
-    uint16_t id;            ///< Unique board id
-    uint16_t fpga_version;  ///< FPGA firmware version
-    uint16_t fpga_len;      ///< FPGA firmware length
-    uint16_t crc;           ///< Config CRC
-} BoardConfig;
-
-BoardConfig board_config;
-
-void board_init (void);
-
-#endif // __INCLUDE_BOARD_H__

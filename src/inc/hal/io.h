@@ -65,7 +65,7 @@
 #define SWITCH_STOP() 	(!GPIO_READ(PINE, 4))
 
 #define LED_COMM(v)			GPIO_WRITE(v, PORTE, 6)
-#define LED_PWR(v)			GPIO_WRITE(v, PORTE, 7)
+//#define LED_PWR(v)			GPIO_WRITE(v, PORTE, 7) #Power light line taken by RF interrupt
 
 #define BEEPER(v)				GPIO_WRITE(v, PORTB, 4)
 
