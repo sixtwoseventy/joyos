@@ -64,6 +64,17 @@ void panic_P (PGM_P msg);
  */
 void set_auto_halt(uint8_t ah);
 
+/**
+ * Enables start of the round.  That is, if this is called, then the robot will
+ * stop waiting or not wait at all to enter umain
+ */
+void round_start();
+
+/**
+ * Ends the round immediately and halts the robot
+ */
+void round_end();
+
 // throw compiler error if x is false
 #define static_assert(x) switch(x) case 0: case (x):
 

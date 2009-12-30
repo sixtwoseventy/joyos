@@ -47,10 +47,22 @@ extern int umain (void);
 extern int idle (void);
 extern int usetup (void);
 
-static uint8_t auto_halt = 1;
+static uint8_t auto_halt = 0;
+static uint8_t auto_round_start = 0;
 
 void set_auto_halt(uint8_t ah) {
 	auto_halt = ah;
+}
+
+void round_start() {
+	auto_round_start = true;
+}
+
+
+void round_end() {
+	lcd_printf_P (PSTR("\nRound end"));
+	uart_printf_P (PSTR("\nRound end"));
+	halt();
 }
 
 int robot_monitor (void) {
@@ -65,7 +77,10 @@ int robot_monitor (void) {
 
 	// prompt user for start click
 	lcd_printf_P (PSTR("\nRobot ready.    Press 'Go'"));
-	go_click ();
+	
+	//Wait until a go click or automatic round trigger
+	while (!go_press()&&!auto_round_start) {;}
+	//go_click ();
 
 	lcd_clear ();
 	// create a user thread
@@ -82,8 +97,7 @@ int robot_monitor (void) {
 		while (1) { yield(); }
 	} else {
 		pause (90000ul);
-		lcd_printf_P (PSTR("\nRound end"));
-		halt();
+		round_end();
 	}
 
 	return 0;

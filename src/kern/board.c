@@ -151,7 +151,9 @@ board_init (void) {
 	// beep
 	beep(880,1000);
 	
-	//Initialize RF
+	//This function doesn't work if above fpga_init
+	//Conflict with SPI stuff perhaps?
     rf_init();
+	
 }
 

@@ -20,10 +20,31 @@ float self_position[2];
 float other_position[2];
 float mouse_position[2];
 
+//The ID of the current goal position.  Starts at 0, increments to 1 on first goal
+//packet received, and increments whenever a new goal position is received
+uint8_t goal_id;
+
+float goal_position[2]; //The target position received from a goal packet
+
 /**
  * Transmits the position of the object with the given ID
  */
 void transmit_position_packet(uint8_t id, float x, float y);
+
+/**
+ * Transmits the goal position for the object with the given ID
+ */
+void transmit_goal_packet(uint8_t id, float x, float y);
+
+/**
+ * Tells the listed robots to start
+ */
+void transmit_start_packet(uint8_t num_bots, uint8_t bot_ids[]);
+
+/**
+ * Tells the listed robots to stop
+ */
+void transmit_stop_packet(uint8_t num_bots, uint8_t bot_ids[]);
 
 /**
  * Initializes RF.  Should not be called by user
