@@ -12,7 +12,7 @@ SCANFOP =
 PRINTFOP = -Wl,-u,vfprintf -lprintf_flt -lm
 CFLAGS = -Wall -std=gnu99 -g -Os -mmcu=$(MCU)
 LDFLAGS = -L$(LIBDIR) $(PRINTFOP) $(SCANFOP) $(MEMLAYOUT)
-AVRDUDEFLAGS_USER = -c stk500 -p $(MCU) -P $(PORT) -b 19200 -V -F
+AVRDUDEFLAGS_USER = -c stk500v1 -p $(MCU) -P $(PORT) -b 19200 -V -F
 
 # Object files
 OBJ = $(SRC:.c=.o)
