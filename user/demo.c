@@ -68,16 +68,16 @@ int display_angle (void) {
 void setServoStraight () {
 	servo_set_pos (SERVO_BACKRIGHT, 202);
 	pause (SET_SERVO_PAUSE);
-	uart_printf("set backright");
+	printf("set backright");
 	servo_set_pos (SERVO_BACKLEFT, 280);
 	pause (SET_SERVO_PAUSE);
-	uart_printf("set backleft");
+	printf("set backleft");
 	servo_set_pos (SERVO_FRONTRIGHT, 222);
 	pause (SET_SERVO_PAUSE);
-	uart_printf("set frontright");
+	printf("set frontright");
 	servo_set_pos (SERVO_FRONTLEFT, 138);
 	pause (SET_SERVO_PAUSE);
-	uart_printf("set frontleft");
+	printf("set frontleft");
 }
 
 void setServoTurn () {
@@ -126,7 +126,7 @@ float read_angle () {
 
 void set_turn (float value) {
 	uint16_t dec = (int) floor( value*100 - floor(value)*100 );
-	uart_printf("Actuate %d.%03u\n", (int) value, dec);
+	printf("Actuate %d.%03u\n", (int) value, dec);
 }
 
 int umain(void) {
@@ -138,7 +138,7 @@ int umain(void) {
 	pid.enabled = 1;
 
 	dispatch_pid (&pid, 0.01, 0);
-	uart_printf("pid done.\n");
+	printf("pid done.\n");
 
 	return 0;
 }

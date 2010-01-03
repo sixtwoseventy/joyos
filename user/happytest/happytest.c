@@ -145,6 +145,8 @@ umain (void) {
 	start_test("Encoder Test    ");
 	test_encoders();
 
+	panic ("Testing new panic()");
+
 	printf("\nTests complete.");
 	while (1);
 	return 0;

@@ -43,7 +43,7 @@ extern FILE lcdout, uartout;
 char str_boot_fail[] PROGMEM  = "Init fail: %s\n\r";
 
 // Boot text
-char str_boot_message[] = "Happyboard v%X.%02X               \5";
+char str_boot_message[] PROGMEM = "Happyboard v%X.%02X               \5";
 
 // Boot progress messages
 char str_boot_uart[] PROGMEM  = "UART0 opened at %d\n\r";
@@ -80,12 +80,14 @@ board_fail_P(PGM_P msg) {
 	strncpy_P (buf, msg, FAIL_MSG_BUF_LEN);
 	buf[FAIL_MSG_BUF_LEN-1] = '\0';
 
-	uart_printf_P(str_boot_fail,msg);
+	printf_P(str_boot_fail,msg);
 	// print message
+#ifdef LCD_DEBUG
 	lcd_set_pos(16);
 	lcd_printf(msg);
 	lcd_set_pos(31);
 	lcd_print_char('\3', NULL);
+#endif
 	// and stop
 	while (1);
 }
@@ -101,15 +103,15 @@ board_init (void) {
 	// init uart
 	uart_init(BAUD_RATE);
 	stderr = &uartout;
-	uart_printf_P(str_boot_uart,BAUD_RATE);
-	uart_printf_P(str_boot_start);
+	printf_P(str_boot_uart,BAUD_RATE);
+	printf_P(str_boot_start);
 	// other IO init
 	digital_init();
 	encoder_init();
 	spi_init();
 	motor_init();
 	servo_init();
-	lcd_init();
+	lcd_init(); //consider wrapping this in an #ifdef LCD_DEBUG tag?
 	stdout = &lcdout;
 	adc_init();
 	isr_init();
@@ -118,33 +120,36 @@ board_init (void) {
 	confOK = board_load_config();
 	if (!confOK)
 		board_fail_P(PSTR("Bad Config"));
-	uart_printf_P(str_boot_conf);
-	uart_printf_P(str_boot_board,
+	printf_P(str_boot_conf);
+	printf_P(str_boot_board,
 			board_config.version>>8,
 			board_config.version&0xFF);
-	uart_printf_P(str_boot_id, board_config.id);
+	printf_P(str_boot_id, board_config.id);
 
 	// print boot text to screen
-	lcd_printf(str_boot_message, 
-			board_config.version>>8, board_config.version&0xFF);
+	printf_P(str_boot_message, board_config.version>>8, board_config.version&0xFF);
 
 	// check battery, fail if <7.5V
 	battOK = read_battery()>=7500;
 	if (!battOK)
 		board_fail_P(PSTR("Low battery"));
-	uart_printf_P(str_boot_batt,read_battery());
+	printf_P(str_boot_batt,read_battery());
 
 	// initialise FPGA
 	fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
 	if (!fpgaOK)
 		board_fail_P(PSTR("FPGA failure"));
-	uart_printf_P(str_boot_fpga,
+	printf_P(str_boot_fpga,
 			fpga_get_version_major(),
 			fpga_get_version_minor());
 
 	// all ok
+#ifdef LCD_DEBUG
 	lcd_set_pos(31);
 	lcd_print_char('\1', NULL);
+#else
+	printf("All good \1");
+#endif
 
 	//delay_busy_ms(500);
 	LED_COMM(0);

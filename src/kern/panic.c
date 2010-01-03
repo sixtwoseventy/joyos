@@ -37,6 +37,7 @@ panic (char *msg) {
 	// stop everything
 	cli();
 	// notify user
+#ifdef LCD_DEBUG
 	extern struct lock lcd_lock;
 
 	// clobber LCD lock so we can write
@@ -45,6 +46,13 @@ panic (char *msg) {
 
 	lcd_clear(); // clear lcd
 	lcd_printf_P(PSTR("panic: %s\n"), msg ? msg : ""); // print msg
+#endif
+	extern struct lock uart_lock;
+	
+	uart_lock.locked = 0;
+	uart_lock.thread = NULL;
+
+	printf("panic: %s\n", msg ? msg : "");
 
 	// TODO: uartPrint
 	// halt

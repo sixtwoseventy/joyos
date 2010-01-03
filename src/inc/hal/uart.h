@@ -41,6 +41,8 @@
 #include <inttypes.h>
 #include <stdio.h>
 
+#define printf(statement, ...) uart_printf_P(PSTR(statement), ## __VA_ARGS__)
+#define printf_P(statement, ...) uart_printf_P(statement, ## __VA_ARGS__)
 /**
  * Send a character over UART.
  */

@@ -57,8 +57,8 @@ primetest (void) {
 	uint16_t x = 2;
 	uint16_t primes[N_PRIMES];
 
-	uart_printf("begin prime test\n");
-	uart_printf("computing %d primes...\n", N_PRIMES);
+	printf("begin prime test\n");
+	printf("computing %d primes...\n", N_PRIMES);
 	while (i < N_PRIMES) {
 		if (is_prime(x)) {
 			//uart_printf(" %d is prime\n", x);
@@ -67,16 +67,16 @@ primetest (void) {
 		x++;
 	}
 
-	uart_printf("checking %d primes...\n", i);
+	printf("checking %d primes...\n", i);
 	for (uint8_t j = 0; j < i; j++) {
 		if (real_primes[j] != primes[j]) {
-			uart_printf("prime (index %u) %d does not match expected %d\n",
+			printf("prime (index %u) %d does not match expected %d\n",
 					j, primes[j], real_primes[j]);
 			panic ("primetest failed");
 		}
 	}
 
-	uart_printf("passed primetest!\n");
+	printf("passed primetest!\n");
 	return 0;
 }
 

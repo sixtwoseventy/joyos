@@ -76,7 +76,7 @@ int robot_monitor (void) {
 	//	yield ();
 
 	// prompt user for start click
-	lcd_printf_P (PSTR("\nRobot ready.    Press 'Go'"));
+	printf("\nRobot ready.    Press 'Go'");
 	
 	//Wait until a go click or automatic round trigger
 	while (!go_press()&&!auto_round_start) {;}
@@ -117,21 +117,22 @@ int main (void) {
 	board_init();
 
 	extern uint16_t __malloc_heap_start;
-	uart_printf_P (PSTR("__malloc_heap_start = %p\n"), __malloc_heap_start);
-	uart_printf_P (PSTR("__malloc_heap_end = %p\n"), __malloc_heap_end);
+	printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
+	printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
 
 	int16_t heap_size = 2 * (__malloc_heap_end - __malloc_heap_start);
-	uart_printf_P (PSTR("heap size: %d bytes\n"), heap_size);
+	printf("heap size: %d bytes\n", heap_size);
 
 	if (__malloc_heap_start >= __malloc_heap_end)
 		panic_P (PSTR("         memory full"));
 
-	PGM_P boot_msg = PSTR("JoyOS v"JOYOS_VERSION"    Press GO");
+	PGM_P boot_msg = PSTR("JoyOS v"JOYOS_VERSION);
 	lcd_clear();
 	lcd_printf_P (boot_msg);
-	uart_printf_P (boot_msg);
-	uart_printf_P (PSTR("\n"));
-	go_click();
+	printf_P (boot_msg);
+	printf_P (PSTR("\n"));
+	//Now, turning on power will immediately start the robot. Contestants can add their own go_click().
+	//go_click();
 
 	// startup multithreading
 	init_thread();

@@ -58,7 +58,7 @@ idle(void) {
 		yield();
 	}
 
-	panic_P (PSTR("idle"));
+	panic ("idle");
 	return 0;
 }
 
@@ -100,8 +100,8 @@ init_thread(void) {
 	//if ((STACKTOP(MAX_THREADS) < __bss_end))
 	//	panic ("no space for stacks");
 
-	uart_printf_P (PSTR("thread table start at %p\n"), &threads);
-	uart_printf_P (PSTR("thread table end at %p\n"), &threads[MAX_THREADS]);
+	printf ("thread table start at %p\n", &threads);
+	printf ("thread table end at %p\n", &threads[MAX_THREADS]);
 
 	// set all threads as free
 	int i;
@@ -110,7 +110,7 @@ init_thread(void) {
 		threads[i].th_status = THREAD_FREE;
 		threads[i].th_stacktop = STACKTOP(i);
 		threads[i].th_runs = 0;
-		uart_printf_P(PSTR("(id %d) stack [%p,%p)\n"),
+		printf("(id %d) stack [%p,%p)\n",
 				i, STACKTOP(i), STACKTOP(i+1));
 	}
 
@@ -119,7 +119,7 @@ init_thread(void) {
 	// assert idle thread is thread #0
 	//assert (threads[0].th_status != THREAD_FREE);
 	if (threads[0].th_status == THREAD_FREE)
-		panic_P (PSTR("idle free"));
+		panic ("idle free");
 
     ATOMIC_BEGIN {
         setjmp(TO_JMP_BUF(sched_jbuf));
@@ -185,52 +185,51 @@ schedule(void) {
 
 	for (int i = 0; i < MAX_THREADS; i++) {
 		if(threads[i].th_status == THREAD_FREE) {
-			uart_printf_P(PSTR(" thread (tid %d) unallocated\n"), i);
+			printf(" thread (tid %d) unallocated\n", i);
 			continue;
 		}
-		uart_printf_P(PSTR(" thread (tid %d) '%s' status %d\n"), 
+		printf(" thread (tid %d) '%s' status %d\n", 
 				i, threads[i].th_name, threads[i].th_status);
 		if(threads[i].th_status == THREAD_RUNNABLE) {
-			uart_printf_P(PSTR(
-					"Oops... there's a runnable thread thats not idle\n"));
+			printf("Oops... there's a runnable thread thats not idle\n");
 		}
 	}
 
 	// should never return
-	panic_P (PSTR("schedule"));
+	panic ("schedule");
 }
 
 void
 check (struct thread *t) {
 	if (threads[0].th_status != THREAD_RUNNABLE) {
-		uart_printf_P(PSTR("-- no idle thread --\n"));
-		uart_printf_P(PSTR("time %d"), global_time);
-		uart_printf_P(PSTR("threads[0] at %p\n"), &threads[0]);
-		uart_printf_P(PSTR("threads[0].th_status at %p\n"), 
+		printf("-- no idle thread --\n");
+		printf("time %d", global_time);
+		printf("threads[0] at %p\n", &threads[0]);
+		printf("threads[0].th_status at %p\n", 
 				&(threads[0].th_status));
 
 		extern uint16_t __malloc_heap_start, __malloc_heap_end;
-		uart_printf_P(PSTR("malloc space [%p,%p]\n"),
+		printf("malloc space [%p,%p]\n",
 				__malloc_heap_start, __malloc_heap_end);
-		panic_P (PSTR("no idle"));
+		panic ("no idle");
 	}
 
 	// check if SP is above stacktop
 	if (t->th_jmpbuf.sp > STACKTOP(t->th_id)) {
-		panic_P (PSTR("SP above"));
+		panic ("SP above");
 	}
 
 	// check is SP is below bottom (stacktop-stacksize)
 	if (t->th_stacktop - t->th_jmpbuf.sp > t->th_stacksize) {
-		uart_printf_P(PSTR("\nstack overflow\n"));
-		uart_printf_P(PSTR("sp of '%s' (id %d) is %p\n"),
+		printf("\nstack overflow\n");
+		printf("sp of '%s' (id %d) is %p\n",
 				t->th_name, t->th_id, t->th_jmpbuf.sp);
 		dump_jmpbuf(&t->th_jmpbuf);
-		uart_printf_P(PSTR("pc at %p\n"), t->th_jmpbuf.pc);
-		uart_printf_P(PSTR("stacktop: %p\n"), t->th_stacktop);
-		uart_printf_P(PSTR("reserved space: %p to %p\n"),
+		printf("pc at %p\n", t->th_jmpbuf.pc);
+		printf("stacktop: %p\n", t->th_stacktop);
+		printf("reserved space: %p to %p\n",
 				t->th_stacktop-t->th_stacksize+1, t->th_stacktop);
-		panic_P (PSTR("stack overflow"));
+		panic_P ("stack overflow");
 	}
 
 /*
@@ -282,7 +281,7 @@ check (struct thread *t) {
 void
 suspend() {
 	if (!current_thread)
-		panic_P (PSTR("no current_thread"));
+		panic ("no current_thread");
 
 	//if (setjmp(current_thread->th_jmpbuf) == 0)
 	if (setjmp(TO_JMP_BUF(current_thread->th_jmpbuf)) == 0) {
@@ -323,7 +322,7 @@ resume(struct thread *t) {
 	longjmp(TO_JMP_BUF(current_thread->th_jmpbuf), 1);
 
 	// resume should never return
-	panic_P (PSTR("resume"));
+	panic ("resume");
 }
 
 void
@@ -369,7 +368,7 @@ yield(void) {
 			"push r31\n\t" ::);
 
 	//assert (current_thread);
-	if (!current_thread) panic_P (PSTR("yield"));
+	if (!current_thread) panic ("yield");
 
 	suspend();
 
@@ -400,7 +399,7 @@ sleep(void *channel) {
 	cli();
 
 	//assert(current_thread);
-	if (!current_thread) panic_P (PSTR("sleep"));
+	if (!current_thread) panic ("sleep");
 
 	current_thread->th_channel = channel;
 	current_thread->th_status = THREAD_SLEEPING;
@@ -433,12 +432,12 @@ exit(int status) {
 
 	//assert(current_thread);
 	if (!current_thread)
-		panic_P (PSTR("exiting nothing"));
+		panic ("exiting nothing");
 
 	current_thread->th_status = THREAD_FREE;
 	yield();
 
-	panic_P (PSTR("exit"));
+	panic_P ("exit");
 	for (;;); // satisfy compiler
 }
 
@@ -519,7 +518,7 @@ create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
 			return i;
 		}
 
-	panic_P (PSTR("out of threads"));
+	panic_P ("out of threads");
 	for(;;); // satisfy compiler
 }
 
@@ -541,7 +540,7 @@ halt(void) {
 	for(;;);
 
 	// unreachable code, should never happen
-	panic_P (PSTR("halt"));
+	panic_P ("halt");
 }
 
 /*
@@ -568,9 +567,9 @@ dump_jmpbuf(jmp_buf *jb) {
 
 void
 dump_jmpbuf(struct jbuf *jb) {
-	uart_printf_P(PSTR("Dumping jmp_buf:\n"));
+	printf("Dumping jmp_buf:\n");
 
-	uart_printf_P (PSTR(" <omitting r0-r31>\n"));
+	printf (" <omitting r0-r31>\n");
 
 	/*
 	uart_printf_P(PSTR("r0\tNA\t\tr1\tNA\t\tr2\t%2p\t\tr3\t%2p\t\tr4\t%2p\n"),
@@ -589,10 +588,10 @@ dump_jmpbuf(struct jbuf *jb) {
 			jb->r30, jb->r31);
 	*/
 
-	uart_printf_P(PSTR(" FP   : %04p\n"), (uint32_t) JMPBUF_FP(*jb));
-	uart_printf_P(PSTR(" SP   : %04p\n"), (uint32_t) JMPBUF_SP(*jb));
-	uart_printf_P(PSTR(" SREG : %02p\n"), (uint32_t) JMPBUF_SREG(*jb));
-	uart_printf_P(PSTR(" PC   : %08p\n"), (uint32_t) JMPBUF_IP(*jb));
+	printf(" FP   : %04p\n", (uint32_t) JMPBUF_FP(*jb));
+	printf(" SP   : %04p\n", (uint32_t) JMPBUF_SP(*jb));
+	printf(" SREG : %02p\n", (uint32_t) JMPBUF_SREG(*jb));
+	printf(" PC   : %08p\n", (uint32_t) JMPBUF_IP(*jb));
 }
 
 void
@@ -600,15 +599,15 @@ dump_threadstates () {
 	uint8_t sreg = SREG & SREG_IF;
 	cli();
 
-	uart_printf_P(PSTR("Dumping thread states:\n"));
+	printf("Dumping thread states:\n");
 
 	for (int i = 0; i < MAX_THREADS; i++) {
 		if(threads[i].th_status == THREAD_FREE) {
-			uart_printf_P(PSTR(" thread (tid %d) unallocated\n"), i);
+			printf(" thread (tid %d) unallocated\n", i);
 			continue;
 		}
 
-		uart_printf_P(PSTR(" thread (tid %d) '%s' status %d runs %u\n"),
+		printf(" thread (tid %d) '%s' status %d runs %u\n",
 				i, threads[i].th_name, threads[i].th_status,
 				threads[i].th_runs);
 	}

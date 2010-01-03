@@ -35,10 +35,12 @@
 void
 waitForClick(char *msg) {
 	if (msg) {
+#ifdef LCD_DEBUG
 		// TODO: clean up, make more general (don't assume LCD)
 		lcd_clear();
 		// print to LCD
 		lcd_printf("%s", msg);
+#endif
 		// print to UART
 		uart_printf("%s\n", msg);
 	}
@@ -57,6 +59,7 @@ dumpBytes (uint8_t *bytes, uint8_t n) {
 	}
 }
 
+/* Is now replaced with a macro that uses uart_printf_P() instead.
 int 
 printf (const char *fmt, ...) {
 	extern struct lock lcd_lock;
@@ -72,5 +75,5 @@ printf (const char *fmt, ...) {
 
 	release(&lcd_lock);
 	return count;
-}
+}*/
 

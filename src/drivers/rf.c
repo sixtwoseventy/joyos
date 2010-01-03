@@ -63,7 +63,7 @@ ISR (RF_INTERRUPT)//RF Interrupt
 		default:
 			break;
 	}
-	//uart_printf("\n(%f, %f)",self_position[0],self_position[1]);
+	//printf("\n(%f, %f)",self_position[0],self_position[1]);
 	sei();//Enable Interrupts
 }
 

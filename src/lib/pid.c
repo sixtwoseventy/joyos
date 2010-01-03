@@ -62,11 +62,11 @@ init_pid (struct pid_controller *pid, float kp, float ki, float kd,
 float 
 update_pid_input(struct pid_controller *pid, float current_val) {
 
-	uart_printf_P (PSTR("current value %0.3f\n"), current_val);
+	printf ("current value %0.3f\n", current_val);
 
 	float error = pid->goal - current_val;
 
-	uart_printf_P (PSTR("error %0.3f\n"), error);
+	printf ("error %0.3f\n", error);
 
 	// proportional feedback
 	float result = error * pid->kp;

@@ -41,10 +41,10 @@ fib (uint16_t n) {
 
 int
 fibonacci_test(void) {
-	uart_printf("begin fact_test\n");
+	printf("begin fact_test\n");
 
 
-	uart_printf("passed fact_test!\n");
+	printf("passed fact_test!\n");
 	return 0;
 }
 
