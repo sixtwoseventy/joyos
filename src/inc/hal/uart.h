@@ -44,8 +44,8 @@
 //notice that printf defaults to using PSTR(), while scanf does not.
 #define printf(statement, ...) uart_printf_P(PSTR(statement), ## __VA_ARGS__)
 #define printf_P(statement, ...) uart_printf_P(statement, ## __VA_ARGS__)
-#define scanf(statement, ...) uart_scanf(statement, ## __VA_ARGS)
-#define scanf_P(statement, ...) uart_scanf_P(PSTR(statement), ## __VA_ARGS)
+#define scanf(statement, ...) uart_scanf(statement, ## __VA_ARGS__)
+#define scanf_P(statement, ...) uart_scanf_P(PSTR(statement), ## __VA_ARGS__)
 
 /**
  * Send a character over UART.
@@ -76,6 +76,8 @@ int uart_printf_P(const char *fmt, ...);
  *
  */
 char uart_recv();
+
+int uart_get(FILE *f);
 
 /**
  *

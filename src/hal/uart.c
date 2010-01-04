@@ -30,7 +30,7 @@
 
 // setup LCD file descriptor (for printf)
 //FILE uartout = FDEV_SETUP_STREAM(uart_put, NULL, _FDEV_SETUP_WRITE);
-FILE uartio = FDEV_SETUP_STREAM(uart_put, uart_recv, _FDEV_SETUP_RW);
+FILE uartio = FDEV_SETUP_STREAM(uart_put, uart_get, _FDEV_SETUP_RW);
 
 struct lock uart_lock;
 
@@ -100,6 +100,13 @@ uart_printf_P(const char *fmt, ...) {
 }
 
 char uart_recv() {
+	LED_COMM(1);
+	while(!(UCSR0A & _BV(RXC0)));
+	LED_COMM(0);
+	return (UDR0);
+}
+
+int uart_get(FILE *f) {
 	LED_COMM(1);
 	while(!(UCSR0A & _BV(RXC0)));
 	LED_COMM(0);

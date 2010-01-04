@@ -128,6 +128,7 @@ int usetup (void) {
  */
 int
 umain (void) {
+
 	start_test("Happytest v0.61 ");
 
 	start_test("Servo Test      ");

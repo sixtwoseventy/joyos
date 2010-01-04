@@ -7,7 +7,7 @@ TARGET = happytest
 SRC = happytest.c
 
 # USB-Serial port number for programming the happyboard
-PORT = com6
+PORT = /dev/ttyUSB0 
 
 # Top level JoyOS directory
 TOPDIR = ../../
