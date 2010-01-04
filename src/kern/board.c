@@ -37,7 +37,7 @@
 
 #define FAIL_MSG_BUF_LEN	17
 
-extern FILE lcdout, uartout;
+extern FILE lcdout, uartio;
 
 // Boot failure message
 char str_boot_fail[] PROGMEM  = "Init fail: %s\n\r";
@@ -102,7 +102,7 @@ board_init (void) {
 //	LED_PWR(1);
 	// init uart
 	uart_init(BAUD_RATE);
-	stderr = &uartout;
+	stderr = &uartio;
 	printf_P(str_boot_uart,BAUD_RATE);
 	printf_P(str_boot_start);
 	// other IO init
@@ -111,8 +111,12 @@ board_init (void) {
 	spi_init();
 	motor_init();
 	servo_init();
+#ifdef LCD_DEBUG
 	lcd_init(); //consider wrapping this in an #ifdef LCD_DEBUG tag?
 	stdout = &lcdout;
+#else
+	stdout = &uartio;
+#endif
 	adc_init();
 	isr_init();
 

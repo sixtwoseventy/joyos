@@ -35,7 +35,7 @@
 //#include <assert.h>
 
 extern FILE lcdout;
-extern FILE uartout;
+extern FILE uartio;
 
 typedef struct link_s link_t;
 struct link_s {
@@ -137,14 +137,14 @@ async_loop_start (void) {
 				lcd_printf("%s", link->buf);
 			} 
 
-			else if (link->out == &uartout) {
+			else if (link->out == &uartio) {
 				uart_printf("%s", link->buf);
 			} 
 
 			else {
 				cli();
 				printf ("Unknown file descriptor %p\n",link->out);
-				printf (" uartout at %p\n", &uartout);
+				printf (" uartio at %p\n", &uartio);
 				printf (" lcdout at %p\n", &lcdout);
 				panic ("async_loop");
 			}
@@ -177,7 +177,7 @@ async_printf (FILE *out, const char *fmt, ...) {
 	va_list ap;
 	int count;
 
-	if (out != &uartout && out != &lcdout) {
+	if (out != &uartio && out != &lcdout) {
 		panic_P (PSTR("unknown out"));
 	}
 

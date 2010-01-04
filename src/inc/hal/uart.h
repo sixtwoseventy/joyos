@@ -41,8 +41,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 
+//notice that printf defaults to using PSTR(), while scanf does not.
 #define printf(statement, ...) uart_printf_P(PSTR(statement), ## __VA_ARGS__)
 #define printf_P(statement, ...) uart_printf_P(statement, ## __VA_ARGS__)
+#define scanf(statement, ...) uart_scanf(statement, ## __VA_ARGS)
+#define scanf_P(statement, ...) uart_scanf_P(PSTR(statement), ## __VA_ARGS)
+
 /**
  * Send a character over UART.
  */
@@ -77,6 +81,16 @@ char uart_recv();
  *
  */
 char uart_has_char();
+
+int uart_vscanf_P(const char *fmt, va_list ap);
+
+/**
+ * Parse a formatted string from UART.
+*/
+int uart_scanf(const char *fmt, ...);
+
+int uart_vscanf_P(const char *fmt, va_list ap);
+int uart_scanf_P(const char *fmt, ...);
 
 /**
  * Initialize the UART driver.

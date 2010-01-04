@@ -79,7 +79,7 @@ int robot_monitor (void) {
 	printf("\nRobot ready.    Press 'Go'");
 	
 	//Wait until a go click or automatic round trigger
-	while (!go_press()&&!auto_round_start) {;}
+	//while (!go_press()&&!auto_round_start) {;}
 	//go_click ();
 
 	lcd_clear ();

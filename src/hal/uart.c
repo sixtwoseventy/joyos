@@ -29,7 +29,9 @@
 #include <kern/lock.h>
 
 // setup LCD file descriptor (for printf)
-FILE uartout = FDEV_SETUP_STREAM(uart_put, NULL, _FDEV_SETUP_WRITE);
+//FILE uartout = FDEV_SETUP_STREAM(uart_put, NULL, _FDEV_SETUP_WRITE);
+FILE uartio = FDEV_SETUP_STREAM(uart_put, uart_recv, _FDEV_SETUP_RW);
+
 struct lock uart_lock;
 
 int uart_send(char ch) {
@@ -57,7 +59,7 @@ int
 uart_vprintf(const char *fmt, va_list ap) {
 	int count;
 	acquire(&uart_lock);
-	count = vfprintf(&uartout, fmt, ap);
+	count = vfprintf(&uartio, fmt, ap);
 	release(&uart_lock);
 
 	return count;
@@ -79,7 +81,7 @@ int
 uart_vprintf_P(const char *fmt, va_list ap) {
 	int count;
 	acquire(&uart_lock);
-	count = vfprintf_P(&uartout, fmt, ap);
+	count = vfprintf_P(&uartio, fmt, ap);
 	release(&uart_lock);
 
 	return count;
@@ -106,6 +108,46 @@ char uart_recv() {
 
 char uart_has_char() {
 	return (UCSR0A & _BV(RXC0));
+}
+
+int uart_vscanf(const char *fmt, va_list ap){
+	int count;
+	acquire(&uart_lock);
+	count = vfscanf(&uartio, fmt, ap);
+	release(&uart_lock);
+
+	return count;
+}
+
+int uart_scanf(const char *fmt, ...){
+	va_list ap;
+	int count;
+	
+	va_start(ap, fmt);
+	count = uart_vscanf(fmt, ap);
+	va_end(ap);
+
+	return count;
+}
+
+int uart_vscanf_P(const char *fmt, va_list ap) {
+	int count;
+	acquire(&uart_lock);
+	count = vfscanf_P(&uartio, fmt,ap);
+	release(&uart_lock);
+
+	return count;
+}
+
+int uart_scanf_P(const char *fmt, ...) {
+	va_list ap;
+	int count;
+	
+	va_start(ap, fmt);
+	count = uart_vscanf_P(fmt, ap);
+	va_end(ap);
+
+	return count;
 }
 
 void uart_init(uint16_t baudRate) {

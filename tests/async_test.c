@@ -28,14 +28,14 @@
 #include <thread.h>
 #include <lock.h>
 
-extern FILE uartout;
+extern FILE uartio;
 
 int
 print_parens (void) {
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 40; j++)
-			async_printf(&uartout, "()");
-		async_printf(&uartout, "\n");
+			async_printf(&uartio, "()");
+		async_printf(&uartio, "\n");
 	}
 	for (;;);
 }
@@ -52,7 +52,7 @@ async_test (void) {
 	create_thread(&print_parens, STACK_DEFAULT, 0, "paren printer");
 
 	for (int i = 0; i < 150; i++) {
-		async_printf(&uartout, "x");
+		async_printf(&uartio, "x");
 		yield();
 	}
 
