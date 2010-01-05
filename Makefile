@@ -41,6 +41,7 @@ HALSRC = 	src/hal/io.c \
 			src/hal/spi.c \
 			src/hal/uart.c \
 			src/hal/delay.c \
+			src/hal/i2c.c \
 
 # Driver source files
 DRIVERSRC = src/drivers/devices/fpga.c \
@@ -77,7 +78,7 @@ LIBSRC = 	src/lib/async_printf.c \
 			src/lib/motion.c \
 
 # User source files
-USERSRC = user/umain.c
+USERSRC = user/magnet/umain.c
 
 # Bootloader Source Files
 BOOTSRC = 	src/boot/hboot.c \

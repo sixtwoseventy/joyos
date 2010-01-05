@@ -17,6 +17,7 @@
 #include <hal/adc.h>
 #include <hal/delay.h>
 #include <hal/io.h>
+#include <hal/i2c.h>
 #include <hal/uart.h>
 #include <hal/spi.h>
 

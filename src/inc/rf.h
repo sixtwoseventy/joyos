@@ -82,3 +82,4 @@ float get_mouse_position_x();
 float get_mouse_position_y();
 
 #endif //_RF_H_
+
