@@ -1,6 +1,7 @@
 #ifndef _RF_H_
 #define _RF_H_
 
+#include <nrf24l01.h>
 #include <stdint.h>
 
 /**
@@ -11,75 +12,53 @@
  * as well as retrieve information received over RF
  */ 
 
-uint8_t master_id; //ID of the master (vision system)
-uint8_t self_id; //ID of this robot
-uint8_t other_id; //ID of the other robot
-uint8_t mouse_id; //ID of the mouse
+#define PAYLOAD_SIZE 30
 
-float self_position[2];
-float other_position[2];
-float mouse_position[2];
+#define POSITION 0x00 //Updated position of this bot, other bot, or mouse
+#define START 0x01 //Start of the round
+#define STOP 0x02 //End of the round
+#define STRING 0x03 //String from bot to board
+#define SYNC 0x04 //Not sure how to use yet.  Established IDs of all bots/vision system on board
+#define GOAL 0x05 //Sets the target position of this robot
 
-//The ID of the current goal position.  Starts at 0, increments to 1 on first goal
-//packet received, and increments whenever a new goal position is received
-uint8_t goal_id;
+typedef struct {
+	uint8_t id;
+	signed x : 12;
+	signed y : 12;
+	signed theta : 12;
+	unsigned confidence : 12;
+} __attribute__ ((aligned (1))) __attribute__ ((packed)) board_coord;
 
-float goal_position[2]; //The target position received from a goal packet
+typedef struct{
+	uint8_t type;
+	uint8_t address;
+	uint8_t payload[PAYLOAD_SIZE];
+} packet;
+
+typedef struct {
+	uint8_t type;
+	uint8_t address;
+	union {
+		uint8_t array[PAYLOAD_SIZE];
+		board_coord coords[4];
+	} payload;
+} __attribute__ ((packed)) packet_buffer;
+
+packet_buffer tx, rx;
+
+board_coord objects[4];
+
+board_coord goal_position; //The target position received from a goal packet
 
 /**
- * Transmits the position of the object with the given ID
+ * Transmits the contents of the RF buffer
  */
-void transmit_position_packet(uint8_t id, float x, float y);
-
-/**
- * Transmits the goal position for the object with the given ID
- */
-void transmit_goal_packet(uint8_t id, float x, float y);
-
-/**
- * Tells the listed robots to start
- */
-void transmit_start_packet(uint8_t num_bots, uint8_t bot_ids[]);
-
-/**
- * Tells the listed robots to stop
- */
-void transmit_stop_packet(uint8_t num_bots, uint8_t bot_ids[]);
+void transmit_raw_packet(uint8_t * buf, uint8_t bytes);
 
 /**
  * Initializes RF.  Should not be called by user
  */
 void rf_init();
-
-/**
- * Gets the X position of this robot
- */
-float get_self_position_x();
-
-/**
- * Gets the Y position of this robot
- */
-float get_self_position_y();
-
-/**
- * Gets the X position of opponent robot
- */
-float get_other_position_x();
-
-/**
- * Gets the Y position of opponent robot
- */
-float get_other_position_y();
-
-/**
- * Gets the X position of the mouse
- */
-float get_mouse_position_x();
-
-/**
- * Gets the Y position of the mouse
- */
-float get_mouse_position_y();
 
 #endif //_RF_H_
 

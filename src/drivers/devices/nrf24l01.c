@@ -32,6 +32,7 @@
 #include <kern/global.h>
 #include <hal/delay.h>
 #include <nrf24l01.h>
+#include <rf.h>
 
 #define L01_PORT		PORTB
 #define L01_PORT_PIN	PINB
@@ -98,12 +99,12 @@ void transmit_string(char * string_out)
 	
 	for(i = 0 ; string_out[i] != '\0' ; i++)
 	{
-		rf_tx_array[1] = string_out[i];
+		((unsigned char*)&tx)[1] = string_out[i];
 		tx_data_nRF24L01();
 		delay_busy_ms(5);
 	}
 
-	rf_tx_array[1] = '\0';
+	((unsigned char*)&tx)[1] = '\0';
 	tx_data_nRF24L01();
 	delay_busy_ms(5);
 }
@@ -118,7 +119,7 @@ void tx_data_nRF24L01(void)
 
 	send_byte(0xE1); //Clear TX Fifo
 	
-	tx_send_payload(0xA0, PAYLOAD_SIZE); //Clock in 4 byte payload of data_array
+	tx_send_payload(0xA0, sizeof(packet)); //Clock in 4 byte payload of data_array
 
     sbi(L01_CE_PORT, L01_CE); //Pulse CE to start transmission
     delay_busy_ms(1);
@@ -143,8 +144,8 @@ uint8_t config_tx_nRF24L01(void)
 
 	send_command(0x25, 0x02); //RF Channel 2 (default, not really needed)
 	
-	for (int x = 0; x < PAYLOAD_SIZE; x++) {
-		rf_tx_array[x] = 0xE7;
+	for (int x = 0; x < sizeof(packet); x++) {
+		((unsigned char*)&tx)[x] = 0xE7;
 	}
 	tx_send_payload(0x30, 5); //Set TX address
 	
@@ -162,7 +163,7 @@ void tx_send_payload(uint8_t cmd, uint8_t bytes)
 	tx_spi_byte(cmd);
 	
 	for(i = 0 ; i < bytes ; i++){
-		tx_spi_byte(rf_tx_array[i]);
+		tx_spi_byte(((unsigned char*)&tx)[i]);
 	}
 	sbi(L01_CSN_PORT, L01_CSN); //Deselect chip
 }
@@ -237,7 +238,7 @@ void config_rx_nRF24L01(void)
 	
     send_command(0x26, 0x07);//data rate = 1MB ===============================================================
     
-    send_command(0x31, PAYLOAD_SIZE);//4 byte payload ==============================================================
+    send_command(0x31, sizeof(packet));//4 byte payload ==============================================================
 	
     send_command(0x20, 0x3B);//PWR_UP = 1 ================================================================
     
@@ -245,7 +246,7 @@ void config_rx_nRF24L01(void)
 
 }
 
-//Gets data from 24L01 and puts it in rf_rx_array, resets all ints
+//Gets data from 24L01 and puts it in rx, resets all ints
 void rx_data_nRF24L01(void)
 {
     uint8_t i, j, data, cmd;
@@ -272,7 +273,7 @@ void rx_data_nRF24L01(void)
 		
     }
     
-    for (j = 0; j < PAYLOAD_SIZE; j++)
+    for (j = 0; j < sizeof(packet); j++)
     {
         data = 0;
         
@@ -289,7 +290,7 @@ void rx_data_nRF24L01(void)
 			delay_busy_us(RF_DELAY);
         }
 		
-		rf_rx_array[j] = data;
+		((unsigned char*)&rx)[j] = data;
  
     }
     

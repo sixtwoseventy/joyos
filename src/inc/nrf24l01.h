@@ -27,13 +27,6 @@
 #define _NRF24L01_H_
 
 #define RF_INTERRUPT SIG_INTERRUPT7
-#define PAYLOAD_SIZE 10
-
-//Array of outgoing data
-uint8_t rf_tx_array[PAYLOAD_SIZE];
-
-//Array of incoming data
-uint8_t rf_rx_array[PAYLOAD_SIZE];
 
 //Initializes ATMega168 pins
 void init_24L01_pins(void);

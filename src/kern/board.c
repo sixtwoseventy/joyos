@@ -134,9 +134,9 @@ board_init (void) {
 	printf_P(str_boot_message, board_config.version>>8, board_config.version&0xFF);
 
 	// check battery, fail if <7.5V
-	battOK = read_battery()>=7500;
+/*	battOK = read_battery()>=7500;
 	if (!battOK)
-		board_fail_P(PSTR("Low battery"));
+		board_fail_P(PSTR("Low battery"));*/
 	printf_P(str_boot_batt,read_battery());
 
 	// initialise FPGA
@@ -162,7 +162,8 @@ board_init (void) {
 	
 	//This function doesn't work if above fpga_init
 	//Conflict with SPI stuff perhaps?
-    //rf_init();
+
+	rf_init();
 	
 }
 

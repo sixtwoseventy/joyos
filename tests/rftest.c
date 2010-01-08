@@ -43,10 +43,7 @@ umain (void) {
 	//Thus, this demo needs two happyboards to witness in action
 	while(1)
 	{
-		printf("\n(%f,%f)",self_position[0],self_position[1]);
-		if (go_press()) {
-			transmit_position_packet(1,get_time()/1000.0,3.14159); //1 is the index of the receiving robot.  For now, this is 1 for all robots
-		}
+		printf("\n(%d,%d) angle: %d",objects[0].x,objects[0].y,objects[0].theta);		
 		pause(100);
 	}
 	

@@ -14,6 +14,8 @@
 #include <servo.h>
 #include <rf.h>
 
+#include <nrf24l01.h>
+
 #include <hal/adc.h>
 #include <hal/delay.h>
 #include <hal/io.h>
