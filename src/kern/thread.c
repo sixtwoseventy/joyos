@@ -160,19 +160,13 @@ schedule(void) {
 		int tid = (id+offset) % MAX_THREADS;
 		if (!tid) continue; // don't RR to idle
 
-		if (threads[tid].th_status == THREAD_PAUSED &&
-				threads[tid].th_wakeup_time <= global_time) {
-			threads[tid].th_status = THREAD_RUNNABLE;
-			resume(&threads[tid]);
-		}
-
 		// if next thread is runnable, resume
 		if (threads[tid].th_status == THREAD_RUNNABLE) {
 			resume(&threads[tid]); // run thread and enable interrupts
-		} else if (threads[id].th_status == THREAD_PAUSED &&
-				threads[id].th_wakeup_time <= global_time) {
+		} else if (threads[tid].th_status == THREAD_PAUSED &&
+				threads[tid].th_wakeup_time <= global_time) {
 			// unpause and go
-			threads[id].th_status = THREAD_RUNNABLE;
+			threads[tid].th_status = THREAD_RUNNABLE;
 			resume(&threads[tid]);
 		}
 	}
