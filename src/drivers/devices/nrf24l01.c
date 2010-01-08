@@ -204,7 +204,7 @@ uint8_t tx_spi_byte(uint8_t outgoing)
     for(i = 0 ; i < 8 ; i++)
     {
 		
-		if(outgoing & 0b10000000)
+		if(outgoing & 0x80)
 			sbi(L01_PORT, MOSI);
 		else
 			cbi(L01_PORT, MOSI);
@@ -258,7 +258,7 @@ void rx_data_nRF24L01(void)
     
     for(i = 0 ; i < 8 ; i++)
     {
-		if(cmd & 0b10000000)
+		if(cmd & 0x80)
 			sbi(L01_PORT, MOSI);
 		else
 			cbi(L01_PORT, MOSI);
