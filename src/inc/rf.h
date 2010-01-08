@@ -44,11 +44,11 @@ typedef struct {
 	} payload;
 } __attribute__ ((packed)) packet_buffer;
 
-packet_buffer tx, rx;
+extern packet_buffer tx, rx;
 
-board_coord objects[4];
+extern volatile board_coord objects[4];
 
-board_coord goal_position; //The target position received from a goal packet
+extern board_coord goal_position; //The target position received from a goal packet
 
 /**
  * Transmits the contents of the RF buffer
