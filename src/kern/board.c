@@ -116,6 +116,7 @@ board_init (void) {
 	stdout = &lcdout;
 #else
 	stdout = &uartio;
+	stdin = &uartio;
 #endif
 	adc_init();
 	isr_init();
