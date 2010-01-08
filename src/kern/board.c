@@ -43,7 +43,7 @@ extern FILE lcdout, uartio;
 char str_boot_fail[] PROGMEM  = "Init fail: %s\n\r";
 
 // Boot text
-char str_boot_message[] PROGMEM = "Happyboard v%X.%02X               \5";
+char str_boot_message[] PROGMEM = "Happyboard v%X.%02X\n\r";
 
 // Boot progress messages
 char str_boot_uart[] PROGMEM  = "UART0 opened at %d\n\r";
@@ -80,7 +80,7 @@ board_fail_P(PGM_P msg) {
 	strncpy_P (buf, msg, FAIL_MSG_BUF_LEN);
 	buf[FAIL_MSG_BUF_LEN-1] = '\0';
 
-	printf_P(str_boot_fail,msg);
+	printf_P(str_boot_fail,buf);
 	// print message
 #ifdef LCD_DEBUG
 	lcd_set_pos(16);
