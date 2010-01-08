@@ -48,9 +48,6 @@ struct thread *current_thread = NULL;
 volatile uint32_t global_time = 0;
 struct jbuf sched_jbuf;
 
-#define ATOMIC_BEGIN uint8_t _cli_was_enabled = SREG & SREG_IF; cli();
-#define ATOMIC_END SREG |= _cli_was_enabled;
-
 // idle thread -- should do nothing forever
 int
 idle(void) {

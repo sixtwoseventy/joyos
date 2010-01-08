@@ -53,6 +53,9 @@
 
 #define STACK_DEFAULT		256
 
+#define ATOMIC_BEGIN uint8_t _cli_was_enabled = SREG & SREG_IF; cli();
+#define ATOMIC_END SREG |= _cli_was_enabled;
+
 // make code a little more readable (hopefully)
 //#define lock_threadtable() __disable_interrupt()
 //#define release_threadtable() __enable_interrupt()
