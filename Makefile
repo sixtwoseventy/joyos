@@ -1,3 +1,10 @@
+# User source files
+USERSRC = tests/rftest.c
+#AVRDUDE_PORT = /dev/tty.usbserial-0000113D
+AVRDUDE_PORT ?= /dev/ttyUSB0
+#AVRDUDE_USERPORT = /dev/tty.usbserial-A20e1uZB
+AVRDUDE_USERPORT ?= /dev/ttyUSB0
+
 CC = avr-gcc
 MCU = atmega128
 OBJCOPY = avr-objcopy
@@ -13,10 +20,6 @@ CFLAGS = -Wall -std=gnu99 -g -Os -mmcu=$(MCU)
 BOOT_LDFLAGS = $(BOOT_PRINTFOP) $(MEMLAYOUT)
 OS_LDFLAGS = $(OS_PRINTFOP) $(MEMLAYOUT)
 
-#AVRDUDE_PORT = /dev/tty.usbserial-0000113D
-AVRDUDE_PORT = /dev/ttyUSB0
-#AVRDUDE_USERPORT = /dev/tty.usbserial-A20e1uZB
-AVRDUDE_USERPORT = /dev/ttyUSB0
 AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F
 AVRDUDEFLAGS_USER = -c stk500 -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200
 
@@ -76,9 +79,6 @@ LIBSRC = 	src/lib/async_printf.c \
 			src/lib/happylib.c \
 			src/lib/motor_group.c \
 			src/lib/motion.c \
-
-# User source files
-USERSRC = tests/rftest.c
 
 # Bootloader Source Files
 BOOTSRC = 	src/boot/hboot.c \
