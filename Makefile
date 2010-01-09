@@ -78,10 +78,7 @@ LIBSRC = 	src/lib/async_printf.c \
 			src/lib/motion.c \
 
 # User source files
-#USERSRC = user/packets/transmit.c
-#USERSRC = user/packets/recv.c
-#USERSRC = tests/rftest.c
-USERSRC = user/vision1/umain.c
+USERSRC = tests/rftest.c
 
 # Bootloader Source Files
 BOOTSRC = 	src/boot/hboot.c \

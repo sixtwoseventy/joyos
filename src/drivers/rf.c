@@ -12,6 +12,12 @@
 #include <avr/interrupt.h>
 #include <hal/uart.h>
 
+packet_buffer tx, rx;
+
+volatile board_coord objects[4];
+
+board_coord goal_position; //The target position received from a goal packet
+
 ISR (RF_INTERRUPT)//RF Interrupt
 {
 	cli();//Disable Interrupts
