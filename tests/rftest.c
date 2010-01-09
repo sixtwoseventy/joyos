@@ -26,6 +26,14 @@
 // Include headers from OS
 #include <joyos.h>
 
+
+int boring_thread(){
+	while(1){
+		printf("yawn.\n");
+		pause(1000);
+	}
+}
+
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
@@ -37,6 +45,10 @@ int usetup (void) {
 // Create threads and return 0.
 int
 umain (void) {	
+
+	rf_init();
+
+	create_thread(&boring_thread, STACK_DEFAULT, 0, "boring thread"); // XXX: priority?
 
 	//This loop prints out its position, which is set by RF
 	//When go is pressed, a position is sent out, and other happyboards will update their position accordingly
