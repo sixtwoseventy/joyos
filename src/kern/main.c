@@ -67,22 +67,25 @@ void round_end() {
 
 int robot_monitor (void) {
 	// start the calibration period...
-	usetup ();
 
-	//lcd_printf_P (PSTR("\nWaiting for RF  'Go' to override"));
+	printf("\n running usetup()...");
+	usetup ();
+	printf("\n usetup() complete.");
+
+	// printf("\n waiting for rf...")
+
+	// lcd_printf_P (PSTR("\nWaiting for RF  'Go' to override"));
 	// wait for the start signal
 	// FIXME: add new start code
 	//while (rf_get_round_state() != STATE_RUNNING && !go_press ())
 	//	yield ();
 
-	// prompt user for start click
-	printf("\nRobot ready.    Press 'Go'");
+	// printf("\n rf start received.");
 	
-	//Wait until a go click or automatic round trigger
-	//while (!go_press()&&!auto_round_start) {;}
-	//go_click ();
+	// lcd_clear ();
 
-	lcd_clear ();
+	printf("\n entering umain()...");
+
 	// create a user thread
 	create_thread(&umain, STACK_DEFAULT, 0, "user main"); // XXX: priority?
 	//dump_threadstates ();

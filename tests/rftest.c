@@ -41,8 +41,6 @@ umain (void) {
 	rf_init();
 
 	//This loop prints out its position, which is set by RF
-	//When go is pressed, a position is sent out, and other happyboards will update their position accordingly
-	//Thus, this demo needs two happyboards to witness in action
 	while(1)
 	{
 		printf("\n(%d,%d) angle: %d",objects[0].x,objects[0].y,objects[0].theta);		
