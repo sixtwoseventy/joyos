@@ -41,7 +41,7 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-//#define EXTERNAL_RAM=0
+//#define EXTERNAL_RAM=1
 
 // defined by user
 extern int umain (void);
