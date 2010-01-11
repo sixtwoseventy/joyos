@@ -46,12 +46,12 @@
 
 /**
  * System panic.
- * Call this routine to halt the board and display an error message on the
- * LCD. This routine never returns.
+ * Call this routine to halt the board and write an error message to the
+ * UART. This routine never returns.
  *
- * @param msg	Display "panic: msg" on the LCD.
+ * @param msg	Write "panic: msg" to the UART.
  */
-void panic (char *msg);
+#define panic(_x_) panic_P (PSTR(_x_))
 
 void panic_P (PGM_P msg);
 
