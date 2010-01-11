@@ -95,7 +95,7 @@ board_fail_P(PGM_P msg) {
 // Initialise board
 void
 board_init (void) {
-	uint8_t fpgaOK, battOK, confOK;
+	uint8_t fpgaOK, /*battOK, */ confOK;
 
 	// Init GPIOs
 	io_init();

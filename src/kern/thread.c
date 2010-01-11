@@ -34,7 +34,6 @@
 #include <kern/util.h> // XXX: debugging
 #include <kern/memlayout.h>
 #include <hal/delay.h>
-#include <hal/uart.h>
 #include <hal/io.h>
 #include <board.h>
 #include <string.h>
@@ -55,7 +54,7 @@ idle(void) {
 		yield();
 	}
 
-	panic ("idle");
+	panic("idle");
 	return 0;
 }
 
@@ -95,7 +94,7 @@ init_thread(void) {
 	//extern uint16_t __bss_end;
 	// make sure stack space won't collide with BSS space
 	//if ((STACKTOP(MAX_THREADS) < __bss_end))
-	//	panic ("no space for stacks");
+	//	panic("no space for stacks");
 
 	printf ("thread table start at %p\n", &threads);
 	printf ("thread table end at %p\n", &threads[MAX_THREADS]);
@@ -116,7 +115,7 @@ init_thread(void) {
 	// assert idle thread is thread #0
 	//assert (threads[0].th_status != THREAD_FREE);
 	if (threads[0].th_status == THREAD_FREE)
-		panic ("idle free");
+		panic("idle free");
 
     ATOMIC_BEGIN {
         setjmp(TO_JMP_BUF(sched_jbuf));
@@ -187,7 +186,7 @@ schedule(void) {
 	}
 
 	// should never return
-	panic ("schedule");
+	panic("schedule");
 }
 
 void
@@ -202,12 +201,12 @@ check (struct thread *t) {
 		extern uint16_t __malloc_heap_start, __malloc_heap_end;
 		printf("malloc space [%p,%p]\n",
 				__malloc_heap_start, __malloc_heap_end);
-		panic ("no idle");
+		panic("no idle");
 	}
 
 	// check if SP is above stacktop
 	if (t->th_jmpbuf.sp > STACKTOP(t->th_id)) {
-		panic ("SP above");
+		panic("SP above");
 	}
 
 	// check is SP is below bottom (stacktop-stacksize)
@@ -220,21 +219,21 @@ check (struct thread *t) {
 		printf("stacktop: %p\n", t->th_stacktop);
 		printf("reserved space: %p to %p\n",
 				t->th_stacktop-t->th_stacksize+1, t->th_stacktop);
-		panic_P ("stack overflow");
+		panic("stack overflow");
 	}
 
 /*
 	// check if SP is below stacktop
 	if (t->th_jmpbuf.sp <= STACKTOP(t->th_id+1)) {
-		uart_printf_P(PSTR("\nstack overflow\n"));
-		uart_printf_P(PSTR("sp of '%s' (id %d) is %p\n"),
+		printf("\nstack overflow\n");
+		printf("sp of '%s' (id %d) is %p\n",
 				t->th_name, t->th_id, t->th_jmpbuf.sp);
 		dump_jmpbuf(&t->th_jmpbuf);
-		uart_printf_P(PSTR("pc at %p\n"), t->th_jmpbuf.pc);
-		uart_printf_P(PSTR("stacktop: %p\n"), t->th_stacktop);
-		uart_printf_P(PSTR("reserved space: %p to %p\n"),
+		printf("pc at %p\n", t->th_jmpbuf.pc);
+		printf("stacktop: %p\n", t->th_stacktop);
+		printf("reserved space: %p to %p\n",
 				STACKTOP(t->th_id+1)+1, STACKTOP(t->th_id));
-		panic_P (PSTR("stack overflow"));
+		panic("stack overflow");
 	}
 */
 
@@ -242,26 +241,26 @@ check (struct thread *t) {
 	for (uint8_t i = 0; i < STACK_SAFETY_ZONE; i++) {
 		uint8_t *sp = (uint8_t *) (t->th_stacktop - t->th_stacksize);
 		if (*(sp-i) != SAFETY_VALUE) {
-			uart_printf("\nstack overflow\n");
-			uart_printf("safety value overwritten...\n");
-			uart_printf("%p: %p\n", sp-i, *(sp-i));
-			uart_printf("sp of '%s' (id %d) is %p\n", 
+			printf("\nstack overflow\n");
+			printf("safety value overwritten...\n");
+			printf("%p: %p\n", sp-i, *(sp-i));
+			printf("sp of '%s' (id %d) is %p\n", 
 					t->th_name, t->th_id, t->th_jmpbuf.sp);
 			dump_jmpbuf(&t->th_jmpbuf);
-			uart_printf("stacktop: %p\n", t->th_stacktop);
-			uart_printf("stacksize: %p\n", t->th_stacksize);
-			uart_printf("reserved space: %p to %p\n",
+			printf("stacktop: %p\n", t->th_stacktop);
+			printf("stacksize: %p\n", t->th_stacksize);
+			printf("reserved space: %p to %p\n",
 					t->th_stacktop - t->th_stacksize, t->th_stacktop);
-			panic ("stack overflow");
+			panic("stack overflow");
 		}
 	}
 	*/
 
 	/*
 	if (!(t->th_jmpbuf.sreg & SREG_IF)) {
-		uart_printf("in thread '%s'...\n", t->th_name);
+		printf("in thread '%s'...\n", t->th_name);
 		dump_jmpbuf(&t->th_jmpbuf);
-		panic ("IF clear");
+		panic("IF clear");
 	}
 	*/
 }
@@ -272,7 +271,7 @@ check (struct thread *t) {
 void
 suspend() {
 	if (!current_thread)
-		panic ("no current_thread");
+		panic("no current_thread");
 
 	//if (setjmp(current_thread->th_jmpbuf) == 0)
 	if (setjmp(TO_JMP_BUF(current_thread->th_jmpbuf)) == 0) {
@@ -295,7 +294,7 @@ suspend() {
 		struct jbuf testbuf;
 		setjmp(TO_JMP_BUF(testbuf));
 		if (testbuf.sp != KSTACKTOP)
-			panic ("kstacktop");
+			panic("kstacktop");
 
 		// make sure current thread is valid
 		check(current_thread);
@@ -313,7 +312,7 @@ resume(struct thread *t) {
 	longjmp(TO_JMP_BUF(current_thread->th_jmpbuf), 1);
 
 	// resume should never return
-	panic ("resume");
+	panic("resume");
 }
 
 void
@@ -338,7 +337,7 @@ pause(uint32_t ms) {
 
 void
 yield(void) {
-	//if(!(SREG & SREG_IF)) panic ("bad yield");
+	//if(!(SREG & SREG_IF)) panic("bad yield");
 	cli();
 
 	// store registers not in jmp_buf on stack
@@ -359,7 +358,7 @@ yield(void) {
 			"push r31\n\t" ::);
 
 	//assert (current_thread);
-	if (!current_thread) panic ("yield");
+	if (!current_thread) panic("yield");
 
 	suspend();
 
@@ -390,7 +389,7 @@ sleep(void *channel) {
 	cli();
 
 	//assert(current_thread);
-	if (!current_thread) panic ("sleep");
+	if (!current_thread) panic("sleep");
 
 	current_thread->th_channel = channel;
 	current_thread->th_status = THREAD_SLEEPING;
@@ -423,12 +422,12 @@ exit(int status) {
 
 	//assert(current_thread);
 	if (!current_thread)
-		panic ("exiting nothing");
+		panic("exiting nothing");
 
 	current_thread->th_status = THREAD_FREE;
 	yield();
 
-	panic_P ("exit");
+	panic("exit");
 	for (;;); // satisfy compiler
 }
 
@@ -447,15 +446,15 @@ allocate_stack(uint16_t size, uint8_t tid) { // TODO refactor
 	// write safety values
 	for (uint8_t i = 0; i < STACK_SAFETY_ZONE; i++) {
 		// *(sp++) = SAFETY_VALUE;
-		//uart_printf("wrote safety value %p at %p\n",
+		//printf("wrote safety value %p at %p\n",
 		//		*(sp-1), sp-1);
 		sp++;
 	}
 	// move pointer to end of block (stack top)
 	//sp += size-1;
-	//uart_printf("STACKTOP(%d) = %p\n", tid, STACKTOP(tid));
+	//printf("STACKTOP(%d) = %p\n", tid, STACKTOP(tid));
 	sp += STACKSIZE-1;
-	//uart_printf("allocate_stack stacktop = %p\n", (uint16_t) sp);
+	//printf("allocate_stack stacktop = %p\n", (uint16_t) sp);
 	//_delay_ms(1);
 
 	return (uint16_t) sp;
@@ -486,7 +485,7 @@ create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
 			// calculate the thread's stack top
 			//uint8_t *sp = (uint8_t *) threads[i].th_stacktop;
 			uint8_t *sp = (uint8_t *) allocate_stack(0, i); // XXX refactor
-			//uart_printf("allocated stacktop = %p\n", sp);
+			//printf("allocated stacktop = %p\n", sp);
 
 			// push argc and argv onto the stack and set registers
 			// TODO implement
@@ -509,7 +508,7 @@ create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
 			return i;
 		}
 
-	panic_P ("out of threads");
+	panic("out of threads");
 	for(;;); // satisfy compiler
 }
 
@@ -531,28 +530,28 @@ halt(void) {
 	for(;;);
 
 	// unreachable code, should never happen
-	panic_P ("halt");
+	panic("halt");
 }
 
 /*
 void
 dump_jmpbuf(jmp_buf *jb) {
-	uart_printf("Dumping jmp_buf:\n");
+	printf("Dumping jmp_buf:\n");
 
 	uint8_t *bytes = (uint8_t *) jb;
 	// print r2-r17
 	for (int i = 0; i < 16; i++) {
-		uart_printf(" r%02u  : 0x%02x\n", i+2, (uint8_t) bytes[2]);
+		printf(" r%02u  : 0x%02x\n", i+2, (uint8_t) bytes[2]);
 	}
 
 	// print frame pointer
-	uart_printf(" FP   : 0x%04x\n", JMPBUF_FP(jb));
+	printf(" FP   : 0x%04x\n", JMPBUF_FP(jb));
 
-	uart_printf(" SP   : 0x%04x\n", JMPBUF_SP(jb));
+	printf(" SP   : 0x%04x\n", JMPBUF_SP(jb));
 
-	uart_printf(" SREG : 0x%02x\n", JMPBUF_SREG(jb));
+	printf(" SREG : 0x%02x\n", JMPBUF_SREG(jb));
 
-	uart_printf(" PC   : 0x%04x\n", JMPBUF_IP(jb));
+	printf(" PC   : 0x%04x\n", JMPBUF_IP(jb));
 }
 */
 
@@ -563,19 +562,19 @@ dump_jmpbuf(struct jbuf *jb) {
 	printf (" <omitting r0-r31>\n");
 
 	/*
-	uart_printf_P(PSTR("r0\tNA\t\tr1\tNA\t\tr2\t%2p\t\tr3\t%2p\t\tr4\t%2p\n"),
-			jb->r2, jb->r3, jb->r4);
-	uart_printf_P(PSTR("r5\t%2p\t\tr6\t%2p\t\tr7\t%2p\t\tr8\t%2p\t\tr9\t%2p\n"),
-			jb->r5, jb->r6, jb->r7, jb->r8, jb->r9);
-	uart_printf_P(PSTR("r10\t%2p\t\tr11\t%2p\t\tr12\t%2p\t\tr13\t%2p\t\tr14\t%2p\n"),
-			jb->r10, jb->r11, jb->r12, jb->r13, jb->r14);
-	uart_printf_P(PSTR("r15\t%2p\t\tr16\t%2p\t\tr17\t%2p\t\tr18\t%2p\t\tr19\t%2p\n"),
-			jb->r15, jb->r16, jb->r17, jb->r18, jb->r19);
-	uart_printf_P(PSTR("r20\t%2p\t\tr21\t%2p\t\tr22\t%2p\t\tr23\t%2p\t\tr24\t%2p\n"),
-			jb->r20, jb->r21, jb->r22, jb->r23, jb->r24);
-	uart_printf_P(PSTR("r25\t%2p\t\tr26\t%2p\t\tr27\t%2p\t\tr28\tNA\t\tr29\tNA\n"),
-			jb->r25, jb->r26, jb->r27);
-	uart_printf_P(PSTR("r30\t%2p\t\tr31\t%2p\n"),
+	printf("r0\tNA\t\tr1\tNA\t\tr2\t%2p\t\tr3\t%2p\t\tr4\t%2p\n",
+	   jb->r2, jb->r3, jb->r4);
+	printf("r5\t%2p\t\tr6\t%2p\t\tr7\t%2p\t\tr8\t%2p\t\tr9\t%2p\n",
+	   jb->r5, jb->r6, jb->r7, jb->r8, jb->r9);
+	printf("r10\t%2p\t\tr11\t%2p\t\tr12\t%2p\t\tr13\t%2p\t\tr14\t%2p\n",
+	   jb->r10, jb->r11, jb->r12, jb->r13, jb->r14);
+	printf("r15\t%2p\t\tr16\t%2p\t\tr17\t%2p\t\tr18\t%2p\t\tr19\t%2p\n",
+	   jb->r15, jb->r16, jb->r17, jb->r18, jb->r19);
+	printf("r20\t%2p\t\tr21\t%2p\t\tr22\t%2p\t\tr23\t%2p\t\tr24\t%2p\n",
+	   jb->r20, jb->r21, jb->r22, jb->r23, jb->r24);
+	printf("r25\t%2p\t\tr26\t%2p\t\tr27\t%2p\t\tr28\tNA\t\tr29\tNA\n",
+	   jb->r25, jb->r26, jb->r27);
+	printf("r30\t%2p\t\tr31\t%2p\n",
 			jb->r30, jb->r31);
 	*/
 

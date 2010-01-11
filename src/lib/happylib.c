@@ -8,7 +8,7 @@ void happylib_init() {
 	confdb_init();
 	confdb_load_integer(CONF_HLIB_VERSION, &version);
   	if (version!=HAPPYLIB_VERSION)
-		panic_P (PSTR("Bad happylib conf"));
+		panic("Bad happylib conf");
 	// set up ir distance calibration
 	confdb_load_integer(CONF_HLIB_IRDIST_M, &ir_m);
 	confdb_load_integer(CONF_HLIB_IRDIST_C, &ir_c); 

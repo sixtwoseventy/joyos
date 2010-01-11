@@ -32,7 +32,6 @@
 
 #include <board.h>
 #include <buttons.h>
-#include <hal/uart.h>
 #include <kern/global.h>
 #include <kern/memlayout.h>
 #include <kern/thread.h>
@@ -60,8 +59,7 @@ void round_start() {
 
 
 void round_end() {
-	lcd_printf_P (PSTR("\nRound end"));
-	uart_printf_P (PSTR("\nRound end"));
+	printf("\nRound end");
 	halt();
 }
 
@@ -74,7 +72,7 @@ int robot_monitor (void) {
 
 	// printf("\n waiting for rf...")
 
-	// lcd_printf_P (PSTR("\nWaiting for RF  'Go' to override"));
+	// printf("\nWaiting for RF  'Go' to override");
 	// wait for the start signal
 	// FIXME: add new start code
 	//while (rf_get_round_state() != STATE_RUNNING && !go_press ())
@@ -110,7 +108,7 @@ int main (void) {
 	// check for runaway code
 	extern struct thread *current_thread;
 	if (current_thread != NULL)
-		panic_P (PSTR("runaway code"));
+		panic("runaway code");
 
 	// startup malloc
 	extern uint16_t __malloc_heap_end;
@@ -127,13 +125,9 @@ int main (void) {
 	printf("heap size: %d bytes\n", heap_size);
 
 	if (__malloc_heap_start >= __malloc_heap_end)
-		panic_P (PSTR("         memory full"));
+		panic("         memory full");
 
-	PGM_P boot_msg = PSTR("JoyOS v"JOYOS_VERSION);
-	lcd_clear();
-	lcd_printf_P (boot_msg);
-	printf_P (boot_msg);
-	printf_P (PSTR("\n"));
+	printf("JoyOS v"JOYOS_VERSION"\n");
 	//Now, turning on power will immediately start the robot. Contestants can add their own go_click().
 	//go_click();
 
@@ -157,7 +151,7 @@ int main (void) {
 	//longjmp(TO_JMP_BUF(sched_jbuf),1);
 
 	// control should never reach here
-	panic_P (PSTR("main"));
+	panic("main");
 
 	return 0;
 }

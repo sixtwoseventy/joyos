@@ -178,7 +178,7 @@ async_printf (FILE *out, const char *fmt, ...) {
 	int count;
 
 	if (out != &uartio && out != &lcdout) {
-		panic_P (PSTR("unknown out"));
+		panic("unknown out");
 	}
 
 	va_start(ap, fmt);

@@ -41,7 +41,7 @@
 int
 fork (void) {
 
-	panic ("fork");
+	panic("fork");
 
 	struct thread *child;
 

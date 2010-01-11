@@ -30,13 +30,11 @@
 #include <kern/thread.h>
 #include <avr/pgmspace.h>
 
-#define PANIC_BUF 26 // 32 - strlen("panic: ") + 1
-
 void
-panic (char *msg) {
+panic_P (PGM_P msg) {
 	// stop everything
 	cli();
-	// notify user
+    // notify user
 #ifdef LCD_DEBUG
 	extern struct lock lcd_lock;
 
@@ -45,44 +43,15 @@ panic (char *msg) {
 	lcd_lock.thread = NULL;
 
 	lcd_clear(); // clear lcd
+	// report panic message
 	lcd_printf_P(PSTR("panic: %s\n"), msg ? msg : ""); // print msg
 #endif
 	extern struct lock uart_lock;
-	
+
 	uart_lock.locked = 0;
 	uart_lock.thread = NULL;
 
 	printf("panic: %s\n", msg ? msg : "");
-
-	// TODO: uartPrint
-	// halt
-	halt();
-}
-
-void
-panic_P (PGM_P msg) {
-	cli();
-
-	char buf[PANIC_BUF];
-
-	// make sure `msg' is non-null
-	if (msg) {
-		strncpy_P (buf, msg, PANIC_BUF);
-		// make sure to null-terminate incase message is to long
-		buf[PANIC_BUF-1] = '\0';
-	}
-
-	else {
-		buf[0] = '\0';
-	}
-
-	// clobber LCD lock so we can write
-	extern struct lock lcd_lock;
-	lcd_lock.locked = 0;
-	lcd_lock.thread = NULL;
-
-	// report panic message
-	lcd_printf_P (PSTR("\npanic: %s"), buf);
 
 	// halt board
 	halt();
