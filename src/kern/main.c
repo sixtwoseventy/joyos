@@ -41,6 +41,8 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
+//#define EXTERNAL_RAM=0
+
 // defined by user
 extern int umain (void);
 extern int idle (void);
@@ -111,18 +113,22 @@ int main (void) {
 		panic("runaway code");
 
 	// startup malloc
-	extern uint16_t __malloc_heap_end;
-	__malloc_heap_end = STACKTOP(MAX_THREADS);
 
+	extern uint16_t __malloc_heap_start, __malloc_heap_end;
+#ifndef EXTERNAL_RAM
+	__malloc_heap_end = STACKTOP(MAX_THREADS);
+#else
+	__malloc_heap_start = 0x8000;
+	__malloc_heap_end = 0xFFFF;
+#endif
 	// startup board
 	board_init();
 
-	extern uint16_t __malloc_heap_start;
 	printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
 	printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
 
-	int16_t heap_size = 2 * (__malloc_heap_end - __malloc_heap_start);
-	printf("heap size: %d bytes\n", heap_size);
+	uint16_t heap_size = (__malloc_heap_end - __malloc_heap_start);
+	printf("heap size: %u bytes\n", heap_size);
 
 	if (__malloc_heap_start >= __malloc_heap_end)
 		panic("         memory full");

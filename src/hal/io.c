@@ -28,7 +28,7 @@
 void 
 io_init() {
 	// XMEM
-	MCUCR |= _BV(SRE);
+	MCUCR |= _BV(SRE); //SRAM Enable;
 	XMCRB &= ~_BV(XMBK);
 	XMCRA &= ~_BV(SRW11);
 	MCUCR &= ~_BV(SRW10);
