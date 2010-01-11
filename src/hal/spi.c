@@ -62,8 +62,6 @@ spi_set_master (spi_clk_div div, uint8_t flags) {
 		SPSR |= _BV(SPI2X);
 	else
 		SPSR &= ~_BV(SPI2X);
-	// set direction of pins
-	DDRB |= _BV(PB2) | _BV(PB1) | _BV(PB0);
 }
 
 int8_t 

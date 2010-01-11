@@ -26,35 +26,181 @@
 #ifndef _NRF24L01_H_
 #define _NRF24L01_H_
 
-#define RF_INTERRUPT SIG_INTERRUPT7
+#include <inttypes.h>
+// Register Map
 
-//Initializes ATMega168 pins
-void init_24L01_pins(void);
+// Config Register
+#define NRF_REG_CONFIG          0x00
 
-//Set up nRF24L01 as a transmitter, does not actually send the data,
-//(need to call tx_data_nRF24L01() for that)
-uint8_t config_tx_nRF24L01(void);
+#define NRF_BIT_MASK_RX_DR  6
+#define NRF_BIT_MASK_TX_DR  5
+#define NRF_BIT_MASK_MAX_RT 4
+#define NRF_BIT_EN_CRC          3
+#define NRF_BIT_CRCO                2
+#define NRF_BIT_PWR_UP          1
+#define NRF_BIT_PRIM_RX         0
 
-//Sends command to nRF
-uint8_t send_byte(uint8_t cmd);
+// Auto Acknowledge 
+#define NRF_REG_EN_AA               0x01
 
-//Sends command to nRF, returns status byte
-uint8_t send_command(uint8_t cmd, uint8_t data);
+#define NRF_BIT_ENAA_P5         5
+#define NRF_BIT_ENAA_P4         4
+#define NRF_BIT_ENAA_P3         3
+#define NRF_BIT_ENAA_P2         2
+#define NRF_BIT_ENAA_P1         1
+#define NRF_BIT_ENAA_P0         0
 
-//Sends a number of bytes of payload
-void tx_send_payload(uint8_t cmd, uint8_t bytes);
+// Enable RX Addresses
+#define NRF_REG_EN_RXADDR       0x02
 
-//This sends out the data stored in the rf_tx_array
-//data_array must be setup before calling this function
-void tx_data_nRF24L01(void);
+#define NRF_BIT_ERX_P5          5
+#define NRF_BIT_ERX_P4          4
+#define NRF_BIT_ERX_P3          3
+#define NRF_BIT_ERX_P2          2
+#define NRF_BIT_ERX_P1          1
+#define NRF_BIT_ERX_P0          0
 
-//Basic SPI to nRF
-uint8_t tx_spi_byte(uint8_t outgoing);
+// Address Width
+#define NRF_REG_SETUP_AW        0x03
 
-//Configures nRF24L01 for recieve mode
-void config_rx_nRF24L01(void);
+#define NRF_AW_5                        3
+#define NRF_AW_4                        2
+#define NRF_AW_3                        1
 
-//Gets data from 24L01 and puts it in rf_rx_array, resets all ints
-void rx_data_nRF24L01(void);
+// Auto Retransmission
+#define NRF_REG_SETUP_RETR  0x04
+
+#define NRF_RETR_ARD_BASE       4
+#define NRF_RETR_ARC_BASE       0
+
+// RF Channel
+#define NRF_REG_RF_CH               0x05
+
+// RF Setup
+#define NRF_REG_RF_SETUP        0x06
+
+#define NRF_BIT_PLL_LOCK        4
+#define NRF_BIT_RF_DR_BASE      3
+#define NRF_RF_DR_1MBPS         0
+#define NRF_RF_DR_2MBPS         1
+#define NRF_RF_DR_250KBPS       4
+#define NRF_RF_PWR_BASE         1
+#define NRF_RF_PWR_18DB         0
+#define NRF_RF_PWR_12DB         1
+#define NRF_RF_PWR_6DB          2
+#define NRF_RF_PWR_0DB          3
+#define NRF_BIT_LNA_HCURR       0
+
+// Status
+#define NRF_REG_STATUS          0x07
+
+#define NRF_BIT_RX_DR               6
+#define NRF_BIT_TX_DS               5
+#define NRF_BIT_MAX_RT          4
+#define NRF_RX_P_NO_BASE        1
+#define NRF_RX_P_NO_NONE        6
+#define NRF_RX_P_NO_EMPTY       7
+#define NRF_RX_P_NO_MASK        0x0E
+#define NRF_BIT_TX_FULL         0
+
+// Transmit observe
+#define NRF_REG_OBSERVE_TX  0x08
+
+#define NRF_PLOS_CNT_BASE       4
+#define NRF_ARC_CNT_BASE        0
+
+// Carrier Detect
+#define NRF_REG_RPD             0x09
+
+// Receive Address Pipe 0
+#define NRF_REG_RX_ADDR_P0  0x0A
+
+// Receive Address Pipe 1
+#define NRF_REG_RX_ADDR_P1  0x0B
+
+// Receive Address Pipe 2
+#define NRF_REG_RX_ADDR_P2  0x0C
+
+// Receive Address Pipe 3
+#define NRF_REG_RX_ADDR_P3  0x0D
+
+// Receive Address Pipe 4
+#define NRF_REG_RX_ADDR_P4  0x0E
+
+// Receive Address Pipe 5
+#define NRF_REG_RX_ADDR_P5  0x0F
+
+// Transmit Address
+#define NRF_REG_TX_ADDR         0x10
+
+// Payload Width Pipe 0
+#define NRF_REG_RX_PW_P0        0x11
+
+// Payload Width Pipe 1
+#define NRF_REG_RX_PW_P1        0x12
+
+// Payload Width Pipe 2
+#define NRF_REG_RX_PW_P2        0x13
+
+// Payload Width Pipe 3
+#define NRF_REG_RX_PW_P3        0x14
+
+// Payload Width Pipe 4
+#define NRF_REG_RX_PW_P4        0x15
+
+// Payload Width Pipe 5
+#define NRF_REG_RX_PW_P5        0x16
+
+// FIFO Status
+#define NRF_REG_FIFO_STATUS 0x17
+
+#define NRF_BIT_FTX_REUSE       6
+#define NRF_BIT_FTX_FULL        5
+#define NRF_BIT_FTX_EMPTY       4
+#define NRF_BIT_FRX_FULL        1
+#define NRF_BIT_FRX_EMPTY       0
+
+// Dynamic payload length
+#define NRF_REG_DYNPD           0x1C
+
+#define NRF_BIT_DPL_P5          5
+#define NRF_BIT_DPL_P4          4
+#define NRF_BIT_DPL_P3          3
+#define NRF_BIT_DPL_P2          2
+#define NRF_BIT_DPL_P1          1
+#define NRF_BIT_DPL_P0          0
+
+// Features
+#define NRF_REG_FEATURE         0x1D
+
+#define NRF_BIT_EN_DPL          2
+#define NRF_BIT_ACK_PAY         1
+#define NRF_BIT_DYN_ACK         0
+
+// SPI Commands
+#define NRF_SPI_R_REGISTER          0x00
+#define NRF_SPI_W_REGISTER          0x20
+#define NRF_SPI_R_RX_PAYLOAD        0x61
+#define NRF_SPI_W_TX_PAYLOAD        0xA0
+#define NRF_SPI_FLUSH_TX            0xE1
+#define NRF_SPI_FLUSH_RX            0xE2
+#define NRF_SPI_REUSE_TX_PL         0xE3
+#define NRF_SPI_R_RX_LP_WID         0x60
+#define NRF_SPI_W_ACK_PAYLOAD       0xA8
+#define NRF_SPI_W_TX_PAYLOAD_NOACK  0xB0
+#define NRF_SPI_NOP                 0xFF
+
+uint8_t nrf_read_status(void);
+uint8_t nrf_read_reg(uint8_t reg);
+uint8_t nrf_read_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len);
+uint8_t nrf_write_reg(uint8_t reg, uint8_t data);
+uint8_t nrf_write_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len);
+uint8_t nrf_read_rx_payload(uint8_t *data, uint8_t len);
+uint8_t nrf_read_rx_payload_len();
+uint8_t nrf_write_tx_payload(uint8_t *data, uint8_t len);
+uint8_t nrf_flush_tx();
+uint8_t nrf_flush_rx();
+uint8_t nrf_reuse_tx_pl();
+uint8_t nrf_get_packet(uint8_t *buf, uint8_t *size);
 
 #endif

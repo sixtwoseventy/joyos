@@ -34,7 +34,7 @@ io_init() {
 	MCUCR &= ~_BV(SRW10);
 
 	// Port B: SPI, Beeper, FPGA conf
-	DDRB = 0xF3; 
+	DDRB = 0xF7;
 	PORTB |= _BV(6);
 	// PORT D: I2C, switches, leds
 	DDRD = 0xFC; 
@@ -52,4 +52,7 @@ io_init() {
 	SPI_ADC1_SS(1);
 	SPI_ADC2_SS(1);
 	SPI_RF_SS(1);
+
+    // Stand by mode
+	RF_CE(0);
 }
