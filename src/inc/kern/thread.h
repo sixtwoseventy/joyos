@@ -202,12 +202,6 @@ void pause(uint32_t ms);
  */
 void yield(void);
 
-// XXX: not tested enough for v1.0.00
-// sleep until woken
-//void sleep(void *);
-// wake up sleeping threads
-//void wakeup(void *);
-
 /**
  * Terminate and exit the current thread.
  * This will free the thread's stack space, but not any of it's dynamically
