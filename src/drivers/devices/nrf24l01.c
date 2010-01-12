@@ -172,11 +172,9 @@ nrf_reuse_tx_pl() {
 uint8_t
 nrf_write_tx_payload(uint8_t *data, uint8_t len) {
     spi_acquire();
-    uint8_t cmd[9];
+    uint8_t cmd[33];
     cmd[0] = NRF_SPI_W_TX_PAYLOAD;
-    uint8_t i;
-    for(i=0;i<len;i++)
-        cmd[i+1] = data[i];
+    memcpy(cmd+1,data,len);
     spi_set_master(SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
     SPI_RF_SS(0);
     spi_transfer_sync(cmd,len+1);
