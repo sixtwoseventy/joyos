@@ -328,8 +328,7 @@ allocate_stack(uint16_t size, uint8_t tid) {
 void
 thread_stub(void) {
     SREG |= SREG_IF;
-    current_thread->th_func();
-    thread_exit(0);
+    thread_exit(current_thread->th_func());
 }
 
 uint8_t
