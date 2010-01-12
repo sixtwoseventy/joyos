@@ -107,10 +107,7 @@ char uart_recv() {
 }
 
 int uart_get(FILE *f) {
-	LED_COMM(1);
-	while(!(UCSR0A & _BV(RXC0)));
-	LED_COMM(0);
-	return (UDR0);
+    return uart_recv();
 }
 
 char uart_has_char() {
