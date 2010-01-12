@@ -45,20 +45,14 @@
 
 // defined by user
 extern int umain (void);
-extern int idle (void);
 extern int usetup (void);
 
 static uint8_t auto_halt = 0;
-static uint8_t auto_round_start = 0;
+//static uint8_t auto_round_start = 0;
 
 void set_auto_halt(uint8_t ah) {
 	auto_halt = ah;
 }
-
-void round_start() {
-	auto_round_start = true;
-}
-
 
 void round_end() {
 	printf("\nRound end");
@@ -69,7 +63,7 @@ int robot_monitor (void) {
 	// start the calibration period...
 
 	printf("\n running usetup()...");
-	usetup ();
+	usetup();
 	printf("\n usetup() complete.");
 
 	// printf("\n waiting for rf...")
@@ -81,27 +75,11 @@ int robot_monitor (void) {
 	//	yield ();
 
 	// printf("\n rf start received.");
-	
-	// lcd_clear ();
 
 	printf("\n entering umain()...");
 
-	// create a user thread
-	create_thread(&umain, STACK_DEFAULT, 0, "user main"); // XXX: priority?
-	//dump_threadstates ();
-
-	// TODO: code to detect all stop
-	/*
-	uint32_t start_time = get_time();
-	while (get_time() - start_time < 60000)
-		yield();
-	*/
-	if (!auto_halt) {
-		while (1) { yield(); }
-	} else {
-		pause (90000ul);
-		round_end();
-	}
+	// create user thread
+	create_thread(&umain, STACK_DEFAULT, 0, "user main");
 
 	return 0;
 }
@@ -114,9 +92,8 @@ int main (void) {
 
 	// startup malloc
 
-	extern uint16_t __malloc_heap_start, __malloc_heap_end;
 #ifndef EXTERNAL_RAM
-	__malloc_heap_end = STACKTOP(MAX_THREADS);
+	__malloc_heap_end = (void*)STACKTOP(MAX_THREADS);
 #else
 	__malloc_heap_start = 0x8000;
 	__malloc_heap_end = 0xFFFF;
@@ -134,31 +111,15 @@ int main (void) {
 		panic("         memory full");
 
 	printf("JoyOS v"JOYOS_VERSION"\n");
-	//Now, turning on power will immediately start the robot. Contestants can add their own go_click().
-	//go_click();
 
-	// startup multithreading
+	// initialize threads and timer
 	init_thread();
-
-	//create_thread(&idle, STACK_DEFAULT, 0, "init2");
-
-	// create the async printf
-	//create_thread(&async_loop_start, 0, "async printf");
-
-	// create the rf thread
-	//create_thread(&rfread, STACK_DEFAULT, 0, "rf"); // XXX: priority?
 
 	// create a thread to manage calibration and starting
 	create_thread(&robot_monitor, STACK_DEFAULT, 0, "robot monitor");
 
-	// start scheduling
+	// start scheduling (doesn't return)
 	schedule();
-	//extern struct jbuf sched_jbuf;
-	//longjmp(TO_JMP_BUF(sched_jbuf),1);
-
-	// control should never reach here
-	panic("main");
 
 	return 0;
 }
-

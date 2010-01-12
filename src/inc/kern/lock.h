@@ -82,5 +82,13 @@ int is_held(struct lock *k);
  */
 void release(struct lock *k);
 
+/**
+ * Smash the lock 'k', releasing it.
+ * Should only ever be called by the kernel.
+ *
+ * @param k	Lock to release. Must be non-null.
+ */
+void smash(struct lock *k);
+
 #endif // __INCLUDE_LOCK_H__
 

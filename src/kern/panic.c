@@ -39,8 +39,7 @@ panic_P (PGM_P msg) {
 	extern struct lock lcd_lock;
 
 	// clobber LCD lock so we can write
-	lcd_lock.locked = 0;
-	lcd_lock.thread = NULL;
+    smash(&lcd_lock);
 
 	lcd_clear(); // clear lcd
 	// report panic message
@@ -48,8 +47,7 @@ panic_P (PGM_P msg) {
 #endif
 	extern struct lock uart_lock;
 
-	uart_lock.locked = 0;
-	uart_lock.thread = NULL;
+    smash(&uart_lock);
 
 	printf("panic: %s\n", msg ? msg : "");
 

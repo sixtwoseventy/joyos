@@ -153,18 +153,14 @@ board_init (void) {
 	lcd_set_pos(31);
 	lcd_print_char('\1', NULL);
 #else
-	printf("All good \1");
+	printf("Board init complete.\n");
 #endif
 
-	//delay_busy_ms(500);
 	LED_COMM(0);
 	// beep
-	beep(880,1000);
-	
-	//This function doesn't work if above fpga_init
-	//Conflict with SPI stuff perhaps?
+	//beep(880,1000);
 
-//	rf_init();
+    // rf_init();
 	
 }
 

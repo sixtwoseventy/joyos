@@ -32,36 +32,15 @@
 #include <kern/global.h>
 #include <gyro.h>
 
-extern struct thread *current_thread;
 extern uint32_t global_time;
-
-//void (*timer0_callback) () = 0;
 
 ISR(TIMER2_OVF_vect) {
 	TCNT2 = TIMER_1MS_EXPIRE;
 
 	global_time++;
-	//global_time++; // FIXME
-//	if (gyro_enabled()) {
-//		gyro_update();
-//	}
 
-	suspend();
-
-	// TODO: nested interrupts
+	yield();
 }
-
-/*
-ISR(TIMER0_OVF_vect) {
-	if (timer0_callback)
-		timer0_callback();
-}
-
-void
-set_timer0_callback(void (*func) ()) {
-	timer0_callback = func;
-}
-*/
 
 ISR(__vector_default) {
 	panic("unknown interrupt");
@@ -74,4 +53,3 @@ ISR(__vector_default) {
  **/
 void isr_init() {
 }
-

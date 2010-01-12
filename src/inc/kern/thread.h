@@ -56,12 +56,7 @@
 #define ATOMIC_BEGIN uint8_t _cli_was_enabled = SREG & SREG_IF; cli();
 #define ATOMIC_END SREG |= _cli_was_enabled;
 
-// make code a little more readable (hopefully)
-//#define lock_threadtable() __disable_interrupt()
-//#define release_threadtable() __enable_interrupt()
-
 struct jbuf {
-	// bytes in jmp_buf
 	union {
 		struct {
 			uint8_t r2;
@@ -83,33 +78,15 @@ struct jbuf {
 			uint16_t fp;
 			uint16_t sp;
 			uint8_t sreg;
-			//uint32_t pc;
 			uint16_t pc;
 		};
 		jmp_buf jb;
 	};
-
-	/*
-	// other registers
-	uint8_t r18;
-	uint8_t r19;
-	uint8_t r20;
-	uint8_t r21;
-	uint8_t r22;
-	uint8_t r23;
-	uint8_t r24;
-	uint8_t r25;
-	uint8_t r26;
-	uint8_t r27;
-	uint8_t r30;
-	uint8_t r31;
-	*/
 };
 
 #define TO_JMP_BUF(jbuf) ((jbuf).jb)
 
 struct thread {
-	//jmp_buf th_jmpbuf;
 	struct jbuf th_jmpbuf;
 	uint16_t th_stacktop;
 	uint16_t th_stacksize;
@@ -120,6 +97,7 @@ struct thread {
 	uint32_t th_wakeup_time;
 	void *th_channel;
 	char *th_name;
+    int (*th_func)();
 };
 
 // Macros for extracting jmp_buf thingies
@@ -163,28 +141,16 @@ enum {
 void init_thread(void);
 
 /**
- * Jump to scheduler, nuke the kstack. Should not be called by user.
- */
-void start_sched(void);
-
-/**
  * Schedule a thread to run. Should not be called by user.
  */
+void schedule(void) __ATTR_NORETURN__;
 
-void schedule(void);
-/**
- * Suspend the current thread and call the scheduler. Should not be called by
- * user.
- */
-
-void suspend(void);
 /**
  * Load a thread and run it. Should not be called by user.
  *
  * @param t	Thread to be run.
  */
-
-void resume(struct thread *t);
+void resume(struct thread *t) __ATTR_NORETURN__;
 
 /**
  * Pause a thread for 'ms' milliseconds. The calling thread will give up the
@@ -207,7 +173,7 @@ void yield(void);
  * This will free the thread's stack space, but not any of it's dynamically
  * allocated memory (malloc).
  */
-void exit(int);
+void thread_exit(int) __ATTR_NORETURN__;
 
 /**
  * Create a new thread.
@@ -227,7 +193,7 @@ uint8_t create_thread(
 /**
  * Stop everything.
  */
-void halt(void);
+void halt(void) __ATTR_NORETURN__;
 
 /**
  * Return the number of milliseconds elapsed since startup.

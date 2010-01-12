@@ -36,6 +36,7 @@
 
 //#include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include "config.h" // TODO rewrite
 #include <avr/pgmspace.h>
 
@@ -53,7 +54,7 @@
  */
 #define panic(_x_) panic_P (PSTR(_x_))
 
-void panic_P (PGM_P msg);
+void panic_P (PGM_P msg) __ATTR_NORETURN__;
 
 /**
  * Enable or disable the Auto-halt.

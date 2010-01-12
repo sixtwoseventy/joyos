@@ -40,6 +40,8 @@
 #include <avr/interrupt.h>
 #include <kern/lock.h>
 
+extern struct lock uart_lock;
+ 
 // array of all threads
 struct thread threads[MAX_THREADS];
 // currently running thread
@@ -47,20 +49,8 @@ struct thread *current_thread = NULL;
 volatile uint32_t global_time = 0;
 struct jbuf sched_jbuf;
 
-// idle thread -- should do nothing forever
-int
-idle(void) {
-	for(;;) {
-		yield();
-	}
-
-	panic("idle");
-	return 0;
-}
-
 void
 setup_timer(void) {
-	//TCCR2 = _BV(CS01) | _BV(CS00);
 	TCCR2 = _BV(CS21) | _BV(CS20);
 	TCNT2 = TIMER_1MS_EXPIRE;
 	TIFR  |= _BV(TOV2);
@@ -69,10 +59,13 @@ setup_timer(void) {
 
 uint32_t
 get_time (void) {
+    ATOMIC_BEGIN;
+
 	uint32_t current_time;
-    ATOMIC_BEGIN {
 	current_time = global_time;
-    } ATOMIC_END;
+
+    ATOMIC_END;
+
 	return current_time;
 }
 
@@ -80,17 +73,21 @@ get_time (void) {
 
 long
 get_time_us (void) {
+    ATOMIC_BEGIN;
+
 	long current_time;
-    ATOMIC_BEGIN {
 	current_time = global_time * 1000 + 
 		(uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
-	//current_time = global_time * 1000;
-    } ATOMIC_END;
+
+    ATOMIC_END;
+
 	return current_time;
 }
 
 void
 init_thread(void) {
+    ATOMIC_BEGIN;
+
 	//extern uint16_t __bss_end;
 	// make sure stack space won't collide with BSS space
 	//if ((STACKTOP(MAX_THREADS) < __bss_end))
@@ -110,99 +107,45 @@ init_thread(void) {
 				i, STACKTOP(i), STACKTOP(i+1));
 	}
 
-	// setup idle thread
-	create_thread(&idle, STACK_DEFAULT, 0, "idle"); // XXX: priority?
-	// assert idle thread is thread #0
-	//assert (threads[0].th_status != THREAD_FREE);
-	if (threads[0].th_status == THREAD_FREE)
-		panic("idle free");
-
-    ATOMIC_BEGIN {
-        setjmp(TO_JMP_BUF(sched_jbuf));
-        sched_jbuf.sp = KSTACKTOP;
-        sched_jbuf.pc = (uint16_t) &schedule;
-    } ATOMIC_END;
+    setjmp(TO_JMP_BUF(sched_jbuf));
+    sched_jbuf.sp = KSTACKTOP;
+    sched_jbuf.pc = (uint16_t) &schedule;
 
 	setup_timer();
+
+    ATOMIC_END;
 }
 
 // Schedule a new thread to run
 // assume interrupts disabled
 void
 schedule(void) {
-	// wakeup any threads
-	// give first priority to threads that should be unpaused...
-	// note: we can starve if too many threads pause for very little time
-	/*
-	for (int i = 0; i < MAX_THREADS; i++) {
-		if (threads[i].th_status == THREAD_PAUSED &&
-				threads[i].th_wakeup_time <= global_time) {
-			threads[i].th_status = THREAD_RUNNABLE;
-			resume(&threads[i]);
-		}
-	}
-	*/
+	int id = current_thread ? current_thread->th_id : MAX_THREADS-1;
+    current_thread = NULL;
 
-	// get thread id
-	int id;
-	if (current_thread) {
-		id = current_thread->th_id;
-	} else
-		id = 0;
-
-	// for now, just do round robin...
 	int offset;
 	for (offset = 1; offset <= MAX_THREADS; offset++) {
 		int tid = (id+offset) % MAX_THREADS;
-		if (!tid) continue; // don't RR to idle
 
-		// if next thread is runnable, resume
-		if (threads[tid].th_status == THREAD_RUNNABLE) {
-			resume(&threads[tid]); // run thread and enable interrupts
-		} else if (threads[tid].th_status == THREAD_PAUSED &&
-				threads[tid].th_wakeup_time <= global_time) {
-			// unpause and go
-			threads[tid].th_status = THREAD_RUNNABLE;
+        if (threads[tid].th_status == THREAD_PAUSED &&
+                threads[tid].th_wakeup_time <= global_time)
+            threads[tid].th_status = THREAD_RUNNABLE;
+
+		if (threads[tid].th_status == THREAD_RUNNABLE)
 			resume(&threads[tid]);
-		}
 	}
 
-	if (threads[0].th_status == THREAD_RUNNABLE) {
-		resume(&threads[0]);
-	}
-
-	cli();
-
-	for (int i = 0; i < MAX_THREADS; i++) {
-		if(threads[i].th_status == THREAD_FREE) {
-			printf(" thread (tid %d) unallocated\n", i);
-			continue;
-		}
-		printf(" thread (tid %d) '%s' status %d\n", 
-				i, threads[i].th_name, threads[i].th_status);
-		if(threads[i].th_status == THREAD_RUNNABLE) {
-			printf("Oops... there's a runnable thread thats not idle\n");
-		}
-	}
-
-	// should never return
-	panic("schedule");
+    // wait for aliens to take us home...
+    SREG |= SREG_IF;
+    for(;;);
 }
 
 void
 check (struct thread *t) {
-	if (threads[0].th_status != THREAD_RUNNABLE) {
-		printf("-- no idle thread --\n");
-		printf("time %d", global_time);
-		printf("threads[0] at %p\n", &threads[0]);
-		printf("threads[0].th_status at %p\n", 
-				&(threads[0].th_status));
-
-		extern uint16_t __malloc_heap_start, __malloc_heap_end;
-		printf("malloc space [%p,%p]\n",
-				__malloc_heap_start, __malloc_heap_end);
-		panic("no idle");
-	}
+    // printfs need the uart lock to be free, and
+    // we're definitely going to panic if we do any
+    // printfs at all, so we will smash the uart lock
+    // if we have to.
 
 	// check if SP is above stacktop
 	if (t->th_jmpbuf.sp > STACKTOP(t->th_id)) {
@@ -211,6 +154,7 @@ check (struct thread *t) {
 
 	// check is SP is below bottom (stacktop-stacksize)
 	if (t->th_stacktop - t->th_jmpbuf.sp > t->th_stacksize) {
+        smash(&uart_lock);
 		printf("\nstack overflow\n");
 		printf("sp of '%s' (id %d) is %p\n",
 				t->th_name, t->th_id, t->th_jmpbuf.sp);
@@ -225,6 +169,7 @@ check (struct thread *t) {
 /*
 	// check if SP is below stacktop
 	if (t->th_jmpbuf.sp <= STACKTOP(t->th_id+1)) {
+        smash(&uart_lock);
 		printf("\nstack overflow\n");
 		printf("sp of '%s' (id %d) is %p\n",
 				t->th_name, t->th_id, t->th_jmpbuf.sp);
@@ -239,6 +184,7 @@ check (struct thread *t) {
 
 	/*
 	for (uint8_t i = 0; i < STACK_SAFETY_ZONE; i++) {
+        smash(&uart_lock);
 		uint8_t *sp = (uint8_t *) (t->th_stacktop - t->th_stacksize);
 		if (*(sp-i) != SAFETY_VALUE) {
 			printf("\nstack overflow\n");
@@ -258,6 +204,7 @@ check (struct thread *t) {
 
 	/*
 	if (!(t->th_jmpbuf.sreg & SREG_IF)) {
+        smash(&uart_lock);
 		printf("in thread '%s'...\n", t->th_name);
 		dump_jmpbuf(&t->th_jmpbuf);
 		panic("IF clear");
@@ -265,54 +212,13 @@ check (struct thread *t) {
 	*/
 }
 
-// assumes current_thread is non-null
-// XXX: Trouble if threads are enabled ??
-// Assumes interrupts are disabled...
-void
-suspend() {
-	if (!current_thread)
-		panic("no current_thread");
-
-	//if (setjmp(current_thread->th_jmpbuf) == 0)
-	if (setjmp(TO_JMP_BUF(current_thread->th_jmpbuf)) == 0) {
-		longjmp(TO_JMP_BUF(sched_jbuf),1);
-		// set SP to kernel stack
-		/*
-		const uint8_t sp_h = (uint8_t) ((KSTACKTOP >> 8) % 256);
-		const uint8_t sp_l = (uint8_t) (KSTACKTOP % 256);
-		asm volatile(
-				"mov __tmp_reg__, %0\n\t"
-				"out __SP_H__, __tmp_reg__\n\t"
-				"mov __tmp_reg__, %1\n\t"
-				"out __SP_L__, __tmp_reg__\n\t" :: "I" (sp_h), "I" (sp_l));
-		uint16_t ksp = (uint16_t) KSTACKTOP;
-		asm volatile(
-				"out __SP_H__, %A0\n\t"
-				"out __SP_L__, %B0\n\t" :: "a" (ksp));
-
-		// XXX TEST XXX
-		struct jbuf testbuf;
-		setjmp(TO_JMP_BUF(testbuf));
-		if (testbuf.sp != KSTACKTOP)
-			panic("kstacktop");
-
-		// make sure current thread is valid
-		check(current_thread);
-		schedule ();
-		*/
-	}
-}
-
 void
 resume(struct thread *t) {
 	current_thread = t;
 
-	check(t); // XXX: debug!
+	check(t);
 	current_thread->th_runs++;
 	longjmp(TO_JMP_BUF(current_thread->th_jmpbuf), 1);
-
-	// resume should never return
-	panic("resume");
 }
 
 void
@@ -323,22 +229,20 @@ pause(uint32_t ms) {
 		delay_busy_ms(ms);
 		return;
 	} else {
-        cli();
+        ATOMIC_BEGIN; // yes, I know interrupts are enabled, but...
 
-        current_thread->th_status = THREAD_PAUSED;
-        // XXX assumes clock period is 1 ms
+        current_thread->th_status = THREAD_PAUSED; // don't change your thread buf with interrupts enabled!!!111~~
         current_thread->th_wakeup_time = global_time + ms;
 
         yield();
 
-        // at this point interrupts are reenabled
+        ATOMIC_END;
     }
 }
 
 void
 yield(void) {
-	//if(!(SREG & SREG_IF)) panic("bad yield");
-	cli();
+    ATOMIC_BEGIN;
 
 	// store registers not in jmp_buf on stack
 	asm volatile(
@@ -357,10 +261,9 @@ yield(void) {
 			"push r30\n\t"
 			"push r31\n\t" ::);
 
-	//assert (current_thread);
-	if (!current_thread) panic("yield");
-
-	suspend();
+	if (!current_thread ||
+            setjmp(TO_JMP_BUF(current_thread->th_jmpbuf)) == 0)
+		longjmp(TO_JMP_BUF(sched_jbuf),1);
 
 	// restore registers stored above
 	asm volatile(
@@ -379,66 +282,26 @@ yield(void) {
 			"pop r0\n\t"
 			"pop r1\n\t" ::);
 
-	sei();
-}
-
-void 
-sleep(void *channel) {
-	// disable global interrupts
-	//lock_threadtable();
-	cli();
-
-	//assert(current_thread);
-	if (!current_thread) panic("sleep");
-
-	current_thread->th_channel = channel;
-	current_thread->th_status = THREAD_SLEEPING;
-
-	// yield processor to another (runnable) process
-	yield();
+    ATOMIC_END;
 }
 
 void
-wakeup(void *channel) {
-	// lock thread array
-	//lock_threadtable();
-	cli();
+thread_exit(int status) {
+    ATOMIC_BEGIN;
 
-	int i;
-	for (i = 1; i < MAX_THREADS; i++)
-		if (threads[i].th_status == THREAD_SLEEPING && threads[i].th_channel == channel)
-            threads[i].th_status = THREAD_RUNNABLE;
-
-	// unlock thread array
-	//release_threadtable();
-	sei();
-}
-
-void
-exit(int status) {
-	//for (;;) yield();
-	// stop everything
-	cli();
-
-	//assert(current_thread);
 	if (!current_thread)
 		panic("exiting nothing");
 
 	current_thread->th_status = THREAD_FREE;
 	yield();
 
-	panic("exit");
-	for (;;); // satisfy compiler
+	panic("scheduled thread that had already exited");
+    ATOMIC_END;
 }
 
 uint16_t
-//allocate_stack(uint16_t size) {
-allocate_stack(uint16_t size, uint8_t tid) { // TODO refactor
+allocate_stack(uint16_t size, uint8_t tid) {
 	return STACKTOP(tid);
-
-
-
-
 
 	/*
 	uint8_t *sp = (uint8_t *) (STACKTOP(tid+1)+1);
@@ -462,54 +325,40 @@ allocate_stack(uint16_t size, uint8_t tid) { // TODO refactor
 	*/
 }
 
+void
+thread_stub(void) {
+    SREG |= SREG_IF;
+    current_thread->th_func();
+    thread_exit(0);
+}
+
 uint8_t
 create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
-	//lock_threadtable();
-	uint8_t was_enabled = SREG & SREG_IF;
-	cli();
+    ATOMIC_BEGIN;
 
 	int i;
 	for (i = 0; i < MAX_THREADS; i++)
-		if (threads[i].th_status == THREAD_FREE) {
-			threads[i].th_status = THREAD_RUNNABLE;
-			threads[i].th_name = name;
-			threads[i].th_runs = 0;
+		if (threads[i].th_status == THREAD_FREE)
+			break;
 
-			threads[i].th_stacksize = STACKSIZE;
+    if (i == MAX_THREADS)
+        panic("out of threads");
 
-			// set initial state of the thread's registers...
-			// TODO: best?
-			//memset(&threads[i].th_jmpbuf, 0, sizeof(jmp_buf));
-			memset(&threads[i].th_jmpbuf, 0, sizeof(struct jbuf));
+    threads[i].th_status = THREAD_RUNNABLE;
+    threads[i].th_name = name;
+    threads[i].th_runs = 0;
+    threads[i].th_stacksize = STACKSIZE;
+    threads[i].th_func = func;
 
-			// calculate the thread's stack top
-			//uint8_t *sp = (uint8_t *) threads[i].th_stacktop;
-			uint8_t *sp = (uint8_t *) allocate_stack(0, i); // XXX refactor
-			//printf("allocated stacktop = %p\n", sp);
+    // make the jmp_buf something sensible,
+    // calculate the thread's stack top, and
+    // set the thread's instruction pointer
+    setjmp(TO_JMP_BUF(threads[i].th_jmpbuf));
+    threads[i].th_jmpbuf.sp = (uint16_t)allocate_stack(0, i);;
+    threads[i].th_jmpbuf.pc = (uint16_t)thread_stub;
 
-			// push argc and argv onto the stack and set registers
-			// TODO implement
-
-			// push a return address to exit onto the stack
-			*(sp--) = (uint8_t) (&exit);
-			*(sp--) = (uint8_t) ((uint16_t) &exit >> 8);
-
-			// set the stack
-			threads[i].th_jmpbuf.sp = (uint16_t) sp;
-
-			// set the thread's instruction pointer
-			threads[i].th_jmpbuf.pc = (uint16_t) func;
-
-			// set interrupt enable flag
-			threads[i].th_jmpbuf.sreg |= SREG_IF;
-
-			// enable global interrupts (if previously enabled)
-			SREG |= was_enabled;
-			return i;
-		}
-
-	panic("out of threads");
-	for(;;); // satisfy compiler
+    ATOMIC_END;
+    return i;
 }
 
 void
@@ -522,61 +371,19 @@ halt(void) {
 	motor_lock.locked = 0;
 	motor_lock.thread = NULL;
 
-	// break each motor
+	// brake each motor
 	for (uint8_t i = 0; i < 6; i++)
 		motor_brake (i);
 
 	// enter busy loop forever
 	for(;;);
-
-	// unreachable code, should never happen
-	panic("halt");
 }
-
-/*
-void
-dump_jmpbuf(jmp_buf *jb) {
-	printf("Dumping jmp_buf:\n");
-
-	uint8_t *bytes = (uint8_t *) jb;
-	// print r2-r17
-	for (int i = 0; i < 16; i++) {
-		printf(" r%02u  : 0x%02x\n", i+2, (uint8_t) bytes[2]);
-	}
-
-	// print frame pointer
-	printf(" FP   : 0x%04x\n", JMPBUF_FP(jb));
-
-	printf(" SP   : 0x%04x\n", JMPBUF_SP(jb));
-
-	printf(" SREG : 0x%02x\n", JMPBUF_SREG(jb));
-
-	printf(" PC   : 0x%04x\n", JMPBUF_IP(jb));
-}
-*/
 
 void
 dump_jmpbuf(struct jbuf *jb) {
 	printf("Dumping jmp_buf:\n");
 
 	printf (" <omitting r0-r31>\n");
-
-	/*
-	printf("r0\tNA\t\tr1\tNA\t\tr2\t%2p\t\tr3\t%2p\t\tr4\t%2p\n",
-	   jb->r2, jb->r3, jb->r4);
-	printf("r5\t%2p\t\tr6\t%2p\t\tr7\t%2p\t\tr8\t%2p\t\tr9\t%2p\n",
-	   jb->r5, jb->r6, jb->r7, jb->r8, jb->r9);
-	printf("r10\t%2p\t\tr11\t%2p\t\tr12\t%2p\t\tr13\t%2p\t\tr14\t%2p\n",
-	   jb->r10, jb->r11, jb->r12, jb->r13, jb->r14);
-	printf("r15\t%2p\t\tr16\t%2p\t\tr17\t%2p\t\tr18\t%2p\t\tr19\t%2p\n",
-	   jb->r15, jb->r16, jb->r17, jb->r18, jb->r19);
-	printf("r20\t%2p\t\tr21\t%2p\t\tr22\t%2p\t\tr23\t%2p\t\tr24\t%2p\n",
-	   jb->r20, jb->r21, jb->r22, jb->r23, jb->r24);
-	printf("r25\t%2p\t\tr26\t%2p\t\tr27\t%2p\t\tr28\tNA\t\tr29\tNA\n",
-	   jb->r25, jb->r26, jb->r27);
-	printf("r30\t%2p\t\tr31\t%2p\n",
-			jb->r30, jb->r31);
-	*/
 
 	printf(" FP   : %04p\n", (uint32_t) JMPBUF_FP(*jb));
 	printf(" SP   : %04p\n", (uint32_t) JMPBUF_SP(*jb));
@@ -586,8 +393,8 @@ dump_jmpbuf(struct jbuf *jb) {
 
 void
 dump_threadstates () {
-	uint8_t sreg = SREG & SREG_IF;
-	cli();
+    acquire(&uart_lock);
+    ATOMIC_BEGIN;
 
 	printf("Dumping thread states:\n");
 
@@ -602,7 +409,8 @@ dump_threadstates () {
 				threads[i].th_runs);
 	}
 
-	SREG |= sreg;
+    ATOMIC_END;
+    release(&uart_lock);
 }
 
 int
@@ -614,4 +422,3 @@ display_thread_states (void) {
 
 	return 0;
 }
-

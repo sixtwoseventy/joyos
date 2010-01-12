@@ -46,64 +46,42 @@ init_lock(struct lock *k, const char *name) {
 	k->thread = NULL;
 }
 
-void 
-acquire(struct lock *k) {
-	// make sure k is non-null
-	if (!k) {
-		panic("acquire null lock");
-	}
-
-	if (k->locked >= LOCK_MAX_ACQUIRES) {
-		panic("acquired too many times");
-	}
-
-	// loop until we acquire lock...
-	for(;;) {
-		// record interrupt status
-		uint8_t was_enabled = SREG & SREG_IF;
-		// disable global interrupts
-		cli();
-
-		// pointer to current thread
-		extern struct thread *current_thread;
-		// if current thread already holds lock
-		if (k->thread == current_thread) {
-			// inc lock counter
-			k->locked++;
-			// enable global interrupts (if previously enabled)
-			SREG |= was_enabled;
-			// done
-			return;
-		}
-
-		// if not locked...
-		if (!k->locked) {
-			// lock it
-			k->locked++;
-			// record holding thread
-			k->thread = current_thread;
-			// enable global interrupts (if previously enabled)
-			SREG |= was_enabled;
-			// done
-			return;
-		} else {
-			// enable global interrupts (if previously enabled)
-			SREG |= was_enabled;
-			// yield so holder can release
-			yield();
-		}
-	}
-
-	// control should never reach this
-	panic("acquire");
+uint8_t inc_lock(struct lock *k) {
+    ATOMIC_BEGIN;
+    extern struct thread *current_thread;
+    if (!k->locked || k->thread==current_thread) {
+        k->locked++;
+        k->thread = current_thread;
+        ATOMIC_END;
+        return 1;
+    } else {
+        ATOMIC_END;
+        return 0;
+    }
 }
 
+void 
+acquire(struct lock *k) {
+	if (!k)
+		panic("acquire null lock");
+
+	if (k->locked >= LOCK_MAX_ACQUIRES)
+		panic("acquired too many times");
+
+    extern struct thread *current_thread;
+    while (!inc_lock(k)) {
+        if (current_thread != NULL)
+            yield();
+        else
+            panic("deadlock in acquire -- called from kernel thread on unavailable lock");
+    }
+}
+
+// should only be called atomically
 int
 is_held (struct lock *k) {
-	//assert (k);
-	if (!k) {
+	if (!k)
 		panic("is_held null lock");
-	}
 
 	extern struct thread *current_thread;
 	return current_thread == k->thread && k->locked;
@@ -111,38 +89,29 @@ is_held (struct lock *k) {
 
 void
 release(struct lock *k) {
-	// make sure k is non-null
-	if (!k) {
+	if (!k)
 		panic("release null lock");
-	}
 
-	// record interrupt status
-	uint8_t was_enabled = SREG & SREG_IF;
+	ATOMIC_BEGIN;
 
-	// disable global interrupts
-	cli();
-
-	// check lock is actually locked
-	if (!k->locked) {
+    if (!is_held(k))
 		panic("release unheld lock");
-	}
 
-	// check that lock is held by the current thread
-	extern struct thread *current_thread;
-	if (k->thread != current_thread) {
-		panic("lock held by another");
-	}
-
-	// release lock
-	k->locked--;
-
-	// if lock is no longer held...
-	if (!k->locked) {
-		// remove pointer to holding thread
+	if (!(--k->locked))
 		k->thread = NULL;
-	}
 
-	// restore SREG (potentially reenabling interrupts)
-	SREG |= was_enabled;
+	ATOMIC_END;
 }
 
+void
+smash(struct lock *k) {
+	if (!k)
+		panic("smash null lock");
+
+	ATOMIC_BEGIN;
+
+    k->locked = 0;
+    k->thread = NULL;
+
+	ATOMIC_END;
+}
