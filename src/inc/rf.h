@@ -51,9 +51,9 @@ extern volatile board_coord objects[4];
 extern board_coord goal_position; //The target position received from a goal packet
 
 /**
- * Transmits the contents of the RF buffer
+ * Transmits a packet
  */
-void transmit_raw_packet(uint8_t * buf, uint8_t bytes);
+uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len);
 
 /**
  * Initializes RF.  Should not be called by user
