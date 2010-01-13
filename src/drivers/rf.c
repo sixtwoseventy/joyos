@@ -12,6 +12,7 @@
 
 packet_buffer tx, rx;
 
+volatile uint32_t position_microtime;
 volatile board_coord objects[4];
 
 board_coord goal_position; //The target position received from a goal packet
@@ -24,7 +25,6 @@ void rf_rx(void)
     // RESOLVE THIS WITH THAT OTHER THING BELOW
     // power on and enable 2-byte CRC, RX mode
     nrf_write_reg(NRF_REG_CONFIG, 
-            _BV(NRF_BIT_PWR_UP) | 
             _BV(NRF_BIT_EN_CRC) | 
             _BV(NRF_BIT_CRCO) | 
             _BV(NRF_BIT_PRIM_RX));
@@ -46,7 +46,6 @@ rf_tx(void) {
 /*
     // RESOLVE THIS WITH THAT OTHER THING BELOW
     nrf_write_reg(NRF_REG_CONFIG, 
-            _BV(NRF_BIT_PWR_UP) | 
             _BV(NRF_BIT_EN_CRC) | 
             _BV(NRF_BIT_CRCO));
 */
@@ -102,8 +101,8 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
 
     switch (type) {
         case POSITION:
-            //Whose position is updated?
 
+            position_microtime = get_time_us();
             objects[0] = rx->payload.coords[0];
             objects[1] = rx->payload.coords[1];
             objects[2] = rx->payload.coords[2];
