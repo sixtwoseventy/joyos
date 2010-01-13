@@ -26,30 +26,32 @@
 // Include headers from OS
 #include <joyos.h>
 
+// usetup is called during the calibration period. It must return before the
+// period ends.
 int usetup (void) {
+	set_auto_halt(0);
 	return 0;
 }
 
-uint8_t buf[32];
+// Entry point to contestant code.
+// Create threads and return 0.
 
 int
-umain (void) {
-    int i, len=0;
-    uint8_t led = 0;
+umain (void) {	
 
-    cli();
+	rf_init();
 
-    for(;;) {
-        led = led ? 0 : 1;
-        LED_COMM(led);
-        len = uart_recv();
-        if (len>0 && len <= 32) {
-            for(i=0; i<len; i++) {
-                buf[i] = uart_recv();
-            }
-            rf_send_packet(0xE7, buf, len);
+	//This loop prints out its position, which is set by RF
+	while(1){
+        if(rf_new_str){
+            printf("%s", rf_str_buf);
+            rf_new_str = 0;
         }
-	}
-
+        pause(100);
+    }
+	
+	// Will never return, but the compiler complains without a return
+	// statement.
 	return 0;
 }
+

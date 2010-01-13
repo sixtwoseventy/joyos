@@ -1,9 +1,14 @@
 # User source files
-USERSRC = tests/rftest.c
-#AVRDUDE_PORT = /dev/tty.usbserial-0000113D
-AVRDUDE_PORT ?= /dev/ttyUSB0
-#AVRDUDE_USERPORT = /dev/tty.usbserial-A20e1uZB
-AVRDUDE_USERPORT ?= /dev/ttyUSB0
+#USERSRC = tests/rf_tx_test.c
+#USERSRC = tests/rftest.c
+USERSRC = tests/rf_rx_test.c
+#USERSRC = user/usb2nrf/transmit.c
+#AVRDUDE_PORT ?= /dev/tty.usbserial-A800cB5K
+AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBaY
+#AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBag
+#AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cB5K
+AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cBaY
+#AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cBag
 
 CC = avr-gcc
 MCU = atmega128
@@ -23,7 +28,7 @@ BOOT_LDFLAGS = $(BOOT_PRINTFOP) $(MEMLAYOUT)
 OS_LDFLAGS = $(OS_PRINTFOP) $(OSMEMLAYOUT) 
 
 AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F
-AVRDUDEFLAGS_USER = -c stk500 -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V
+AVRDUDEFLAGS_USER = -c stk500v1 -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V
 
 DEBUG_HOST = localhost:4242
 
@@ -113,7 +118,7 @@ BOOTOBJ = $(BOOTSRC:.c=.o)
 # Objects for library
 DISTOBJ = $(DISTSRC:.c=.o)
 
-all: $(OSLIB) $(HLLIB) $(BOOTTARGET) size
+all: $(OSLIB) $(HLLIB) $(BOOTTARGET) 
 
 size: $(OSELF)
 	@echo -n "-- OS Size "

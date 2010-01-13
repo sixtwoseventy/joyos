@@ -6,6 +6,7 @@
 #include <nrf24l01.h>
 #include <kern/global.h>
 #include <kern/thread.h>
+#include <kern/lock.h>
 #include <avr/interrupt.h>
 #include <hal/uart.h>
 #include <hal/io.h>
@@ -16,6 +17,71 @@ volatile uint32_t position_microtime;
 volatile board_coord objects[4];
 
 board_coord goal_position; //The target position received from a goal packet
+
+FILE rfio = FDEV_SETUP_STREAM(rf_put, NULL, _FDEV_SETUP_WRITE);
+
+volatile char rf_str_buf[PAYLOAD_SIZE+1];
+uint8_t rf_ch_count = 0;
+
+volatile uint8_t rf_new_str;
+
+struct lock rf_lock;
+
+int rf_put(char ch, FILE *f){
+    ATOMIC_BEGIN;
+
+    tx.payload.array[rf_ch_count++] = ch;
+    
+    if ((ch=='\n') || (rf_ch_count == PAYLOAD_SIZE)){
+        tx.type = STRING;
+        rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet));
+        rf_ch_count = 0;
+    }
+
+    ATOMIC_END;
+
+    return ch;
+}
+
+int rf_vprintf(const char *fmt, va_list ap) {
+	int count;
+	acquire(&rf_lock);
+	count = vfprintf(&rfio, fmt, ap);
+	release(&rf_lock);
+
+	return count;
+}
+
+int rf_printf(const char *fmt, ...) {
+	va_list ap;
+	int count;
+
+	va_start(ap, fmt);
+	count = rf_vprintf(fmt, ap);
+	va_end(ap);
+
+	return count;
+}
+
+int rf_vprintf_P(const char *fmt, va_list ap) {
+	int count;
+	acquire(&rf_lock);
+	count = vfprintf_P(&rfio, fmt, ap);
+	release(&rf_lock);
+
+	return count;
+}
+
+int rf_printf_P(const char *fmt, ...) {
+	va_list ap;
+	int count;
+
+	va_start(ap, fmt);
+	count = rf_vprintf_P(fmt, ap);
+	va_end(ap);
+
+	return count;
+}
 
 void rf_rx(void)
 {
@@ -96,17 +162,15 @@ uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len) {
 }
 
 void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
+
     uint8_t type = rx->type;
     //uint8_t address = rx->address;
 
     switch (type) {
         case POSITION:
 
+            memcpy(objects, rx->payload.coords, sizeof(objects));
             position_microtime = get_time_us();
-            objects[0] = rx->payload.coords[0];
-            objects[1] = rx->payload.coords[1];
-            objects[2] = rx->payload.coords[2];
-            objects[3] = rx->payload.coords[3];
 
             break;
         case GOAL:
@@ -129,11 +193,12 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
                 target = rx->packet_buf.payload[i];
                 if (target == self_id) { round_end(); break; }
             }
-            break;
+            break;*/
 
         case STRING:
-            printf("%s",rx->packet_buf.payload);
-            break;*/
+            rf_new_str = 1;
+            memcpy(rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
+            break;
         default:
             break;
     }
@@ -179,6 +244,18 @@ int rf_receive (void) {
 
 // Initialize RF
 void rf_init (void) {
+    // The rf_lock ensures that printing to
+    // rf from several threads will not cause
+    // characters to be interleaved between threads
+    init_lock(&rf_lock, "RF Lock");
+
+    // STRING packets don't contain the null character
+    // for efficiency.  rf_str_buf is one character larger
+    // than the payload to hold this additional character
+    rf_str_buf[PAYLOAD_SIZE] = '\0';
+
+    rf_new_str = 0;
+
 	rf_rx(); //Enable receive mode
 
 	create_thread (&rf_receive, STACK_DEFAULT, 0, "rf");

@@ -3,6 +3,7 @@
 
 #include <nrf24l01.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /**
  * \file rf.h
@@ -49,6 +50,19 @@ extern packet_buffer tx, rx;
 extern volatile board_coord objects[4];
 
 extern board_coord goal_position; //The target position received from a goal packet
+
+extern volatile char rf_str_buf[PAYLOAD_SIZE+1];
+
+// rf_new_str is set by the rx interrupt handler and
+// cleared by user code once the string has been
+// processed as desired.
+extern volatile uint8_t rf_new_str;
+
+int rf_put(char ch, FILE *f);
+int rf_vprintf(const char *fmt, va_list ap);
+int rf_printf(const char *fmt, ...);
+int rf_vprintf_P(const char *fmt, va_list ap);
+int rf_printf_P(const char *fmt, ...);
 
 /**
  * Transmits a packet
