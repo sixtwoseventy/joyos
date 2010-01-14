@@ -77,11 +77,7 @@ int robot_monitor (void) {
 	// printf("\n rf start received.");
 
 	printf("\n entering umain()...");
-
-	// create user thread
-	create_thread(&umain, STACK_DEFAULT, 0, "user main");
-
-	return 0;
+	return umain();
 }
 
 int main (void) {
@@ -116,7 +112,7 @@ int main (void) {
 	init_thread();
 
 	// create a thread to manage calibration and starting
-	create_thread(&robot_monitor, STACK_DEFAULT, 0, "robot monitor");
+	create_thread(&robot_monitor, STACK_DEFAULT, 0, "main");
 
 	// start scheduling (doesn't return)
 	schedule();
