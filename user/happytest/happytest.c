@@ -28,9 +28,9 @@
 /**
  * Display testName and 'Press Go'
  */
-void start_test(char testName[]) {
-	printf("\n%sPress Go",testName);
-	go_click();
+int start_test(char testName[]) {
+	printf("\n%s: press Go (or Stop to skip)", testName);
+	return either_click();
 }
 
 /**
@@ -129,22 +129,22 @@ int usetup (void) {
 int
 umain (void) {
 
-	start_test("Happytest v0.61 ");
+	printf("\nHappytest v0.61 ");
 
-	start_test("Servo Test      ");
-	test_servos();
+	if (start_test("Servo Test"))
+        test_servos();
 	
-	start_test("Motor Test      ");
-	test_motors();
+	if (start_test("Motor Test"))
+        test_motors();
 
-	start_test("Digital Test    ");
-	test_digital();
+	if (start_test("Digital Test"))
+        test_digital();
 
-	start_test("Analog Test     ");
-	test_analog();
+	if (start_test("Analog Test"))
+        test_analog();
 	
-	start_test("Encoder Test    ");
-	test_encoders();
+	if (start_test("Encoder Test"))
+        test_encoders();
 
 	panic ("Testing new panic()");
 
