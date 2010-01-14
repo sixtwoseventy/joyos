@@ -21,6 +21,7 @@
 #define STRING 0x03 //String from bot to board
 #define SYNC 0x04 //Not sure how to use yet.  Established IDs of all bots/vision system on board
 #define GOAL 0x05 //Sets the target position of this robot
+#define LIGHT 0x06 //Instructs robots to turn their lights on or off
 
 typedef struct {
 	uint8_t id;
@@ -29,6 +30,11 @@ typedef struct {
 	signed theta : 12;
 	unsigned confidence : 12;
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) board_coord;
+
+typedef struct{
+    uint8_t id;
+    int16_t value;
+} __attribute__ ((aligned (1))) __attribute__ ((packed)) light_command;
 
 typedef struct{
 	uint8_t type;
@@ -42,6 +48,7 @@ typedef struct {
 	union {
 		uint8_t array[PAYLOAD_SIZE];
 		board_coord coords[4];
+        light_command lights[4];
 	} payload;
 } __attribute__ ((packed)) packet_buffer;
 

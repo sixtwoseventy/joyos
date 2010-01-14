@@ -114,6 +114,9 @@ int main (void) {
 	// create a thread to manage calibration and starting
 	create_thread(&robot_monitor, STACK_DEFAULT, 0, "main");
 
+    // initialize RF
+    rf_init();
+
 	// start scheduling (doesn't return)
 	schedule();
 

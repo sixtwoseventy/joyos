@@ -10,6 +10,8 @@
 #include <avr/interrupt.h>
 #include <rf.h>
 #include <hal/io.h>
+#include <motor.h>
+#include <kern/thread.h>
 
 packet_buffer tx, rx;
 
@@ -28,6 +30,9 @@ uint8_t rf_ch_count = 0;
 volatile uint8_t rf_new_str;
 
 struct lock rf_lock;
+
+uint8_t light_port = 3;
+uint8_t robot_id = 0;
 
 int rf_send(char ch){
     ATOMIC_BEGIN;
@@ -260,9 +265,17 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
             break;*/
 
         case STRING:
-	    rf_buf_index = 0;
+            rf_buf_index = 0;
             memcpy((char *)rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
             break;
+
+        case LIGHT:
+            for (int i=0; i<4; i++) {
+                if (rx->payload.lights[i].id == robot_id)
+                    motor_set_vel(light_port, rx->payload.lights[i].value);
+            }
+            break;
+
         default:
             break;
     }
@@ -308,6 +321,10 @@ int rf_receive (void) {
 
 // Initialize RF
 void rf_init (void) {
+    extern struct thread *current_thread;
+    if (current_thread != NULL)
+        return;
+
     // The rf_lock ensures that printing to
     // rf from several threads will not cause
     // characters to be interleaved between threads
