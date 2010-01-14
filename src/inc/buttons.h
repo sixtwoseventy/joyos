@@ -54,6 +54,12 @@ uint8_t go_press();
 uint8_t stop_press();
 
 /**
+ * Wait for the user to click one of the two buttons.
+ * Returns 0 if Stop was pressed.
+ */
+int either_click();
+
+/**
  * Wait for the user to click the 'Go' button.
  * This will loop until the 'Go' button is pressed and released.
  */

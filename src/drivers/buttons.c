@@ -43,6 +43,15 @@
 #define VBAT_MULT ((VBAT_ADC*(VBAT_R1+VBAT_R2)*1000.0)/(VBAT_RES*VBAT_R1))
 #define VBAT_ADC_TO_MV(x) ((uint16_t)(((float)(x))*VBAT_MULT))
 
+int either_click() {
+    int which = 0;
+	while (!SWITCH_GO() && !SWITCH_STOP());
+    which = SWITCH_GO();
+	delay_busy_us(100);
+	while (SWITCH_GO() || SWITCH_STOP());
+    return which;
+}
+
 void 
 go_click() {
 	while (!SWITCH_GO());
