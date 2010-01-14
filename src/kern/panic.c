@@ -30,6 +30,7 @@
 #include <kern/thread.h>
 #include <avr/pgmspace.h>
 
+#define PANIC_STRING "\npanic: %S\n"
 void
 panic_P (PGM_P msg) {
 	// stop everything
@@ -43,13 +44,13 @@ panic_P (PGM_P msg) {
 
 	lcd_clear(); // clear lcd
 	// report panic message
-	lcd_printf_P(PSTR("panic: %s\n"), msg ? msg : ""); // print msg
+	lcd_printf_P(PSTR(PANIC_STRING), msg ? msg : ""); // print msg
 #endif
 	extern struct lock uart_lock;
 
     smash(&uart_lock);
 
-	printf("panic: %s\n", msg ? msg : "");
+	printf(PANIC_STRING, msg ? msg : "");
 
 	// halt board
 	halt();
