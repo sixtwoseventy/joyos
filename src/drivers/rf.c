@@ -8,7 +8,7 @@
 #include <kern/thread.h>
 #include <kern/lock.h>
 #include <avr/interrupt.h>
-#include <hal/uart.h>
+#include <rf.h>
 #include <hal/io.h>
 
 packet_buffer tx, rx;
@@ -18,9 +18,11 @@ volatile board_coord objects[4];
 
 board_coord goal_position; //The target position received from a goal packet
 
-FILE rfio = FDEV_SETUP_STREAM(rf_put, NULL, _FDEV_SETUP_WRITE);
+FILE rfio = FDEV_SETUP_STREAM(rf_put, rf_recv, _FDEV_SETUP_RW);
 
 volatile char rf_str_buf[PAYLOAD_SIZE+1];
+volatile uint8_t rf_buf_index = PAYLOAD_SIZE;
+
 uint8_t rf_ch_count = 0;
 
 volatile uint8_t rf_new_str;
@@ -78,6 +80,54 @@ int rf_printf_P(const char *fmt, ...) {
 
 	va_start(ap, fmt);
 	count = rf_vprintf_P(fmt, ap);
+	va_end(ap);
+
+	return count;
+}
+
+int rf_recv(FILE * foo) {
+
+	while(rf_buf_index==PAYLOAD_SIZE || rf_str_buf[rf_buf_index]=='\0')
+		yield();
+
+	return rf_str_buf[rf_buf_index++];
+}
+
+int rf_vscanf(const char *fmt, va_list ap){
+	int count;
+	acquire(&rf_lock);
+	count = vfscanf(&rfio, fmt, ap);
+	release(&rf_lock);
+
+	return count;
+}
+
+int rf_scanf(const char *fmt, ...){
+	va_list ap;
+	int count;
+	
+	va_start(ap, fmt);
+	count = rf_vscanf(fmt, ap);
+	va_end(ap);
+
+	return count;
+}
+
+int rf_vscanf_P(const char *fmt, va_list ap) {
+	int count;
+	acquire(&rf_lock);
+	count = vfscanf_P(&rfio, fmt,ap);
+	release(&rf_lock);
+
+	return count;
+}
+
+int rf_scanf_P(const char *fmt, ...) {
+	va_list ap;
+	int count;
+	
+	va_start(ap, fmt);
+	count = rf_vscanf_P(fmt, ap);
 	va_end(ap);
 
 	return count;
@@ -162,7 +212,6 @@ uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len) {
 }
 
 void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
-
     uint8_t type = rx->type;
     //uint8_t address = rx->address;
 
@@ -196,7 +245,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
             break;*/
 
         case STRING:
-            rf_new_str = 1;
+	    rf_buf_index = 0;
             memcpy(rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
             break;
         default:

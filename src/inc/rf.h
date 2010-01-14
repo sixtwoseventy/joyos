@@ -64,6 +64,16 @@ int rf_printf(const char *fmt, ...);
 int rf_vprintf_P(const char *fmt, va_list ap);
 int rf_printf_P(const char *fmt, ...);
 
+
+/**
+ * Prototypes for rf_scanf()
+ */
+int rf_recv(FILE * foo);
+int rf_vscanf(const char *fmt, va_list ap);
+int rf_scanf(const char *fmt, ...);
+int rf_vscanf_P(const char *fmt, va_list ap);
+int rf_scanf_P(const char *fmt, ...);
+
 /**
  * Transmits a packet
  */

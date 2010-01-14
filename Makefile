@@ -1,13 +1,13 @@
 # User source files
 #USERSRC = tests/rf_tx_test.c
 #USERSRC = tests/rftest.c
-USERSRC = tests/rf_rx_test.c
 #USERSRC = user/usb2nrf/transmit.c
+USERSRC = tests/rf_rx_test.c
 #AVRDUDE_PORT ?= /dev/tty.usbserial-A800cB5K
 AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBaY
 #AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBag
 #AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cB5K
-AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cBaY
+AVRDUDE_USERPORT ?= /dev/ttyUSB0
 #AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cBag
 
 CC = avr-gcc

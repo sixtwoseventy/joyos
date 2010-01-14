@@ -35,20 +35,18 @@ int usetup (void) {
 
 // Entry point to contestant code.
 // Create threads and return 0.
+char buf[32];
 
 int
 umain (void) {	
 
 	rf_init();
-
+	
 	//This loop prints out its position, which is set by RF
 	while(1){
-        if(rf_new_str){
-            printf("%s", rf_str_buf);
-            rf_new_str = 0;
-        }
-        pause(100);
-    }
+		rf_scanf("%s", buf);
+		printf("%s", buf);
+    	}
 	
 	// Will never return, but the compiler complains without a return
 	// statement.
