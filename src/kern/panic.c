@@ -25,6 +25,7 @@
 
 #include <avr/interrupt.h>
 #include <lcd.h>
+#include <hal/uart.h>
 #include <kern/global.h>
 #include <kern/lock.h>
 #include <kern/thread.h>
@@ -50,7 +51,7 @@ panic_P (PGM_P msg) {
 
     smash(&uart_lock);
 
-	printf(PANIC_STRING, msg ? msg : "");
+	uart_printf_P(PANIC_STRING, (void *)(msg ? msg : ""));
 
 	// halt board
 	halt();
