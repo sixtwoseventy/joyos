@@ -13,8 +13,6 @@
 #include <fcntl.h>
 #include <termios.h>
 
-packet_buffer tx, rx;
-
 NSFileHandle *open_serial(NSString *path) {
 	struct termios options;
 
@@ -47,13 +45,6 @@ void send_packet(NSFileHandle *fh, void *packet, uint8_t length) {
 	[fh writeData:[NSData dataWithBytesNoCopy:packet length:length freeWhenDone:NO]];
 }
 
-char POSITION = 0x00; //Updated position of this bot, other bot, or mouse
-char START = 0x01; //Start of the round
-char STOP = 0x02; //End of the round
-char STRING = 0x03; //String from bot to board
-char SYNC = 0x04; //Not sure how to use yet.  Established IDs of all bots/vision system on board
-char GOAL = 0x05;//Sets the target position of this robot
-
 @implementation AppController
 
 - (void) gotDataNotification:(NSNotification *)notification {
@@ -73,12 +64,22 @@ char GOAL = 0x05;//Sets the target position of this robot
 	
 	sync_serial(serialPort);
 	
-	generate_goal(&tx.payload.coords[1]);
-	fill_goal(&tx.payload.coords[2], &tx.payload.coords[1]);
-	fill_goal(&tx.payload.coords[3], &tx.payload.coords[2]);
+	position.type = POSITION;
+	position.address = 0xFF;
+	generate_goal(&position.payload.coords[1]);
+	fill_goal(&position.payload.coords[2], &position.payload.coords[1]);
+	fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
 	
+	
+	lights.type = LIGHT;
+	lights.address = 0xFF;
+	for (int i=0; i<4; i++) {
+		lights.payload.lights[i].id = i;
+		lights.payload.lights[i].value = 0;
+	}
+
 	for(int i=0; i<sizeof(packet); i++){
-		printf("%02x",((unsigned char*)&tx)[i]);
+		printf("%02x",((unsigned char*)&position)[i]);
 	}
 	
 	printf("\n");
@@ -325,12 +326,10 @@ BOOL close_to(board_coord* pos1, board_coord* pos2){
 		erase(data+1, data+0, bytesPerRow, bytesPerPixel, imgSize.width, imgSize.height	, xmax[i]-R, ymax[i]-R, 2*R+1, 2*R+1);
 	}
 	
-	tx.type = POSITION;
-	tx.address = 0xFF;
-	tx.payload.coords[0].x = (int16_t)((x[0]-320)*(1<<12)/640.);
-	tx.payload.coords[0].y = -(int16_t)((y[0]-240)*(1<<12)/640.);
-	tx.payload.coords[0].theta = -(int)(theta[0]*(1<<12)/(M_PI*2));
-	tx.payload.coords[0].confidence = thresh[0]<<4;
+	position.payload.coords[0].x = (int16_t)((x[0]-320)*(1<<12)/640.);
+	position.payload.coords[0].y = -(int16_t)((y[0]-240)*(1<<12)/640.);
+	position.payload.coords[0].theta = -(int)(theta[0]*(1<<12)/(M_PI*2));
+	position.payload.coords[0].confidence = thresh[0]<<4;
 	
 	/*
 	printf("Packet: x=%+05d y=%+05d theta=%+05d confidence=%+05d\n",
@@ -348,16 +347,19 @@ BOOL close_to(board_coord* pos1, board_coord* pos2){
 		   tx.payload.coords[3].x,
 		   tx.payload.coords[3].y);*/
 	
-	if (close_to(&tx.payload.coords[0],&tx.payload.coords[1])){
+	if (close_to(&position.payload.coords[0],&position.payload.coords[1])){
 		//printf("[[goal reached]]\n");
-		memmove(tx.payload.coords+1, tx.payload.coords+2, 2*sizeof(board_coord));
-		fill_goal(&tx.payload.coords[3], &tx.payload.coords[2]);
+		memmove(position.payload.coords+1, position.payload.coords+2, 2*sizeof(board_coord));
+		fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
 		if (t > 0.0)
 			score++;
 	}
 
 	//sync_serial(serialPort);
-	send_packet(serialPort,&tx,sizeof(packet));
+	send_packet(serialPort,&position,sizeof(packet));
+	
+	lights.payload.lights[0].value = lights.payload.lights[0].value ? 0 : 255;
+	send_packet(serialPort,&lights,sizeof(packet));
 	
 	if (firstTick) {
 		// number them someway
@@ -468,8 +470,8 @@ BOOL close_to(board_coord* pos1, board_coord* pos2){
 
 	for (int i=1; i<4; i++) {
 		float X, Y;
-		X = (((float)tx.payload.coords[i].x*640./(1<<12) + 320)/imgSize.width)*2.f - 1.f;
-		Y = -(((-(float)tx.payload.coords[i].y*640./(1<<12) + 240)/imgSize.height)*2.f - 1.f) * imgSize.height/imgSize.width;
+		X = (((float)position.payload.coords[i].x*640./(1<<12) + 320)/imgSize.width)*2.f - 1.f;
+		Y = -(((-(float)position.payload.coords[i].y*640./(1<<12) + 240)/imgSize.height)*2.f - 1.f) * imgSize.height/imgSize.width;
 		[goals addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 						   [NSNumber numberWithFloat:X], @"X",
 						   [NSNumber numberWithFloat:Y], @"Y",

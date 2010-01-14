@@ -34,6 +34,7 @@
 		8D1107320486CEB800E47090 /* vision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE366A3510DB5D080002516E /* seedfill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = seedfill.h; sourceTree = "<group>"; };
 		AE366A3610DB5D080002516E /* seedfill.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = seedfill.c; sourceTree = "<group>"; };
+		CF9A739810FFE0CB0015C437 /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = ../../src/inc/packet.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +53,7 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				CF9A739810FFE0CB0015C437 /* packet.h */,
 				849818230BCF1CE50085CECA /* AppController.h */,
 				849818220BCF1CE50085CECA /* AppController.m */,
 				AE366A3510DB5D080002516E /* seedfill.h */,
