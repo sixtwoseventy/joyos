@@ -45,7 +45,7 @@ int uart_send(char ch) {
 int 
 uart_put(char ch, FILE *f) {
 	if (ch == '\n')
-	 	uart_put('\r', f);
+	 	uart_send('\r');
 
 	return uart_send(ch);
 }
@@ -110,7 +110,7 @@ int uart_get(FILE *f) {
     return uart_recv();
 }
 
-char uart_has_char() {
+uint8_t uart_has_char() {
 	return (UCSR0A & _BV(RXC0));
 }
 

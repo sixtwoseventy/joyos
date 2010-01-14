@@ -82,7 +82,7 @@ int uart_get(FILE *f);
 /**
  *
  */
-char uart_has_char();
+uint8_t uart_has_char();
 
 int uart_vscanf_P(const char *fmt, va_list ap);
 

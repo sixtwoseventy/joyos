@@ -18,7 +18,7 @@ volatile board_coord objects[4];
 
 board_coord goal_position; //The target position received from a goal packet
 
-FILE rfio = FDEV_SETUP_STREAM(rf_put, rf_recv, _FDEV_SETUP_RW);
+FILE rfio = FDEV_SETUP_STREAM(rf_put, rf_get, _FDEV_SETUP_RW);
 
 volatile char rf_str_buf[PAYLOAD_SIZE+1];
 volatile uint8_t rf_buf_index = PAYLOAD_SIZE;
@@ -29,7 +29,7 @@ volatile uint8_t rf_new_str;
 
 struct lock rf_lock;
 
-int rf_put(char ch, FILE *f){
+int rf_send(char ch){
     ATOMIC_BEGIN;
 
     tx.payload.array[rf_ch_count++] = ch;
@@ -44,6 +44,14 @@ int rf_put(char ch, FILE *f){
 
     return ch;
 }
+
+int rf_put(char ch, FILE *f) {
+	if (ch == '\n')
+	 	rf_send('\r');
+
+	return rf_send(ch);
+}
+
 
 int rf_vprintf(const char *fmt, va_list ap) {
 	int count;
@@ -85,12 +93,14 @@ int rf_printf_P(const char *fmt, ...) {
 	return count;
 }
 
-int rf_recv(FILE * foo) {
-
+char rf_recv() {
 	while(rf_buf_index==PAYLOAD_SIZE || rf_str_buf[rf_buf_index]=='\0')
 		yield();
-
 	return rf_str_buf[rf_buf_index++];
+}
+
+int rf_get(FILE * f) {
+    return rf_recv();
 }
 
 int rf_vscanf(const char *fmt, va_list ap){
@@ -131,6 +141,11 @@ int rf_scanf_P(const char *fmt, ...) {
 	va_end(ap);
 
 	return count;
+}
+
+uint8_t rf_has_char(){
+    return (rf_buf_index != PAYLOAD_SIZE) && 
+           (rf_str_buf[rf_buf_index] != '\0');
 }
 
 void rf_rx(void)
@@ -218,7 +233,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
     switch (type) {
         case POSITION:
 
-            memcpy(objects, rx->payload.coords, sizeof(objects));
+            memcpy((char *)objects, rx->payload.coords, sizeof(objects));
             position_microtime = get_time_us();
 
             break;
@@ -246,7 +261,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
 
         case STRING:
 	    rf_buf_index = 0;
-            memcpy(rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
+            memcpy((char *)rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
             break;
         default:
             break;

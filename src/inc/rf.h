@@ -58,6 +58,7 @@ extern volatile char rf_str_buf[PAYLOAD_SIZE+1];
 // processed as desired.
 extern volatile uint8_t rf_new_str;
 
+int rf_send(char ch);
 int rf_put(char ch, FILE *f);
 int rf_vprintf(const char *fmt, va_list ap);
 int rf_printf(const char *fmt, ...);
@@ -68,11 +69,13 @@ int rf_printf_P(const char *fmt, ...);
 /**
  * Prototypes for rf_scanf()
  */
-int rf_recv(FILE * foo);
+int rf_get(FILE * foo);
+char rf_recv();
 int rf_vscanf(const char *fmt, va_list ap);
 int rf_scanf(const char *fmt, ...);
 int rf_vscanf_P(const char *fmt, va_list ap);
 int rf_scanf_P(const char *fmt, ...);
+uint8_t rf_has_char();
 
 /**
  * Transmits a packet
