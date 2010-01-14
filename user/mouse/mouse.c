@@ -68,6 +68,7 @@ float FieldStrength = 0;
 uint16_t PIDDelay;
 struct pid_controller ForwardPID;
 uint8_t isActivated;
+uint8_t isForward;
 
 float fangle;
 
@@ -117,16 +118,29 @@ void SetLeftVelocity(float vel)
 
 void ForwardApplyMV(float MV)
 {
-	if (MV > 60) {
-		SetRightVelocity(TURNING_SCALE*TargetVelocity);
-		SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
-	} else if (MV < -60) {
-		SetRightVelocity(-TURNING_SCALE*TargetVelocity);
-		SetLeftVelocity(TURNING_SCALE*TargetVelocity);
+	if (isForward) {
+		if (MV > 60) {
+			SetRightVelocity(TURNING_SCALE*TargetVelocity);
+			SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
+		} else if (MV < -60) {
+			SetRightVelocity(-TURNING_SCALE*TargetVelocity);
+			SetLeftVelocity(TURNING_SCALE*TargetVelocity);
+		} else {
+			SetRightVelocity(BoundedVelocity(TargetVelocity+MV/2));
+			SetLeftVelocity(BoundedVelocity(TargetVelocity-MV/2));	
+		}
 	} else {
-		SetRightVelocity(BoundedVelocity(TargetVelocity+MV/2));
-		SetLeftVelocity(BoundedVelocity(TargetVelocity-MV/2));	
-	}
+		if (MV > 60) {
+			SetRightVelocity(TURNING_SCALE*TargetVelocity);
+			SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
+		} else if (MV < -60) {
+			SetRightVelocity(-TURNING_SCALE*TargetVelocity);
+			SetLeftVelocity(TURNING_SCALE*TargetVelocity);
+		} else {
+			SetRightVelocity(BoundedVelocity(-TargetVelocity+MV/2));
+			SetLeftVelocity(BoundedVelocity(-TargetVelocity-MV/2));	
+		}
+	} 
 }
 
 void MotorCoast(uint8_t Motor)
@@ -237,7 +251,11 @@ float ComputeMagnetTarget() {
 }
 
 float getError() {
-	return -fangle;
+	if (isForward) {
+		return -fangle;
+	} else {
+		return (-(int)fangle+360)%360-180;
+	}
 }
 
 void PIDInit() {
@@ -280,6 +298,7 @@ umain (void) {
 
 
 	isActivated = false;
+	isForward = true;
 	MagnetInit();
 	PIDInit();
 	uint8_t num_low_readings = 0;
@@ -288,6 +307,12 @@ umain (void) {
 	
 		//Read Magnet data
 		ComputeMagnetTarget();
+		
+		if (fangle > 90 || fangle < -90) {
+			isForward = false;
+		} else {
+			isForward = true;
+		}
 		
 		//Determine if we should change from activated->deactivated or vice versa
 		if (isActivated) {
