@@ -340,7 +340,7 @@ sighting oldrobot[N];
 	
 	if (firstTick) {
 		for (int i=0; i<N; i++)
-			oldx[i] = oldy[i] = oldtheta[i] = 0.f;
+			oldrobot[i],x = oldrobot[i],y = oldrobot[i],theta = 0.f;
 	}
 	
 	NSBitmapImageRep* bitmap = 0;
