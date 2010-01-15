@@ -33,12 +33,12 @@
 #define GYRO_PORT 		11
 #define LSB_US_PER_DEG	1400000
 
-#define MaxVelocity 100
-#define TARGET_VELOCITY 60
+#define MaxVelocity 150
+#define TARGET_VELOCITY 80
 #define TURNING_SCALE .8
 
 #define ACTIVATE_THRESH 600
-#define DEACTIVATE_THRESH 400
+#define DEACTIVATE_THRESH 375
 #define DEACTIVATE_SAMPLES 10
 #define START_RAMPDOWN 5
 
@@ -46,9 +46,11 @@
 
 //10 2 0 0
 #define PID_DELAY 10
-#define KP 2
+#define KP 1.5
 #define KD 0
 #define KI 0
+
+#define TURN_THRESH 60*KP
 
 uint8_t Compass = 0x42;
 uint8_t ReadCommand[] = {'A'};
@@ -69,6 +71,12 @@ uint16_t PIDDelay;
 struct pid_controller ForwardPID;
 uint8_t isActivated;
 uint8_t isForward;
+
+float NearbyScale = 1.0f;
+//.7
+#define NEARBY_DAMP .7
+#define NEARBY_RAMP 1.2
+#define NEARBY_MIN .2
 
 float fangle;
 
@@ -107,22 +115,22 @@ float BoundedVelocity(float ProposedVelocity)
 void SetRightVelocity(float vel)
 {
 	motor_set_vel(RIGHT_MOTOR, (int16_t)vel);
-	printf("\nR: %d",(int16_t)vel);
+	//printf("\nR: %d",(int16_t)vel);
 }
 
 void SetLeftVelocity(float vel)
 {
 	motor_set_vel(LEFT_MOTOR, (int16_t)vel);
-	printf("\nL: %d",(int16_t)vel);
+	//printf("\nL: %d",(int16_t)vel);
 }
 
 void ForwardApplyMV(float MV)
 {
 	if (isForward) {
-		if (MV > 60) {
+		if (MV > TURN_THRESH) {
 			SetRightVelocity(TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
-		} else if (MV < -60) {
+		} else if (MV < -TURN_THRESH) {
 			SetRightVelocity(-TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(TURNING_SCALE*TargetVelocity);
 		} else {
@@ -130,10 +138,10 @@ void ForwardApplyMV(float MV)
 			SetLeftVelocity(BoundedVelocity(TargetVelocity-MV/2));	
 		}
 	} else {
-		if (MV > 60) {
+		if (MV > TURN_THRESH) {
 			SetRightVelocity(TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
-		} else if (MV < -60) {
+		} else if (MV < -TURN_THRESH) {
 			SetRightVelocity(-TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(TURNING_SCALE*TargetVelocity);
 		} else {
@@ -240,8 +248,7 @@ float ComputeMagnetTarget() {
 		fangle = ((float)AngleReading)/10.0;
 		if (fangle > 180.0) fangle -= 360.0;
 		
-		//printf("\n%.1f, (%d, %d), %d\n",fangle,MagXReading,MagYReading, strength(MagXReading,MagYReading));
-		printf("\nangle:%.1f, strength: %.2f",fangle, strength(MagXReading,MagYReading));
+		//printf("\nangle:%.1f, strength: %.2f",fangle, strength(MagXReading,MagYReading));
 		
 		
 		//i2cMasterSend(Compass,1,ResetCommand);
@@ -308,10 +315,24 @@ umain (void) {
 		//Read Magnet data
 		ComputeMagnetTarget();
 		
+		uint8_t oldForward = isForward;
+		
 		if (fangle > 90 || fangle < -90) {
 			isForward = false;
 		} else {
 			isForward = true;
+		}
+		
+		//If we changed directions, chill out
+		if (oldForward != isForward) {
+			NearbyScale *= NEARBY_DAMP;
+		} else {
+			NearbyScale *= NEARBY_RAMP;
+		}
+		if (NearbyScale > 1.0f) {
+			NearbyScale = 1.0f;
+		} else if (NearbyScale < NEARBY_MIN) {
+			NearbyScale = NEARBY_MIN;
 		}
 		
 		//Determine if we should change from activated->deactivated or vice versa
@@ -320,7 +341,7 @@ umain (void) {
 				num_low_readings++;
 				//Need START_RAMPDOWN readings to begin motor rampdown
 				if (num_low_readings > START_RAMPDOWN) {
-					SetTargetVelocity(TARGET_VELOCITY*(1-(num_low_readings-START_RAMPDOWN)/(DEACTIVATE_SAMPLES-START_RAMPDOWN)));
+					SetTargetVelocity(TARGET_VELOCITY*(1-(float)(num_low_readings-START_RAMPDOWN)/(float)(DEACTIVATE_SAMPLES-START_RAMPDOWN)));
 				}
 				//If you have DEACTIVATE_SAMPLES low readings, deactivate
 				if (num_low_readings == DEACTIVATE_SAMPLES) {
@@ -344,10 +365,12 @@ umain (void) {
 			}
 		}
 		
+		SetTargetVelocity(NearbyScale*TargetVelocity);
+		
 		//Stop if not activated, otherwise update PID
 		if (!isActivated) {
 			CoastMotors();
-			pause(100);
+			//pause(100);
 		} else {
 			PIDUpdate();
 		}
