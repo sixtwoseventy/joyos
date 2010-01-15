@@ -74,7 +74,7 @@ uint8_t isForward;
 
 float NearbyScale = 1.0f;
 //.7
-#define NEARBY_DAMP .7
+#define NEARBY_DAMP .5
 #define NEARBY_RAMP 1.2
 #define NEARBY_MIN .2
 
