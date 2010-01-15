@@ -340,7 +340,7 @@ sighting oldrobot[N];
 	
 	if (firstTick) {
 		for (int i=0; i<N; i++)
-			oldrobot[i],x = oldrobot[i],y = oldrobot[i],theta = 0.f;
+			oldrobot[i].x = oldrobot[i].y = oldrobot[i].theta = 0.f;
 	}
 	
 	NSBitmapImageRep* bitmap = 0;
@@ -390,9 +390,9 @@ sighting oldrobot[N];
 			float minDistance = 1e6;
 			int minNumber = 0;
 			for (int j=0; j<numPointsToAssign; j++) {
-				float dx = robot[i].x - oldx[pointsToAssign[j]];
-				float dy = robot[i].y - oldy[pointsToAssign[j]];
-				float dtheta_squared = angleDiff(robot[i].theta, oldtheta[pointsToAssign[j]]);
+				float dx = robot[i].x - oldrobot[pointsToAssign[j]].x;
+				float dy = robot[i].y - oldrobot[pointsToAssign[j]].y;
+				float dtheta_squared = angleDiff(robot[i].theta, oldrobot[pointsToAssign[j]].theta);
 				float distance = dx*dx+dy*dy+dtheta_squared*R*R/4.f;
 				if (distance<minDistance) {
 					minDistance = distance;
