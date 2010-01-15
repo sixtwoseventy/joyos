@@ -76,21 +76,17 @@ void send_packet(NSFileHandle *fh, void *packet, uint8_t length) {
 	
 	lights.type = LIGHT;
 	lights.address = 0xFF;
-	for (int i=0; i<4; i++) {
-		lights.payload.lights[i].id = i;
-		lights.payload.lights[i].value = 0;
-	}
 
-	//for(int i=0; i<sizeof(packet); i++){
-	//	printf("%02x",((unsigned char*)&position)[i]);
-	//}
-	
-	//printf("\n");
-	//printf("%ld\n", sizeof(board_coord));
-	
+	for (int i=0; i<4; i++)
+		lights.payload.lights[i].id = i;
+
+	// for now, store one contestant position and two mouse-bot positions
+	lights.payload.lights[0].id = position.payload.coords[0].id = 0;
+	lights.payload.lights[1].id = position.payload.coords[1].id = 128;
+	lights.payload.lights[2].id = position.payload.coords[2].id = 129;
+	lights.payload.lights[3].id = position.payload.coords[3].id = 255;
+		
 	[self performSelectorInBackground:@selector(tickThread:) withObject:nil];
-	
-	[self performSelectorInBackground:@selector(flashThread:) withObject:nil];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gotDataNotification:) name:NSFileHandleReadCompletionNotification object:nil];
 	score = 0;
@@ -262,10 +258,6 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 	*thresh = threshold;
 }
 
-#define N 1
-bool firstTick = true;
-float oldx[N], oldy[N], oldtheta[N];
-
 float angleDiff(float a, float b) {
 	float x = cos(a) - cos(b);
 	float y = sin(a) - sin(b);
@@ -311,18 +303,6 @@ BOOL close_to(board_coord* pos1, board_coord* pos2){
     [pool release];
 }
 
-- (void)flashThread:(id)arg {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(flash:) userInfo:nil repeats:YES];
-	
-    for(;;) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-    }
-	
-    [pool release];
-}
-
 - (void)snapTo:(NSValue *)pointer {
 	*((NSBitmapImageRep **)[pointer pointerValue]) = [[qcView valueForOutputKey:@"Blurred" ofType:@"NSBitmapImageRep"] copy];
 	// createSnapshotImageOfType:@"NSBitmapImageRep"];
@@ -336,6 +316,13 @@ typedef struct {
 
 
 #define SWAP(_x_, _y_) {__typeof__(_x_) _z_; _z_=_x_; _x_=_y_; _y_=_z_;}
+#define N 1
+bool firstTick = true;
+// variables related to lighting experiments
+int currentRobot;
+NSTimeInterval lastTime;
+sighting oldrobot[N];
+
 - (void)tick:(id)arg {
 	printf("#");
 	if (!qcView.isRendering) {
@@ -381,11 +368,6 @@ typedef struct {
 			  robot[i].xmax-R, robot[i].ymax-R, 2*R+1, 2*R+1);
 	}
 	
-	position.payload.coords[0].x = (int16_t)((robot[0].x-320)*(1<<12)/640.);
-	position.payload.coords[0].y = -(int16_t)((robot[0].y-240)*(1<<12)/640.);
-	position.payload.coords[0].theta = -(int)(robot[0].theta*(1<<12)/(M_PI*2));
-	position.payload.coords[0].confidence = robot[0].thresh<<4;
-	
 	if (close_to(&position.payload.coords[0],&position.payload.coords[1])){
 		memmove(position.payload.coords+1, position.payload.coords+2, 2*sizeof(board_coord));
 		fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
@@ -393,9 +375,6 @@ typedef struct {
 			score++;
 	}
 
-	//sync_serial(serialPort);
-	send_packet(serialPort,&position,sizeof(packet));
-	
 	if (firstTick) {
 		// number them someway
 //		sort(xmax, ymax, N);
@@ -436,11 +415,20 @@ typedef struct {
 			}
 		}
 	}
-	for (int i=0; i<N; i++) {
-		oldx[i] = robot[i].x;
-		oldy[i] = robot[i].y;
-		oldtheta[i] = robot[i].theta;
+
+	for (int i=0; i<N; i++){
+		position.payload.coords[i].x = (int16_t)((robot[i].x-320)*(1<<12)/640.);
+		position.payload.coords[i].y = -(int16_t)((robot[i].y-240)*(1<<12)/640.);
+		position.payload.coords[i].theta = -(int)(robot[i].theta*(1<<12)/(M_PI*2));
+		position.payload.coords[i].confidence = robot[i].thresh<<4;
 	}
+	
+	//sync_serial(serialPort);
+	send_packet(serialPort,&position,sizeof(packet));
+	
+	
+	for (int i=0; i<N; i++)
+		oldrobot[i] = robot[i];
 	
 	//NSLog(@"Max was %d", max[0]);
 	NSImage *image = [[NSImage alloc] init];
@@ -501,12 +489,6 @@ typedef struct {
 					  [NSString stringWithFormat:@"Time left: %1d:%06.3f", mins, secs], @"Time",
 					  nil] forInputKey:@"Structure"];
 	firstTick = false;
-}
-
-- (void)flash:(id)unused {
-	NSTimeInterval t = [[NSDate date] timeIntervalSinceReferenceDate];
-	lights.payload.lights[0].value = (fmod(t*1., 1.0) < .5) ? 255 : 0;
-	send_packet(serialPort,&lights,sizeof(packet));
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
