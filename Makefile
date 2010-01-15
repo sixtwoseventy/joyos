@@ -169,7 +169,7 @@ $(HLLIB): $(HLOBJ)
 	@avr-ar rcs $@ $(HLOBJ)
 
 clean:
-	@echo "-- Cleaing objects"
+	@echo "-- Cleaning objects"
 	@rm -f $(OBJ) $(BOOTOBJ) $(HLOBJ)
 	@rm -f $(OSELF) $(OSTARGET) $(OSLIB) $(HLLIB)
 	@rm -f $(BOOTELF) $(BOOTTARGET)
