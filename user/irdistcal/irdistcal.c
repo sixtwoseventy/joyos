@@ -40,12 +40,12 @@ int usetup() {
   	return 0;
 }
        
+uint16_t xd[36];
+uint16_t yd[36];
 int umain() {
     uint16_t i,n = 36;
     uint16_t port=8;
     uint16_t km,kc;
-    uint16_t xd[36];
-    uint16_t yd[36];
 		//happylib_init();
     // start
     printf("\nIRDistCal       Press Go");
