@@ -69,9 +69,9 @@ void send_packet(NSFileHandle *fh, void *packet, uint8_t length) {
 	
 	position.type = POSITION;
 	position.address = 0xFF;
-	generate_goal(&position.payload.coords[1]);
-	fill_goal(&position.payload.coords[2], &position.payload.coords[1]);
-	fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
+//	generate_goal(&position.payload.coords[1]);
+//	fill_goal(&position.payload.coords[2], &position.payload.coords[1]);
+//	fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
 	
 	
 	lights.type = LIGHT;
@@ -81,9 +81,9 @@ void send_packet(NSFileHandle *fh, void *packet, uint8_t length) {
 		lights.payload.lights[i].id = i;
 
 	// for now, store one contestant position and two mouse-bot positions
-	lights.payload.lights[0].id = position.payload.coords[0].id = 0;
-	lights.payload.lights[1].id = position.payload.coords[1].id = 128;
-	lights.payload.lights[2].id = position.payload.coords[2].id = 129;
+	lights.payload.lights[0].id = position.payload.coords[0].id = 128;
+	lights.payload.lights[1].id = position.payload.coords[1].id = 129;
+	lights.payload.lights[2].id = position.payload.coords[2].id = 130;
 	lights.payload.lights[3].id = position.payload.coords[3].id = 255;
 		
 	[self performSelectorInBackground:@selector(tickThread:) withObject:nil];
@@ -98,21 +98,10 @@ void send_packet(NSFileHandle *fh, void *packet, uint8_t length) {
 	[super dealloc];
 }
 
-void sort(int x[], int y[], int N) {
-	int xt, yt;
-	for (int i=0; i<N-1; i++) {
-		for (int j=i+1; j<N; j++) {
-			if (x[i] > x[j]) {
-				xt = x[i];
-				yt = y[i];
-				x[i] = x[j];
-				y[i] = y[j];
-				x[j] = xt;
-				y[j] = yt;
-			}
-		}
-	}
-}
+#define ROI_LEFT 0
+#define ROI_RIGHT 53
+#define ROI_TOP 0
+#define ROI_BOTTOM 0
 
 // given a bitmap, obtain a location hint
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,
@@ -120,8 +109,8 @@ void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, 
 	int max = 0;
 	int xmax = 0;
 	int ymax = 0;
-	for (int y=0; y<height; y++) {
-		for (int x=0; x<width; x++) {
+	for (int y=ROI_TOP; y<height-ROI_BOTTOM; y++) {
+		for (int x=ROI_LEFT; x<width-ROI_RIGHT; x++) {
 			unsigned char value = data[bytesPerPixel * x + bytesPerRow * y];
 			if (value > max) {
 				max = value;
@@ -205,16 +194,22 @@ void hist(Window *win, unsigned char *data, unsigned int *h, unsigned int *total
 // given a bitmap and a location hint, determine a better location estimate
 // and an angle estimate; furthermore, generate a mask
 void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int width, int height,
-		   int x, int y, float *xout, float *yout, float *thetaout, bool *light, int *thresh, float *sum) {
+		   int x, int y, float *xout, float *yout, float *thetaout, bool *light, int *thresh, float *momentout) {
 	// clear the mask
 	blank(mask, bytesPerRow, bytesPerPixel, width, height, x-R, y-R, 2*R+1, 2*R+1);
 	// choose a work region
 	Window win = {MAX(x-R, 0), MAX(y-R, 0), MIN(x+R, width-1), MIN(y+R, height-1)};
 	// choose a threshold by entropy maximization
 	unsigned int h[256], hc[256], ht, running = 0;
+	float moment;
 	int threshold = 0;
 	int i=0;
 	hist(&win, data, h, &ht, bytesPerRow, bytesPerPixel);
+	
+	for (i=5; i<256; i++) {
+		moment += h[i]*pow(i/255.,2.0);
+	}
+	
 	for (i=0; i<256; i++) {
 		hc[i] = running;
 		running += h[i];
@@ -223,7 +218,7 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 		// p is the probability that a randomly chosen pixel has a value >= i
 		float p = 1 - (((float)hc[i]) / ht);
 		// p should be about 375/ht
-		if (p < (375.f / ht) * 2.5) {
+		if (p < (375.f / ht) * 1.5) {
 			threshold = i;
 			break;
 		}
@@ -241,7 +236,9 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 	// within bounds, for masked pixels,
 	//   find centroid
 	float centroid[2];
-	findcentroid(&win, data, mask, bytesPerRow, bytesPerPixel, centroid, sum);
+	float sum;
+	findcentroid(&win, data, mask, bytesPerRow, bytesPerPixel, centroid, &sum);
+	moment /= sum;
 	////	 estimate angle from difference between centroid and center
 	//float angle1 = -atan2((win.x1+win.x0)*.5f - centroid[0], (win.y1+win.y0)*.5f - centroid[1]);
 	//	 recenter to centroid
@@ -256,6 +253,7 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 	*yout = centroid[1];
 	*thetaout = angle1;
 	*thresh = threshold;
+	*momentout = moment;
 }
 
 float angleDiff(float a, float b) {
@@ -294,7 +292,7 @@ BOOL close_to(board_coord* pos1, board_coord* pos2){
 - (void)tickThread:(id)arg {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-	NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
+	[NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
 	
     for(;;) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
@@ -309,22 +307,37 @@ BOOL close_to(board_coord* pos1, board_coord* pos2){
 }
 
 typedef struct {
+	uint8_t id;
 	float x, y, theta, sum;
 	bool light;
 	int max, xmax, ymax, thresh;
 } sighting;
 
-
 #define SWAP(_x_, _y_) {__typeof__(_x_) _z_; _z_=_x_; _x_=_y_; _y_=_z_;}
-#define N 1
+
+#define SORT(_x_, _N_, _f_) \
+{	for (int i=0; i<_N_-1; i++) \
+		for (int j=i+1; j<_N_; j++) \
+			if (_f_(_x_[i], _x_[j])) \
+				SWAP(_x_[i], _x_[j]); }
+
+bool by_confidence(sighting a, sighting b) {
+	return a.thresh < b.thresh;
+}
+
+void sort_by_confidence(sighting x[], int N) {
+	SORT(x, N, by_confidence);
+}
+
+#define N_ROBOTS 2
 bool firstTick = true;
 // variables related to lighting experiments
 int currentRobot;
 NSTimeInterval lastTime;
-sighting oldrobot[N];
+sighting oldrobot[N_ROBOTS];
 
 - (void)tick:(id)arg {
-	printf("#");
+	//printf("#");
 	if (!qcView.isRendering) {
 		score = 0;
 		timestamp = [[NSDate date] timeIntervalSince1970];
@@ -335,12 +348,14 @@ sighting oldrobot[N];
 	t = 120 - t;
 	if (t < 0.0) t = 0.0;
 	
-	double secs = fmod(t, 60.0);
-	int mins = (int)(t / 60);
+//	double secs = fmod(t, 60.0);
+//	int mins = (int)(t / 60);
 	
 	if (firstTick) {
-		for (int i=0; i<N; i++)
+		for (int i=0; i<N_ROBOTS; i++) {
 			oldrobot[i].x = oldrobot[i].y = oldrobot[i].theta = 0.f;
+			oldrobot[i].id = position.payload.coords[i].id;
+		}
 	}
 	
 	NSBitmapImageRep* bitmap = 0;
@@ -351,9 +366,9 @@ sighting oldrobot[N];
 	int bytesPerPixel = [bitmap bitsPerPixel] >> 3;
 	int bytesPerRow = [bitmap bytesPerRow];
 
-	sighting robot[N];
+	sighting robot[N_ROBOTS];
 	
-	for (int i=0; i<N; i++) {
+	for (int i=0; i<N_ROBOTS; i++) {
 		locate(data+1, bytesPerRow, bytesPerPixel,
 			   imgSize.width, imgSize.height,
 			   &robot[i].xmax, &robot[i].ymax, &robot[i].max);
@@ -368,67 +383,119 @@ sighting oldrobot[N];
 			  robot[i].xmax-R, robot[i].ymax-R, 2*R+1, 2*R+1);
 	}
 	
-	if (close_to(&position.payload.coords[0],&position.payload.coords[1])){
+/*	if (close_to(&position.payload.coords[0],&position.payload.coords[1])){
 		memmove(position.payload.coords+1, position.payload.coords+2, 2*sizeof(board_coord));
 		fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
 		if (t > 0.0)
 			score++;
-	}
+	}*/
 
 	if (firstTick) {
 		// number them someway
-//		sort(xmax, ymax, N);
+		//		sort(xmax, ymax, N);
+		lights.payload.lights[currentRobot].value = 255;
+		send_packet(serialPort,&lights,sizeof(packet));
 	} else {
 		// make an effort to figure out which is which
-		int pointsToAssign[N], assignments[N];
-		int numPointsToAssign = N;
-		for (int i=0; i<N; i++)
-			pointsToAssign[i] = i;
-		for (int i=0; i<N; i++) {
-			// figure out which old point corresponds to point i
-			// and put it in assignments[i]
-			float minDistance = 1e6;
-			int minNumber = 0;
-			for (int j=0; j<numPointsToAssign; j++) {
-				float dx = robot[i].x - oldrobot[pointsToAssign[j]].x;
-				float dy = robot[i].y - oldrobot[pointsToAssign[j]].y;
-				float dtheta_squared = angleDiff(robot[i].theta, oldrobot[pointsToAssign[j]].theta);
-				float distance = dx*dx+dy*dy+dtheta_squared*R*R/4.f;
-				if (distance<minDistance) {
-					minDistance = distance;
-					minNumber = j;
+		// assignments is a map of new robots -> old robots
+		int assignments[N_ROBOTS];
+		float distance[N_ROBOTS][N_ROBOTS];
+		for (int i=0; i<N_ROBOTS; i++) {
+			for (int j=0; j<N_ROBOTS; j++) {
+				float dx = robot[i].x - oldrobot[j].x;
+				float dy = robot[i].y - oldrobot[j].y;
+				float dtheta_squared = angleDiff(robot[i].theta, oldrobot[j].theta);
+				if (isnan(dx) || isnan(dy))
+					dx = dy = 0.0;
+				distance[i][j] = dx*dx+dy*dy+dtheta_squared*R*R/4.f;//+(oldrobot[j].thresh);
+			}
+		}
+		for (int k=0; k<N_ROBOTS; k++) {
+			float minDistance = INFINITY;
+			int imin, jmin;
+			for (int i=0; i<N_ROBOTS; i++) {
+				for (int j=0; j<N_ROBOTS; j++) {
+					if (distance[i][j] < minDistance) {
+						imin = i;
+						jmin = j;
+						minDistance = distance[i][j];
+					}
 				}
 			}
-			assignments[i] = pointsToAssign[minNumber];
-			// remove that point from the list of candidates
-			for (int j = minNumber; j<numPointsToAssign-1; j++)
-				pointsToAssign[j] = pointsToAssign[j + 1];
-			numPointsToAssign--;
+			assignments[imin] = jmin;
+			for (int i=0; i<N_ROBOTS; i++)
+				distance[i][jmin] = INFINITY;
+			for (int j=0; j<N_ROBOTS; j++)
+				distance[imin][j] = INFINITY;
 		}
 		// reassign points according to assignments
-		for (int i=0; i<N; i++) {
+		for (int i=0; i<N_ROBOTS; i++) {
 			int j = assignments[i];
 			if (i != j) {
-//				printf("Swapping %d %d\n", i, j);
 				SWAP(robot[i], robot[j]);
 				SWAP(assignments[i], assignments[j]);
 			}
 		}
+		for (int i=0; i<N_ROBOTS; i++)
+			robot[i].id = oldrobot[i].id;
+		
+		// experiment consists of commanding one robot to turn its light on.
+		// then we test which 't' got the brightest and swap the robot->t 
+		// assignment as necessary. evaluate the results of each experiment
+		// after each second, then increment currentRobot.
+		
+		NSTimeInterval now = [[NSDate date] timeIntervalSinceReferenceDate];
+		if ((now-lastTime) > 1){
+			// evaluate results of the experiment
+			int litRobot=0, litRobots=0;
+			for (int i=0; i<N_ROBOTS; i++) {
+				if (robot[i].light) {
+					litRobot = i;
+					litRobots++;
+				}
+			}
+			if (litRobots == 1) {
+				// the id of robot[litRobot] should be lights.payload.lights[currentRobot].id
+				// and litRobot should be currentRobot
+				if (robot[litRobot].id != lights.payload.lights[currentRobot].id) {
+					printf("Found robot id %d while looking for robot id %d -- swapping\n", robot[litRobot].id, lights.payload.lights[currentRobot].id);
+					for (int i=0; i<N_ROBOTS; i++) {
+						if (robot[i].id == lights.payload.lights[currentRobot].id) {
+							SWAP(robot[i].id, robot[litRobot].id);
+							break;
+						}
+					}
+				}
+				if (litRobot != currentRobot) {
+					printf("Found robot index %d while looking for robot index %d -- swapping\n", litRobot, currentRobot);
+					SWAP(robot[litRobot], robot[currentRobot]);
+				}
+			}
+			
+			// start the next experiment
+			lights.payload.lights[currentRobot].value = 0;
+			currentRobot = (++currentRobot) % N_ROBOTS;
+			lights.payload.lights[currentRobot].value = 255;
+			
+			lastTime = now;
+		}
+		send_packet(serialPort,&lights,sizeof(packet));
+		
+		for (int i=0; i<N_ROBOTS; i++){
+			position.payload.coords[i].x = (int16_t)((robot[i].x-320)*(1<<12)/640.);
+			position.payload.coords[i].y = -(int16_t)((robot[i].y-240)*(1<<12)/640.);
+			position.payload.coords[i].theta = -(int)(robot[i].theta*(1<<12)/(M_PI*2));
+			position.payload.coords[i].confidence = robot[i].thresh<<4;
+			position.payload.coords[i].id = robot[i].id;
+		}
+		
+		//sync_serial(serialPort);
+		send_packet(serialPort,&position,sizeof(packet));
+		
+		
+		for (int i=0; i<N_ROBOTS; i++)
+			oldrobot[i] = robot[i];
 	}
-
-	for (int i=0; i<N; i++){
-		position.payload.coords[i].x = (int16_t)((robot[i].x-320)*(1<<12)/640.);
-		position.payload.coords[i].y = -(int16_t)((robot[i].y-240)*(1<<12)/640.);
-		position.payload.coords[i].theta = -(int)(robot[i].theta*(1<<12)/(M_PI*2));
-		position.payload.coords[i].confidence = robot[i].thresh<<4;
-	}
-	
-	//sync_serial(serialPort);
-	send_packet(serialPort,&position,sizeof(packet));
-	
-	
-	for (int i=0; i<N; i++)
-		oldrobot[i] = robot[i];
 	
 	//NSLog(@"Max was %d", max[0]);
 	NSImage *image = [[NSImage alloc] init];
@@ -458,7 +525,7 @@ sighting oldrobot[N];
 	NSMutableArray *robots = [NSMutableArray array];
 	NSMutableArray *goals = [NSMutableArray array];
 	
-	for (int i=0; i<N; i++) {
+	for (int i=0; i<N_ROBOTS; i++) {
 		float X, Y;
 		X = (robot[i].x/imgSize.width)*2.f - 1.f;
 		Y = -((robot[i].y/imgSize.height)*2.f - 1.f) * imgSize.height/imgSize.width;
@@ -467,11 +534,11 @@ sighting oldrobot[N];
 						   [NSNumber numberWithFloat:X], @"X",
 						   [NSNumber numberWithFloat:Y], @"Y",
 						   [NSNumber numberWithFloat:robot[i].theta*180.f/M_PI], @"Theta",
-						   [NSString stringWithFormat:@"Robot %d (%3.1f)", i+1, robot[i].sum/1000.], @"Label", nil]];
-		printf("%f\n", robot[i].sum);
+						   [NSString stringWithFormat:@"Robot %d%@", robot[i].id, robot[i].light?@"+":@""], @"Label", nil]];
+		//printf("%f\n", robot[i].sum);
 	}
 	
-	for (int i=1; i<4; i++) {
+	/*for (int i=1; i<4; i++) {
 		float X, Y;
 		X = (((float)position.payload.coords[i].x*640./(1<<12) + 320)/imgSize.width)*2.f - 1.f;
 		Y = -(((-(float)position.payload.coords[i].y*640./(1<<12) + 240)/imgSize.height)*2.f - 1.f) * imgSize.height/imgSize.width;
@@ -480,13 +547,13 @@ sighting oldrobot[N];
 						   [NSNumber numberWithFloat:Y], @"Y",
 						   [NSNumber numberWithFloat:0*180.f/M_PI], @"Theta",
 						   [NSString stringWithFormat:@"Goal %d", i], @"Label", nil]];
-	}
+	}*/
 
 	[qcView setValue:[NSDictionary dictionaryWithObjectsAndKeys:
 					  robots, @"Robots",
 					  goals, @"Goals",
-					  [NSString stringWithFormat:@"Score: %d", score], @"Score",
-					  [NSString stringWithFormat:@"Time left: %1d:%06.3f", mins, secs], @"Time",
+//					  [NSString stringWithFormat:@"Score: %d", score], @"Score",
+//					  [NSString stringWithFormat:@"Time left: %1d:%06.3f", mins, secs], @"Time",
 					  nil] forInputKey:@"Structure"];
 	firstTick = false;
 }
