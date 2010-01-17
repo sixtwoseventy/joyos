@@ -14,6 +14,7 @@
 extern packet_buffer tx, rx;
 
 extern volatile board_coord objects[4];
+extern volatile uint32_t position_microtime;
 
 extern board_coord goal_position; //The target position received from a goal packet
 
