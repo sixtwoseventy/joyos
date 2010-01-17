@@ -31,7 +31,7 @@ volatile uint8_t rf_new_str;
 
 struct lock rf_lock;
 
-uint8_t light_port = 3;
+uint8_t light_port = 0xFF;
 uint8_t robot_id = 0;
 
 int rf_send(char ch){
@@ -248,21 +248,21 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
 
             break;
 
-/*		case START:
+		case START:
     
             //Remaining bytes are robots which are starting.  Check if we're one of them.
             for (uint8_t i = 0; i < 30; i++) {
-                target = rx->packet_buf.payload[i];
-                if (target == self_id) { round_start(); break; }
+                uint8_t target = rx->payload.array[i];
+                if (target == robot_id) { round_start(); break; }
             }
             break;
         case STOP:
             //Remaining bytes are robots which are stopping.  Check if we're one of them.
             for (uint8_t i = 0; i < 30; i++) {
-                target = rx->packet_buf.payload[i];
-                if (target == self_id) { round_end(); break; }
+                uint8_t target = rx->payload.array[i];
+                if (target == robot_id) { round_end(); break; }
             }
-            break;*/
+            break;
 
         case STRING:
             rf_buf_index = 0;
@@ -270,9 +270,11 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
             break;
 
         case LIGHT:
-            for (int i=0; i<4; i++) {
-                if (rx->payload.lights[i].id == robot_id)
-                    motor_set_vel(light_port, rx->payload.lights[i].value);
+            if (light_port != 0xFF) {
+                for (int i=0; i<4; i++) {
+                    if (rx->payload.lights[i].id == robot_id)
+                        motor_set_vel(light_port, rx->payload.lights[i].value);
+                }
             }
             break;
 

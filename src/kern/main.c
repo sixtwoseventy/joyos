@@ -54,29 +54,34 @@ void set_auto_halt(uint8_t ah) {
 	auto_halt = ah;
 }
 
+volatile uint8_t rf_start = 0;
+
+void round_start() {
+    rf_start = 1;
+}
+
 void round_end() {
 	printf("\nRound end");
 	halt();
 }
 
+void wait_for_rf (void) {
+    while (!rf_start)
+        yield();
+}
+
 int robot_monitor (void) {
 	// start the calibration period...
 
-	printf("\n running usetup()...");
+	printf("\nRunning usetup()...");
 	usetup();
-	printf("\n usetup() complete.");
+	printf("\nFinished usetup().");
 
-	// printf("\n waiting for rf...")
+	printf("\nPress Go to start or Stop to wait for RF.");
+    if (!either_click())
+        wait_for_rf();
 
-	// printf("\nWaiting for RF  'Go' to override");
-	// wait for the start signal
-	// FIXME: add new start code
-	//while (rf_get_round_state() != STATE_RUNNING && !go_press ())
-	//	yield ();
-
-	// printf("\n rf start received.");
-
-	printf("\n entering umain()...");
+	printf("\nRunning umain()...");
 	return umain();
 }
 
