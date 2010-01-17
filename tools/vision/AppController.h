@@ -6,15 +6,13 @@
 //  Copyright __MyCompanyName__ 2009 . All rights reserved.
 //
 
-#pragma once
-
-#ifndef _APP_CONTROLLER_H
-#define _APP_CONTROLLER_H
-
 #import <Cocoa/Cocoa.h>
 
 #import <Quartz/Quartz.h>
 #import "packet.h"
+#import "vision.h"
+
+#define N_ROBOTS 3
 
 @interface AppController : NSObject 
 {
@@ -22,13 +20,18 @@
 	double timestamp;
     IBOutlet QCView* qcView;
     IBOutlet NSImageView* imageView;
+    IBOutlet NSTextField* textField;
 	NSFileHandle* serialPort;
 	packet_buffer position, lights;
+	
+	// variables related to lighting experiments
+	int currentRobot;
+	NSTimeInterval lastTime;
+	sighting oldrobot[N_ROBOTS];	
 }
 
+- (IBAction)reset:(id)sender;
 void fill_goal(board_coord* pos, board_coord* last);
 void generate_goal(board_coord* pos);
 
 @end
-
-#endif

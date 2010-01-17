@@ -21,10 +21,10 @@ typedef struct {short y, xl, xr, dy;} Segment;
  * Parent segment was on line y-dy.  dy=1 or -1
  */
 
-#define MAX 10000		/* max depth of stack */
+#define MAX_DEPTH 10000		/* max depth of stack */
 
 #define PUSH(Y, XL, XR, DY)	/* push new segment on stack */ \
-if (sp<stack+MAX && Y+(DY)>=win->y0 && Y+(DY)<=win->y1) \
+if (sp<stack+MAX_DEPTH && Y+(DY)>=win->y0 && Y+(DY)<=win->y1) \
 {sp->y = Y; sp->xl = XL; sp->xr = XR; sp->dy = DY; sp++;}
 
 #define POP(Y, XL, XR, DY)	/* pop segment off stack */ \
@@ -44,7 +44,7 @@ if (sp<stack+MAX && Y+(DY)>=win->y0 && Y+(DY)<=win->y1) \
 void fill(int x, int y, unsigned char threshold, Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel) {
     int l, x1, x2, dy;
 	int xmin=win->x1, xmax=0, ymin=win->y1, ymax=0;
-    Segment stack[MAX], *sp = stack;	/* stack of filled segments */
+    Segment stack[MAX_DEPTH], *sp = stack;	/* stack of filled segments */
 	
     if (x<win->x0 || x>win->x1 || y<win->y0 || y>win->y1) return;
     PUSH(y, x, x, 1);			/* needed in some cases */
