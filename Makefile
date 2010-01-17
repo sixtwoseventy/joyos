@@ -77,6 +77,7 @@ KERNELSRC = src/kern/main.c \
 			src/kern/thread.c \
 			src/kern/isr.c \
 			src/kern/util.c \
+			src/kern/ring.c \
 
 # Library source files
 LIBSRC = 	src/lib/async_printf.c \
