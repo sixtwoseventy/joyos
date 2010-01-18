@@ -88,6 +88,13 @@ int usetup (void) {
 	pause (500);
 	printf ("\nCalibrating     offset...\n");
 	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);*/
+
+    extern uint8_t light_port;
+    light_port = 3;
+
+    extern uint8_t robot_id;
+    robot_id = 129;
+
 	return 0;
 }
 
