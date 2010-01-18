@@ -73,15 +73,15 @@ void wait_for_rf (void) {
 int robot_monitor (void) {
 	// start the calibration period...
 
-	printf("\nRunning usetup()...");
+	printf("Running usetup()...\n");
 	usetup();
-	printf("\nFinished usetup().");
+	printf("Finished usetup().\n");
 
-	printf("\nPress Go to start or Stop to wait for RF.");
+	printf("Press Go to start or Stop to wait for RF.\n");
     if (!either_click())
         wait_for_rf();
 
-	printf("\nRunning umain()...");
+	printf("Running umain()...\n");
 	return umain();
 }
 

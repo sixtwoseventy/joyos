@@ -40,19 +40,19 @@
 extern FILE lcdout, uartio;
 
 // Boot failure message
-char str_boot_fail[] PROGMEM  = "Init fail: %s\n\r";
+char str_boot_fail[] PROGMEM  = "Init fail: %s\n";
 
 // Boot text
-char str_boot_message[] PROGMEM = "Happyboard v%X.%02X\n\r";
+char str_boot_message[] PROGMEM = "Happyboard v%X.%02X\n";
 
 // Boot progress messages
-char str_boot_uart[] PROGMEM  = "UART0 opened at %d\n\r";
-char str_boot_start[] PROGMEM = "Happyboard init started\n\r";
-char str_boot_board[] PROGMEM = "Hardware version %X.%02X\n\r";
-char str_boot_id[] PROGMEM    = "Board ID %04X\n\r";
-char str_boot_conf[] PROGMEM  = "Board config OK\n\r";
-char str_boot_batt[] PROGMEM  = "Battery OK: %dmV\n\r";
-char str_boot_fpga[] PROGMEM  = "FPGA v%d.%d\n\r";
+char str_boot_uart[] PROGMEM  = "UART0 opened at %d\n";
+char str_boot_start[] PROGMEM = "Happyboard init started\n";
+char str_boot_board[] PROGMEM = "Hardware version %X.%02X\n";
+char str_boot_id[] PROGMEM    = "Board ID %04X\n";
+char str_boot_conf[] PROGMEM  = "Board config OK\n";
+char str_boot_batt[] PROGMEM  = "Battery OK: %dmV\n";
+char str_boot_fpga[] PROGMEM  = "FPGA v%d.%d\n";
 
 // Load board config.
 // Return true if config CRC is valid
