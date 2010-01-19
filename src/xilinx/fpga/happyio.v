@@ -66,18 +66,23 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	
 	// latch the lower 8 bits of address
 	assign data = ad;
-	//always @ (ale or ad or a)
-	always @ (ad or a or clk)
-	begin
-		if (ale)
-			addr[7:0] = ad[7:0];
+	always @(negedge ale) begin
+		addr[7:0] = ad[7:0];
 		addr[15:8] = a[7:0];
 	end
 
 	assign aout[7:0]  = addr[7:0];
+
 	// assign ram ce	
-	assign ramce = ~addr[15];
-	
+	always @ (addr[15] or nRD or nWR) begin
+		if (nRD & nWR) begin
+			ramce = 1;
+		end
+		if (ramce) begin
+			ramce = ~addr[15]; 	
+		end
+	end 
+
 	// read control
 	always @ (negedge nRD)
 	begin
