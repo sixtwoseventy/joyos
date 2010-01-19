@@ -1,6 +1,6 @@
-`include "Motor.v"
-`include "Servo.v"
-`include "Encoder.v"
+//`include "Motor.v"
+//`include "Servo.v"
+//`include "Encoder.v"
 
 module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mot5, Servo, Enc, Digital, ramce);
 	// clock
@@ -23,6 +23,8 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	input  [7:0] Digital;
 	output [5:0] Servo;
 	output ramce;
+
+	//reg ramce;
 
 	// internal
 	reg    [15:0] addr;
@@ -62,26 +64,23 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	reg [7:0] tempHi;
 
 	// bidirectional data bus
-	assign ad = nRD ? 8'hzz : dataOut;
+	 assign ad = (addr[15] | nRD ) ? 8'hzz : dataOut ;
+	//assign ad = 8'hzz;
 	
 	// latch the lower 8 bits of address
 	assign data = ad;
 	always @(negedge ale) begin
-		addr[7:0] = ad[7:0];
-		addr[15:8] = a[7:0];
+			addr[7:0] = ad[7:0];
+			addr[15:8] = a[7:0];
 	end
 
 	assign aout[7:0]  = addr[7:0];
 
 	// assign ram ce	
-	always @ (addr[15] or nRD or nWR) begin
-		if (nRD & nWR) begin
-			ramce = 1;
-		end
-		if (ramce) begin
-			ramce = ~addr[15]; 	
-		end
-	end 
+	assign ramce = ~addr[15];
+	//always @ (addr[15] or nRD or nWR) begin
+	//	ramce = ~addr[15];
+	//end 
 
 	// read control
 	always @ (negedge nRD)
