@@ -91,8 +91,8 @@ LIBSRC = 	src/lib/async_printf.c \
 # Bootloader Source Files
 BOOTSRC = 	src/boot/hboot.c \
 			src/drivers/devices/at45db011.c \
-			src/drivers/lcd.c \
-			src/hal/uart.c \
+			src/drivers/lcd_hboot.c \
+			src/hal/uart_hboot.c \
 			src/hal/spi.c \
 			src/hal/adc.c \
 			src/hal/io.c \
