@@ -78,10 +78,10 @@ KERNELSRC = src/kern/main.c \
 			src/kern/isr.c \
 			src/kern/util.c \
 			src/kern/ring.c \
+			src/kern/pipe.c \
 
 # Library source files
-LIBSRC = 	src/lib/async_printf.c \
-		 	src/lib/pid.c \
+LIBSRC = 	src/lib/pid.c \
 			src/lib/irdist.c \
 			src/lib/confdb.c \
 			src/lib/happylib.c \
