@@ -43,14 +43,14 @@ uint16_t ring_write(ring_buf *ring, uint8_t *buf, uint16_t count) {
         // will we run off the end of the buffer?
         if (ring->write + n >= ring->capacity) {
             uint16_t run = ring->capacity - ring->write;
-            memcpy(ring->buf+ring->write, buf, run);
+            if (buf) memcpy(ring->buf+ring->write, buf, run);
             n -= run;
-            buf += run;
+            if (buf) buf += run;
             ring->write = 0;
         }
         // write any remaining bytes
         if (n > 0) {
-            memcpy(ring->buf+ring->write, buf, n);
+            if (buf) memcpy(ring->buf+ring->write, buf, n);
             ring->write += n;
         }
     }
@@ -75,14 +75,14 @@ uint16_t ring_read(ring_buf *ring, uint8_t *buf, uint16_t count) {
         // will we run off the end of the buffer?
         if (ring->read + n >= ring->capacity) {
             uint16_t run = ring->capacity - ring->read;
-            memcpy(buf, ring->buf+ring->read, run);
+            if (buf) memcpy(buf, ring->buf+ring->read, run);
             n -= run;
-            buf += run;
+            if (buf) buf += run;
             ring->read = 0;
         }
         // read any remaining bytes
         if (n > 0) {
-            memcpy(buf, ring->buf+ring->read, n);
+            if (buf) memcpy(buf, ring->buf+ring->read, n);
             ring->read += n;
         }
     }
