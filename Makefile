@@ -78,7 +78,6 @@ KERNELSRC = src/kern/main.c \
 			src/kern/isr.c \
 			src/kern/util.c \
 			src/kern/ring.c \
-			src/kern/pipe.c \
 
 # Library source files
 LIBSRC = 	src/lib/pid.c \
