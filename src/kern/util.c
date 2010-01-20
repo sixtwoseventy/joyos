@@ -29,7 +29,6 @@
 #include <kern/util.h>
 #include <kern/lock.h>
 #include <lcd.h>
-#include <lib/async_printf.h>
 #include <avr/pgmspace.h>
 
 void
@@ -58,22 +57,3 @@ dumpBytes (uint8_t *bytes, uint8_t n) {
 			i, (void *)(bytes + i), bytes[i]);
 	}
 }
-
-/* Is now replaced with a macro that uses uart_printf_P() instead.
-int 
-printf (const char *fmt, ...) {
-	extern struct lock lcd_lock;
-	extern FILE lcdout;
-	acquire(&lcd_lock);
-	va_list ap;
-	int count;
-
-	va_start(ap, fmt);
-	count = vfprintf (&lcdout, fmt, ap);
-	//count = async_vfprintf (&lcdout, fmt, ap);
-	va_end(ap);
-
-	release(&lcd_lock);
-	return count;
-}*/
-
