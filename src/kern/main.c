@@ -37,7 +37,6 @@
 #include <kern/thread.h>
 #include <kern/thread.h>
 #include <kern/util.h>
-#include <lib/async_printf.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
