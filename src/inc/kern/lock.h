@@ -45,7 +45,6 @@ struct lock {
 	unsigned char locked;
 	const char *name;
 	struct thread *thread;
-	// TODO add more detail
 };
 
 /**
@@ -66,6 +65,15 @@ void init_lock(struct lock *k, const char *name);
  * @param k	Lock to acquire. Must be non-null.
  */
 void acquire(struct lock *k);
+
+/**
+ * Try to acquire the lock 'k'.
+ * If another thread holds the lock, return 0.
+ * If the lock was acquired, return 1.
+ *
+ * @param k	Lock to acquire. Must be non-null.
+ */
+int try_acquire(struct lock *k);
 
 /**
  * Checks to see if lock 'k' is held by the current thread.

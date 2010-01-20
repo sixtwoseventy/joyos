@@ -77,6 +77,17 @@ acquire(struct lock *k) {
     }
 }
 
+int 
+try_acquire(struct lock *k) {
+	if (!k)
+		panic("acquire null lock");
+
+	if (k->locked >= LOCK_MAX_ACQUIRES)
+		panic("acquired too many times");
+
+    return inc_lock(k);
+}
+
 // should only be called atomically
 int
 is_held (struct lock *k) {
