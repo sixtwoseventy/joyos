@@ -1,9 +1,10 @@
 #include "config.h"
 #include "hal/io.h"
-#include "hal/uart.h"
-#include "lcd.h"
+#include "hal/uart_hboot.h"
+#include "lcd_hboot.h"
 #include "at45db011.h"
 #include <avr/eeprom.h>
+#include <kern/lock.h>
 
 #define eeprom_wb(addr,val) eeprom_write_byte ((uint8_t *)(addr),(uint8_t)(val))
 #define eeprom_rb(addr) eeprom_read_byte ((uint8_t *)(addr))
@@ -19,9 +20,9 @@
 #define SIG3				0x02
 #define PAGE_SIZE		0x80U
 
-void acquire() {}
-void release() {}
-void init_lock(int k, char *name) {}
+void acquire(struct lock *k) {}
+void release(struct lock *k) {}
+void init_lock(struct lock *k, const char *name) {}
 
 // pointer to the start of the Main App.
 void (*appBoot)(void) = 0x0000;
