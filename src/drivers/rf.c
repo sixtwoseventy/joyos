@@ -18,7 +18,7 @@ packet_buffer tx, rx;
 volatile uint32_t position_microtime;
 volatile board_coord objects[4];
 
-board_coord goal_position; //The target position received from a goal packet
+volatile board_coord goal_position; //The target position received from a goal packet
 
 FILE rfio = FDEV_SETUP_STREAM(rf_put, rf_get, _FDEV_SETUP_RW);
 
@@ -31,8 +31,8 @@ volatile uint8_t rf_new_str;
 
 struct lock rf_lock;
 
-uint8_t light_port = 0xFF;
-uint8_t robot_id = 0;
+volatile uint8_t light_port = 0xFF;
+volatile uint8_t robot_id = 0xFF;
 
 int rf_send(char ch){
     ATOMIC_BEGIN;
@@ -148,53 +148,64 @@ int rf_scanf_P(const char *fmt, ...) {
 	return count;
 }
 
-uint8_t rf_has_char(){
+uint8_t rf_has_char() {
     return (rf_buf_index != PAYLOAD_SIZE) && 
            (rf_str_buf[rf_buf_index] != '\0');
 }
 
-void rf_rx(void)
-{
+void rf_rx(void) {
 	RF_CE(0);
-    delay_busy_us(150);
-/*
-    // RESOLVE THIS WITH THAT OTHER THING BELOW
-    // power on and enable 2-byte CRC, RX mode
-    nrf_write_reg(NRF_REG_CONFIG, 
-            _BV(NRF_BIT_EN_CRC) | 
-            _BV(NRF_BIT_CRCO) | 
-            _BV(NRF_BIT_PRIM_RX));
-*/
-	nrf_write_reg(NRF_REG_CONFIG, 0x3D); // PRX, 16 bit CRC enabled
+    delay_busy_us(150); // I don't think delay_busy_us actually goes up that high
+	nrf_write_reg(NRF_REG_CONFIG,
+        _BV(NRF_BIT_PRIM_RX) |
+        _BV(NRF_BIT_CRCO) |
+        _BV(NRF_BIT_EN_CRC) |
+        _BV(NRF_BIT_MASK_MAX_RT) |
+        _BV(NRF_BIT_MASK_TX_DR)); // PRX, 16 bit CRC enabled
     nrf_write_reg(NRF_REG_EN_AA, 0); // disable auto-ack for all channels
-    nrf_write_reg(NRF_REG_RF_SETUP, 0x07); // data rate = 1MB
-    nrf_write_reg(NRF_REG_RX_PW_P0, sizeof(packet));
-    nrf_write_reg(NRF_REG_CONFIG, 0x3B); // PWR_UP = 1
+    nrf_write_reg(NRF_REG_RF_SETUP,
+        (NRF_RF_PWR_0DB << NRF_RF_PWR_BASE) |
+        (NRF_RF_DR_1MBPS << NRF_BIT_RF_DR_BASE) |
+        _BV(NRF_BIT_LNA_HCURR)); // data rate = 1MB
+    nrf_write_reg(NRF_REG_RX_PW_P0, sizeof(packet_buffer));
+    nrf_write_reg(NRF_REG_CONFIG, 
+        _BV(NRF_BIT_PRIM_RX) |
+        _BV(NRF_BIT_PWR_UP) |
+        //_BV(NRF_BIT_CRCO) | // this bit was not in the configuration for some unknown reason
+        _BV(NRF_BIT_EN_CRC) |
+        _BV(NRF_BIT_MASK_MAX_RT) |
+        _BV(NRF_BIT_MASK_TX_DR)); // PWR_UP = 1
 	RF_CE(1);
     // wait >= 130 us
     delay_busy_us(150);
 }
 
-uint8_t
-rf_tx(void) {
+uint8_t rf_tx(void) {
     RF_CE(0);
     delay_busy_us(150);
-/*
-    // RESOLVE THIS WITH THAT OTHER THING BELOW
-    nrf_write_reg(NRF_REG_CONFIG, 
-            _BV(NRF_BIT_EN_CRC) | 
-            _BV(NRF_BIT_CRCO));
-*/
-
-    nrf_write_reg(NRF_REG_CONFIG, 0x7C); //16 bit CRC enabled, be a transmitter
-    nrf_write_reg(NRF_REG_EN_AA, 0x00); //Disable auto acknowledge on all pipes
-    nrf_write_reg(NRF_REG_SETUP_RETR, 0x00); //Disable auto-retransmit
-    nrf_write_reg(NRF_REG_SETUP_AW, 0x03); //Set address width to 5bytes (default, not really needed)
-    nrf_write_reg(NRF_REG_RF_SETUP, 0x07); //Air data rate 1Mbit, 0dBm, Setup LNA
-    nrf_write_reg(NRF_REG_RF_CH, 0x02); //RF Channel 2 (default, not really needed)
+    nrf_write_reg(NRF_REG_CONFIG,
+        _BV(NRF_BIT_CRCO) |
+        _BV(NRF_BIT_EN_CRC) |
+        _BV(NRF_BIT_MASK_MAX_RT) |
+        _BV(NRF_BIT_MASK_TX_DR) |
+        _BV(NRF_BIT_MASK_RX_DR)); //16 bit CRC enabled, be a transmitter
+    nrf_write_reg(NRF_REG_EN_AA, 0); //Disable auto acknowledge on all pipes
+    nrf_write_reg(NRF_REG_SETUP_RETR, 0); //Disable auto-retransmit
+    nrf_write_reg(NRF_REG_SETUP_AW, NRF_AW_5); //Set address width to 5bytes (default, not really needed)
+    nrf_write_reg(NRF_REG_RF_SETUP,
+        (NRF_RF_PWR_0DB << NRF_RF_PWR_BASE) |
+        (NRF_RF_DR_1MBPS << NRF_BIT_RF_DR_BASE) |
+        _BV(NRF_BIT_LNA_HCURR)); //Air data rate 1Mbit, 0dBm, Setup LNA
+    nrf_write_reg(NRF_REG_RF_CH, 2); //RF Channel 2 (default, not really needed)
     uint8_t addr[5] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
     nrf_write_multibyte_reg(NRF_REG_TX_ADDR, addr, 5);
-    nrf_write_reg(NRF_REG_CONFIG, 0x7A); //Power up, be a transmitter
+    nrf_write_reg(NRF_REG_CONFIG,
+        _BV(NRF_BIT_PWR_UP) |
+        //_BV(NRF_BIT_CRCO) |
+        _BV(NRF_BIT_EN_CRC) |
+        _BV(NRF_BIT_MASK_MAX_RT) |
+        _BV(NRF_BIT_MASK_TX_DR) |
+        _BV(NRF_BIT_MASK_RX_DR)); //Power up, be a transmitter
     return nrf_read_status();
 }
 
@@ -231,36 +242,37 @@ uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len) {
     return (status & _BV(NRF_BIT_TX_DS)) != 0;
 }
 
-void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
+void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
     uint8_t type = rx->type;
     //uint8_t address = rx->address;
 
     switch (type) {
         case POSITION:
-
             memcpy((char *)objects, rx->payload.coords, sizeof(objects));
             position_microtime = get_time_us();
-
             break;
+
         case GOAL:
-
             goal_position = rx->payload.coords[0];
-
             break;
 
 		case START:
-    
-            //Remaining bytes are robots which are starting.  Check if we're one of them.
-            for (uint8_t i = 0; i < 30; i++) {
-                uint8_t target = rx->payload.array[i];
-                if (target == robot_id) { round_start(); break; }
+            if (robot_id != 0xFF) {
+                //Remaining bytes are robots which are starting.  Check if we're one of them.
+                for (uint8_t i = 0; i < 30; i++) {
+                    uint8_t target = rx->payload.array[i];
+                    if (target == robot_id) { round_start(); break; }
+                }
             }
             break;
+
         case STOP:
-            //Remaining bytes are robots which are stopping.  Check if we're one of them.
-            for (uint8_t i = 0; i < 30; i++) {
-                uint8_t target = rx->payload.array[i];
-                if (target == robot_id) { round_end(); break; }
+            if (robot_id != 0xFF) {
+                //Remaining bytes are robots which are stopping.  Check if we're one of them.
+                for (uint8_t i = 0; i < 30; i++) {
+                    uint8_t target = rx->payload.array[i];
+                    if (target == robot_id) { round_end(); break; }
+                }
             }
             break;
 
@@ -270,7 +282,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
             break;
 
         case LIGHT:
-            if (light_port != 0xFF) {
+            if (light_port != 0xFF && robot_id != 0xFF) {
                 for (int i=0; i<4; i++) {
                     if (rx->payload.lights[i].id == robot_id)
                         motor_set_vel(light_port, rx->payload.lights[i].value);
@@ -284,8 +296,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t pipe) {
 }
 
 // get a packet; return pipe number
-uint8_t
-rf_get_packet(uint8_t *buf, uint8_t *size) {
+uint8_t rf_get_packet(uint8_t *buf, uint8_t *size) {
     uint8_t pipe;
     while (1) {
         pipe = ((nrf_read_reg(NRF_REG_STATUS) & NRF_RX_P_NO_MASK) >> NRF_RX_P_NO_BASE);

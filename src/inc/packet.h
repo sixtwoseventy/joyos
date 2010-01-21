@@ -1,3 +1,6 @@
+#ifndef _PACKET_H_
+#define _PACKET_H_
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -10,6 +13,7 @@
 #define SYNC 0x04 //Not sure how to use yet.  Established IDs of all bots/vision system on board
 #define GOAL 0x05 //Sets the target position of this robot
 #define LIGHT 0x06 //Instructs robots to turn their lights on or off
+#define REPLY_STRING 0x07 //String from board to bot
 
 typedef struct {
 	uint8_t id;
@@ -24,12 +28,6 @@ typedef struct{
     int16_t value;
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) light_command;
 
-typedef struct{
-	uint8_t type;
-	uint8_t address;
-	uint8_t payload[PAYLOAD_SIZE];
-} packet;
-
 typedef struct {
 	uint8_t type;
 	uint8_t address;
@@ -40,3 +38,4 @@ typedef struct {
 	} payload;
 } __attribute__ ((packed)) packet_buffer;
 
+#endif
