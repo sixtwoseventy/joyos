@@ -41,7 +41,7 @@ int rf_send(char ch){
     
     if ((ch=='\n') || (rf_ch_count == PAYLOAD_SIZE)){
         tx.type = STRING;
-        rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet));
+        rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet_buffer));
         rf_ch_count = 0;
     }
 
@@ -324,7 +324,7 @@ int rf_receive (void) {
                 uint8_t size;
                 uint8_t pipe;
                 while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
-                    rf_process_packet(&rx, pipe);
+                    rf_process_packet(&rx, size, pipe);
             }
         //}
         yield();
