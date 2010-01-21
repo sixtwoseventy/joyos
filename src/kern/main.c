@@ -40,8 +40,6 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-//#define EXTERNAL_RAM=1
-
 // defined by user
 extern int umain (void);
 extern int usetup (void);
@@ -74,42 +72,12 @@ int robot_monitor (void) {
 }
 
 int main (void) {
-	// check for runaway code
-	extern struct thread *current_thread;
-	if (current_thread != NULL)
-		panic("runaway code");
-
-	// startup malloc
-
-#ifndef EXTERNAL_RAM
-	__malloc_heap_end = (void*)STACKTOP(MAX_THREADS);
-#else
-	__malloc_heap_start = 0x8000;
-	__malloc_heap_end = 0xFFFF;
-#endif
-	// startup board
 	board_init();
-
-	printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
-	printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
-
-	uint16_t heap_size = (__malloc_heap_end - __malloc_heap_start);
-	printf("heap size: %u bytes\n", heap_size);
-
-	if (__malloc_heap_start >= __malloc_heap_end)
-		panic("         memory full");
 
 	printf("JoyOS v"JOYOS_VERSION"\n");
 
-	// initialize threads and timer
 	init_thread();
-
-	// create a thread to manage calibration and starting
 	create_thread(&robot_monitor, STACK_DEFAULT, 0, "main");
-
-    // initialize RF
     rf_init();
-
-	// start scheduling (doesn't return)
 	schedule();
 }

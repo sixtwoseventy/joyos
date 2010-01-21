@@ -32,32 +32,31 @@
 #include <kern/global.h>
 #include <kern/lock.h>
 #include <kern/isr.h>
+#include <kern/memlayout.h>
+#include <kern/thread.h>
 #include <at45db011.h>
 #include <util/crc16.h>
-
-#define FAIL_MSG_BUF_LEN	17
 
 extern FILE lcdout, uartio;
 
 // Boot failure message
-char str_boot_fail[] PROGMEM  = "Init fail: %s\n";
+#define str_boot_fail "Init fail: %S\n"
 
 // Boot text
-char str_boot_message[] PROGMEM = "Happyboard v%X.%02X\n";
+#define str_boot_message "Happyboard v%X.%02X\n"
 
 // Boot progress messages
-char str_boot_uart[] PROGMEM  = "UART0 opened at %d\n";
-char str_boot_start[] PROGMEM = "Happyboard init started\n";
-char str_boot_board[] PROGMEM = "Hardware version %X.%02X\n";
-char str_boot_id[] PROGMEM    = "Board ID %04X\n";
-char str_boot_conf[] PROGMEM  = "Board config OK\n";
-char str_boot_batt[] PROGMEM  = "Battery OK: %dmV\n";
-char str_boot_fpga[] PROGMEM  = "FPGA v%d.%d\n";
+#define str_boot_uart "UART0 opened at %d\n"
+#define str_boot_start "Happyboard init started\n"
+#define str_boot_board "Hardware version %X.%02X\n"
+#define str_boot_id "Board ID %04X\n"
+#define str_boot_conf "Board config OK\n"
+#define str_boot_batt "Battery OK: %dmV\n"
+#define str_boot_fpga "FPGA v%d.%d\n"
 
 // Load board config.
 // Return true if config CRC is valid
-uint8_t
-board_load_config (void) {
+uint8_t board_load_config (void) {
 	uint8_t i;
 	uint16_t crc=0;
 	uint8_t *config_arr = (uint8_t*)&board_config;
@@ -72,15 +71,10 @@ board_load_config (void) {
 	return (crc==board_config.crc);
 }
 
+#define board_fail(msg) board_fail_P(PSTR(msg))
 // Halt board on init failure and print message
-void 
-board_fail_P(PGM_P msg) {
-	// need to put the message in a char buffer before printf
-	char buf[FAIL_MSG_BUF_LEN];
-	strncpy_P (buf, msg, FAIL_MSG_BUF_LEN);
-	buf[FAIL_MSG_BUF_LEN-1] = '\0';
-
-	printf_P(str_boot_fail,buf);
+void board_fail_P(PGM_P msg) {
+	printf(str_boot_fail, msg);
 	// print message
 #ifdef LCD_DEBUG
 	lcd_set_pos(16);
@@ -92,20 +86,32 @@ board_fail_P(PGM_P msg) {
 	while (1);
 }
 
-// Initialise board
-void
-board_init (void) {
-	uint8_t fpgaOK, /*battOK, */ confOK;
+//#define EXTERNAL_RAM=1
 
-	// Init GPIOs
-	io_init();
-//	LED_PWR(1);
-	// init uart
+void memory_init(void) {
+#ifndef EXTERNAL_RAM
+	__malloc_heap_end = (void*)STACKTOP(MAX_THREADS);
+#else
+	__malloc_heap_start = 0x8000;
+	__malloc_heap_end = 0xFFFF;
+#endif
+	printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
+	printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
+
+	uint16_t heap_size = (__malloc_heap_end - __malloc_heap_start);
+	printf("heap size: %u bytes\n", heap_size);
+
+	if (__malloc_heap_start >= __malloc_heap_end)
+		panic("memory full");
+}
+
+// Initialise board
+void board_init (void) {
+	io_init(); // Init GPIOs
 	uart_init(BAUD_RATE);
 	stderr = &uartio;
-	printf_P(str_boot_uart,BAUD_RATE);
-	printf_P(str_boot_start);
-	// other IO init
+	printf(str_boot_uart,BAUD_RATE);
+	printf(str_boot_start);
 	digital_init();
 	encoder_init();
 	spi_init();
@@ -120,33 +126,31 @@ board_init (void) {
 #endif
 	adc_init();
 	isr_init();
+    memory_init();
 
 	// load config, or fail if invalid
-	confOK = board_load_config();
-	if (!confOK)
-		board_fail_P(PSTR("Bad Config"));
-	printf_P(str_boot_conf);
-	printf_P(str_boot_board,
+	if (!board_load_config())
+		board_fail("Bad Config");
+	printf(str_boot_conf);
+	printf(str_boot_board,
 			board_config.version>>8,
 			board_config.version&0xFF);
-	printf_P(str_boot_id, board_config.id);
+	printf(str_boot_id, board_config.id);
 
 	// print boot text to screen
-	printf_P(str_boot_message, board_config.version>>8, board_config.version&0xFF);
+	printf(str_boot_message, board_config.version>>8, board_config.version&0xFF);
 
 	// check battery, fail if <7.5V
-/*	battOK = read_battery()>=7500;
-	if (!battOK)
-		board_fail_P(PSTR("Low battery"));*/
-	printf_P(str_boot_batt,read_battery());
+#ifdef CHECK_BATTERY
+	if (!(read_battery()>=7500))
+		board_fail("Low battery");
+#endif
+	printf(str_boot_batt,read_battery());
 
 	// initialise FPGA
-	fpgaOK = fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len);
-	if (!fpgaOK)
-		board_fail_P(PSTR("FPGA failure"));
-	printf_P(str_boot_fpga,
-			fpga_get_version_major(),
-			fpga_get_version_minor());
+	if (!fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len))
+		board_fail("FPGA failure");
+	printf(str_boot_fpga, fpga_get_version_major(), fpga_get_version_minor());
 
 	// all ok
 #ifdef LCD_DEBUG
@@ -157,10 +161,4 @@ board_init (void) {
 #endif
 
 	LED_COMM(0);
-	// beep
-	//beep(880,1000);
-
-    // rf_init();
-	
 }
-
