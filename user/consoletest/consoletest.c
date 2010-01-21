@@ -26,7 +26,6 @@
 #include <joyos.h>
 
 int usetup (void) {
-	set_auto_halt(0);
 	return 0;
 }
 
