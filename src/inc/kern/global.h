@@ -57,15 +57,6 @@
 void panic_P (PGM_P msg) __ATTR_NORETURN__;
 
 /**
- * Enable or disable the Auto-halt.
- * By default after 60 seconds, the kernel will disable all motors and servos
- * and halt. To disable this functionality call set_auto_halt(0);
- *
- * @param ah whether to enable or disable auto-halt functionality
- */
-void set_auto_halt(uint8_t ah);
-
-/**
  * Enables start of the round.  That is, if this is called, then the robot will
  * stop waiting or not wait at all to enter umain
  */

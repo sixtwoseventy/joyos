@@ -46,13 +46,6 @@
 extern int umain (void);
 extern int usetup (void);
 
-static uint8_t auto_halt = 0;
-//static uint8_t auto_round_start = 0;
-
-void set_auto_halt(uint8_t ah) {
-	auto_halt = ah;
-}
-
 volatile uint8_t rf_start = 0;
 
 void round_start() {
@@ -64,11 +57,6 @@ void round_end() {
 	halt();
 }
 
-void wait_for_rf (void) {
-    while (!rf_start)
-        yield();
-}
-
 int robot_monitor (void) {
 	// start the calibration period...
 
@@ -78,7 +66,8 @@ int robot_monitor (void) {
 
 	printf("Press Go to start or Stop to wait for RF.\n");
     if (!either_click())
-        wait_for_rf();
+        while (!rf_start)
+            yield();
 
 	printf("Running umain()...\n");
 	return umain();
@@ -123,6 +112,4 @@ int main (void) {
 
 	// start scheduling (doesn't return)
 	schedule();
-
-	return 0;
 }
