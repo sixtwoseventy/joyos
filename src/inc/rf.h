@@ -11,12 +11,12 @@
  * as well as retrieve information received over RF
  */ 
 
+extern volatile uint32_t position_microtime;
 extern packet_buffer tx, rx;
 
 extern volatile board_coord objects[4];
-extern volatile uint32_t position_microtime;
 
-extern board_coord goal_position; //The target position received from a goal packet
+extern volatile board_coord goal_position; //The target position received from a goal packet
 
 extern volatile char rf_str_buf[PAYLOAD_SIZE+1];
 
@@ -53,6 +53,9 @@ uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len);
  * Initializes RF.  Should not be called by user
  */
 void rf_init();
+
+extern volatile uint8_t light_port;
+extern volatile uint8_t robot_id;
 
 #endif //_RF_H_
 
