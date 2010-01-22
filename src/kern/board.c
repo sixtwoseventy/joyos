@@ -37,8 +37,6 @@
 #include <at45db011.h>
 #include <util/crc16.h>
 
-extern FILE lcdout, uartio;
-
 // Boot failure message
 #define str_boot_fail "Init fail: %S\n"
 
@@ -77,10 +75,7 @@ void board_fail_P(PGM_P msg) {
 	printf(str_boot_fail, msg);
 	// print message
 #ifdef LCD_DEBUG
-	lcd_set_pos(16);
-	lcd_printf(msg);
-	lcd_set_pos(31);
-	lcd_print_char('\3', NULL);
+	lcd_printf("%c%S%c%c", LCD_POS(16), msg, LCD_POS(31), (char)3);
 #endif
 	// and stop
 	while (1);
@@ -92,8 +87,8 @@ void memory_init(void) {
 #ifndef EXTERNAL_RAM
 	__malloc_heap_end = (void*)STACKTOP(MAX_THREADS);
 #else
-	__malloc_heap_start = 0x8000;
-	__malloc_heap_end = 0xFFFF;
+	__malloc_heap_start = (void*)0x8000;
+	__malloc_heap_end = (void*)0xFFFF;
 #endif
 	printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
 	printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
@@ -109,7 +104,7 @@ void memory_init(void) {
 void board_init (void) {
 	io_init(); // Init GPIOs
 	uart_init(BAUD_RATE);
-	stderr = &uartio;
+	stderr = F_UART;
 	printf(str_boot_uart,BAUD_RATE);
 	printf(str_boot_start);
 	digital_init();
@@ -117,12 +112,13 @@ void board_init (void) {
 	spi_init();
 	motor_init();
 	servo_init();
+    rf_init();
 #ifdef LCD_DEBUG
-	lcd_init(); //consider wrapping this in an #ifdef LCD_DEBUG tag?
-	stdout = &lcdout;
+	lcd_init();
+	stdout = F_LCD;
 #else
-	stdout = &uartio;
-	stdin = &uartio;
+	stdout = F_UART;
+	stdin = F_UART;
 #endif
 	adc_init();
 	isr_init();
@@ -154,8 +150,7 @@ void board_init (void) {
 
 	// all ok
 #ifdef LCD_DEBUG
-	lcd_set_pos(31);
-	lcd_print_char('\1', NULL);
+    lcd_printf("%c%c", LCD_POS(31), (char)1);
 #else
 	printf("Board init complete.\n");
 #endif
