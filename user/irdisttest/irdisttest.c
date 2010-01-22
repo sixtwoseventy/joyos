@@ -34,7 +34,6 @@
 // period ends.
 int usetup (void) {
 	irdist_set_calibration (SHARP_M, SHARP_C);
-	set_auto_halt (0);
 	return 0;
 }
 

@@ -41,7 +41,6 @@ uint32_t old_time;
 float fangle;
 
 int usetup (void) {
-	set_auto_halt(0);
 	return 0;
 }
 

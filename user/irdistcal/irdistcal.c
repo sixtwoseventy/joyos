@@ -36,7 +36,6 @@ uint8_t irdist_fit(uint16_t *xd, uint16_t *yd,
 }
 
 int usetup() {
-	set_auto_halt(0);
   	return 0;
 }
        

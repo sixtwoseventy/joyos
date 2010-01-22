@@ -119,7 +119,6 @@ void test_digital() {
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	set_auto_halt(0);
 	return 0;
 }
 
