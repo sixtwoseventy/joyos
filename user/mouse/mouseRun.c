@@ -8,7 +8,7 @@
 
 #define DRIVE_KP 2.0
 #define DRIVE_KD 0.0
-#define DRIVE_KI 0.1
+#define DRIVE_KI 0.0
 
 #define RIGHT_MOTOR 0
 #define LEFT_MOTOR 1
@@ -16,12 +16,13 @@
 
 #define TURN_THRESH 5
 #define TURN_VEL 60
+#define CUTOFF_ANGLE 30
 
 #define CLAMP(X) X>0?(X>MAX_VEL?MAX_VEL:X):0
 #define REV_CLAMP(X) X<0?(X<-MAX_VEL?-MAX_VEL:X):0
 #define RF_TO_DEGREES(X) (float)(X*180.0/2048.0)
 #define RAD_TO_DEGREES(X) (float)(X*180.0/M_PI)
-#define CORRECT_ANGLE(X) (X+180)%360-180
+#define CORRECT_ANGLE(X) (X>0?(X+180)%360-180:(X+540)%360-180)
 #define RF_TO_INCHES(X) X*96.0/4096.0
 
 typedef enum {
@@ -29,7 +30,8 @@ typedef enum {
 	DRIVING,
 	INIT,
 	ACTIVATED,
-	HALT
+	HALT,
+	NAVIGATE
 } state_enum;
 
 state_enum state = INIT;
@@ -50,13 +52,55 @@ uint32_t state_time = 0;
 
 uint32_t last_update_time = 0;
 
-void updateSelfPosition(bool update_gyro);
+bool isForward = true;
 
-void applyMotorDifferential(float vel) {
-	int intVel = (int)vel;
-	//printf("\nR:%i, L:%i, %i",(-targetVel + intVel), (-targetVel-intVel), (int16_t)REV_CLAMP(-targetVel + intVel));
-	motor_set_vel(RIGHT_MOTOR,(int16_t)REV_CLAMP(-targetVel - intVel));
-	motor_set_vel(LEFT_MOTOR,(int16_t)REV_CLAMP(-targetVel + intVel));
+void updateSelfPosition(bool update_gyro);
+void determineTargetPosition();
+void updateAngleToTarget();
+
+float getError() {
+	int e = CORRECT_ANGLE((int)(gyro_get_degrees() - angle_to_target));
+	if (e < 90 && e > -90) {
+		isForward = true;
+		return (float)e;
+	} else {
+		isForward = false;
+		return (float)CORRECT_ANGLE(e+180);
+	}
+}
+
+void turnAndDrive(float MV)
+{
+	int angle = (int)getError();
+	//printf("\n%i",angle);
+	if (!isForward) {
+		printf("\n->%i",angle);
+		if (angle < -CUTOFF_ANGLE) {
+			printf("\nTURNRIGHT");
+			motor_set_vel(RIGHT_MOTOR,-TURN_VEL);
+			motor_set_vel(LEFT_MOTOR,TURN_VEL);
+		} else if (angle > CUTOFF_ANGLE) {
+			printf("\nTURNLEFT");
+			motor_set_vel(RIGHT_MOTOR,TURN_VEL);
+			motor_set_vel(LEFT_MOTOR,-TURN_VEL);
+		} else {
+			printf("\nSTRAIGHT, %.2f", MV);
+			motor_set_vel(RIGHT_MOTOR,CLAMP(targetVel-(int)MV));
+			motor_set_vel(LEFT_MOTOR,CLAMP(targetVel+(int)MV));	
+		}
+	} else {
+		printf("\nOTHER");
+		if (angle < -CUTOFF_ANGLE) {
+			motor_set_vel(RIGHT_MOTOR,-TURN_VEL);
+			motor_set_vel(LEFT_MOTOR,TURN_VEL);
+		} else if (angle > CUTOFF_ANGLE) {
+			motor_set_vel(RIGHT_MOTOR,TURN_VEL);
+			motor_set_vel(LEFT_MOTOR,-TURN_VEL);
+		} else {
+			motor_set_vel(RIGHT_MOTOR,REV_CLAMP(-targetVel-(int)MV));
+			motor_set_vel(LEFT_MOTOR,REV_CLAMP(-targetVel+(int)MV));	
+		}
+	} 
 }
 
 void resetPID(float target) {
@@ -64,9 +108,9 @@ void resetPID(float target) {
 			DRIVE_KP,
 			DRIVE_KI,
 			DRIVE_KD,
-			&gyro_get_degrees,
-			&applyMotorDifferential);
-	driver.goal = target;
+			&getError,
+			&turnAndDrive);
+	driver.goal = 0;
 	driver.enabled = 1;
 }
 
@@ -102,38 +146,13 @@ float getDistanceToTarget(int x1, int y1) {
 	return RF_TO_INCHES((float)sqrt(diffx*diffx+diffy*diffy));
 }
 
-//float getTurnAmount(int x1, int y1) {
-//	
-//}
 
-bool turnToTarget() {
+bool navigateToTarget() {
 //return true if need to be called next frame
-	float angle_difference = angle_to_target-gyro_get_degrees();
-	int int_diff = (int)angle_difference;
-	while (int_diff < 0) {
-		int_diff += 360;
-	}
-	//printf("\n%.2f, %.2f, %i", angle, angle_to_target, int_diff);
-	int_diff = CORRECT_ANGLE(int_diff);
-	if (int_diff > TURN_THRESH) {
-		motor_set_vel(RIGHT_MOTOR, -TURN_VEL);
-		motor_set_vel(LEFT_MOTOR, TURN_VEL);
-		return true;
-	} else if (int_diff < -TURN_THRESH) {
-		motor_set_vel(RIGHT_MOTOR, TURN_VEL);
-		motor_set_vel(LEFT_MOTOR, -TURN_VEL);
-		return true;
-	} else {
-		motor_set_vel(RIGHT_MOTOR, 0);
-		motor_set_vel(LEFT_MOTOR, 0);
-		return false;
-	}
-}
 
-bool driveToTarget() {
-//return true if need to be called next frame
 	if (get_time() - state_time > 3500) {
 		updateSelfPosition(true);
+		updateAngleToTarget();
 		state_time = get_time();
 	}
 	else if (get_time() - state_time > 3000) {
@@ -166,11 +185,15 @@ void updateSelfPosition(bool updateGyro) {
 	last_update_time = get_time();
 }
 
-void updateTargetPosition() {
+void updateAngleToTarget() {
+	angle_to_target = getTargetAngle(target_x,target_y);
+	//driver.goal = angle_to_target;
+}
+
+void determineTargetPosition() {
 //Currently, chase after mouse bot.
 	target_x = objects[2].x;
 	target_y = objects[2].y;
-	angle_to_target = getTargetAngle(target_x,target_y);
 }
 /*
 
@@ -193,23 +216,15 @@ void step() {
 		case ACTIVATED:
 			printf("\nActivated");
 			updateSelfPosition(true);
-			updateTargetPosition();
-			state = TURNING;
+			determineTargetPosition();
+			updateAngleToTarget();
+			state = NAVIGATE;
+			resetPID(angle_to_target);
+			state_time = get_time();
 			break;
-		case TURNING:
-			printf("\nTurning");
-			if (!turnToTarget()) {
-				state = DRIVING;
-				pause(500);
-				updateSelfPosition(true);
-				resetPID(angle_to_target);
-				state_time = get_time();
-			}
-			break;
-		case DRIVING:
-		
-			printf("\nDriving");
-			if (!driveToTarget()) {
+		case NAVIGATE:
+			printf("\nNavigating");
+			if (!navigateToTarget()) {
 				state = HALT;
 			}
 			break;
