@@ -37,6 +37,8 @@
 #include <at45db011.h>
 #include <util/crc16.h>
 
+extern FILE lcdout, uartio;
+
 // Boot failure message
 #define str_boot_fail "Init fail: %S\n"
 
@@ -75,7 +77,10 @@ void board_fail_P(PGM_P msg) {
 	printf(str_boot_fail, msg);
 	// print message
 #ifdef LCD_DEBUG
-	lcd_printf("%c%S%c%c", LCD_POS(16), msg, LCD_POS(31), (char)3);
+	lcd_set_pos(16);
+	lcd_printf(msg);
+	lcd_set_pos(31);
+	lcd_print_char('\3', NULL);
 #endif
 	// and stop
 	while (1);
@@ -104,7 +109,7 @@ void memory_init(void) {
 void board_init (void) {
 	io_init(); // Init GPIOs
 	uart_init(BAUD_RATE);
-	stderr = F_UART;
+	stderr = &uartio;
 	printf(str_boot_uart,BAUD_RATE);
 	printf(str_boot_start);
 	digital_init();
@@ -112,13 +117,12 @@ void board_init (void) {
 	spi_init();
 	motor_init();
 	servo_init();
-    rf_init();
 #ifdef LCD_DEBUG
-	lcd_init();
-	stdout = F_LCD;
+	lcd_init(); //consider wrapping this in an #ifdef LCD_DEBUG tag?
+	stdout = &lcdout;
 #else
-	stdout = F_UART;
-	stdin = F_UART;
+	stdout = &uartio;
+	stdin = &uartio;
 #endif
 	adc_init();
 	isr_init();
@@ -150,7 +154,8 @@ void board_init (void) {
 
 	// all ok
 #ifdef LCD_DEBUG
-    lcd_printf("%c%c", LCD_POS(31), (char)1);
+	lcd_set_pos(31);
+	lcd_print_char('\1', NULL);
 #else
 	printf("Board init complete.\n");
 #endif
