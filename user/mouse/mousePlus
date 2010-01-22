@@ -85,6 +85,9 @@ float NearbyScale = 1.0f;
 #define NEARBY_RAMP 1.2
 #define NEARBY_MIN .2
 
+#define velAlpha .2
+#define DEAD_ZONE 20
+
 float fangle;
 
 float getError();
@@ -105,7 +108,7 @@ int usetup (void) {
 }
 
 void SetTargetVelocity(float vel) {
-	TargetVelocity = vel;
+    TargetVelocity = velAlpha*vel+(1-velAlpha)*TargetVelocity;
 }
 
 
@@ -125,17 +128,19 @@ float BoundedVelocity(float ProposedVelocity)
 	}
 }
 
+float FixDeadZone(float vel){
+    if (vel < 0.) return vel - DEAD_ZONE;
+    else return vel + DEAD_ZONE;
+}
+
 void SetRightVelocity(float vel)
 {
-	motor_set_vel(RIGHT_MOTOR, (int16_t)vel);
-	//printf("\nR: %d",(int16_t)vel);
-}
+    motor_set_vel(RIGHT_MOTOR, (int16_t)FixDeadZone(vel)); }
 
 void SetLeftVelocity(float vel)
 {
-	motor_set_vel(LEFT_MOTOR, (int16_t)vel);
-	//printf("\nL: %d",(int16_t)vel);
-}
+    motor_set_vel(LEFT_MOTOR, (int16_t)FixDeadZone(vel)); }
+	
 
 void ForwardApplyMV(float MV)
 {
@@ -291,6 +296,14 @@ float getStrengthError() {
 void applyNearbyScale(float val) {
 	if (val > 1.0f) {
 		NearbyScale = 1.0f;
+	} else if (val < 0.0f) {
+		NearbyScale = 0.0f;
+	} else {
+		NearbyScale = val;
+	}
+	/*
+	if (val > 1.0f) {
+		NearbyScale = 1.0f;
 	} else if (val <= .25f) {
 		//NearbyScale = 0.0f;
 		float possibleVal = NearbyScale * .8;
@@ -298,7 +311,7 @@ void applyNearbyScale(float val) {
 		//NearbyScale *= .8;
 	} else {
 		NearbyScale = val;
-	}
+	}*/
 }
 
 void PIDInit() {
