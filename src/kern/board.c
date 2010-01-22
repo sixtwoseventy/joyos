@@ -86,7 +86,7 @@ void board_fail_P(PGM_P msg) {
 	while (1);
 }
 
-//#define EXTERNAL_RAM=1
+#define EXTERNAL_RAM
 
 void memory_init(void) {
 #ifndef EXTERNAL_RAM
