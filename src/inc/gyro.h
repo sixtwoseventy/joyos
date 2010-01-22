@@ -27,6 +27,11 @@
 #define __INCLUDE_GYRO_H__
 
 /**
+ * \file gyro.h
+ * \brief Functions to retrieve heading information from the ADI gyroscope.
+ */ 
+
+/**
  * Initialize and calibrate the gyro located at `port'.
  *
  * @param port				Analog port number of the gyroscope.
