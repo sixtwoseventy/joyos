@@ -16,6 +16,9 @@ typedef struct {
 	int regionMax, xmax, ymax, thresh;
 } sighting;
 
+#define ROBOT_PIXEL_THRESH 30
+#define ROBOT_THRESH 100
+
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,
 			int *xout, int *yout, int *regionMaxOut);
 void erase(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int width, int height, int x, int y, int dx, int dy);

@@ -39,7 +39,7 @@ void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, 
 		for (int x=(-2+xmax); x<(2+xmax); x++){
 			if ((y >= ROI_TOP) && (y < height-ROI_BOTTOM) && (x >= ROI_LEFT) && (x < width-ROI_RIGHT)){
 				unsigned char value = data[bytesPerPixel * x + bytesPerRow * y];
-				regionMax += value > 40 ? value : 0;
+				regionMax += value > ROBOT_PIXEL_THRESH ? value : 0;
 			}
 		}
 	}
@@ -142,13 +142,14 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 		// p is the probability that a randomly chosen pixel has a value >= i
 		float p = 1 - (((float)hc[i]) / ht);
 		// p should be about 375/ht
-		if (p < (375.f / ht) * 1.5) {
+//		if (p < (375.f / ht) * 1.5) {
+		if (p < (750.f / ht) * 1.5) {
 			threshold = i;
 			break;
 		}
 	}
 	// Now look for pixels more than twice as bright as the threshold
-	*light = (ht - hc[150]) > 0;
+	*light = (ht - hc[100]) > 0;
 	//	printf("Threshold %d\n", threshold);
 	//	threshold = data[x*bytesPerPixel + y*bytesPerRow]*2/4;
 	//	printf("At chosen threshold, p is %.2f rather than %.2f\n", 1 - (((float)h[threshold-1]) / ht), 375.f / ht);

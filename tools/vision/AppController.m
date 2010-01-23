@@ -27,14 +27,24 @@
 	}
 	
 	serialPort = open_serial(@"/dev/tty.usbserial-A800cBag");
-	
+	killTickThread = NO;
+	tickThread = nil;
+	[self reset:nil];
 	[self performSelectorInBackground:@selector(tickThread:) withObject:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gotDataNotification:) name:NSFileHandleReadCompletionNotification object:nil];
-	
-	[self reset:nil];
+}	
+
+- (void)endTickThread {
 }
 
 - (IBAction)reset:(id)sender {
+	if (tickThread) {
+		killTickThread = YES;
+//		[self performSelector:@selector(endTickThread:) onThread:tickThread withObject:nil waitUntilDone:YES];
+		usleep(100000);
+//		[tickThread join];
+	}
+	
 	sync_serial(serialPort);
 	
 	position.type = POSITION;
@@ -50,10 +60,10 @@
 		lights.payload.lights[i].value = 0;
 	
 	// for now, store one contestant position and two mouse-bot positions
-	lights.payload.lights[0].id = position.payload.coords[0].id = [textField integerValue];
-	lights.payload.lights[1].id = position.payload.coords[1].id = 128;
-	lights.payload.lights[2].id = position.payload.coords[2].id = 129;
-	lights.payload.lights[3].id = position.payload.coords[3].id = 130;
+	lights.payload.lights[0].id = position.payload.coords[0].id = [teamA integerValue];
+	lights.payload.lights[1].id = position.payload.coords[1].id = [teamB integerValue];
+	lights.payload.lights[2].id = position.payload.coords[2].id = 128;
+	lights.payload.lights[3].id = position.payload.coords[3].id = 129;
 	
 	score = 0;
 	timestamp = [[NSDate date] timeIntervalSince1970];
@@ -65,7 +75,17 @@
 	
 	currentRobot = 0;
 	lights.payload.lights[currentRobot].value = 255;
-	send_packet(serialPort,&lights,sizeof(packet));
+	send_packet(serialPort,&lights,sizeof(packet_buffer));
+	
+	// start robots
+	start.type = START;
+	for (int i=0; i<N_ROBOTS; i++){
+		start.payload.array[i] = position.payload.coords[i].id;
+	}
+	
+	send_packet(serialPort,&start,sizeof(packet_buffer));
+	killTickThread = NO;
+	[self performSelectorInBackground:@selector(tickThread:) withObject:nil];
 }
 
 - (void) dealloc {
@@ -107,12 +127,13 @@ float angleDiff(float a, float b) {
 }
 
 - (void)tickThread:(id)arg {
+	tickThread = [NSThread currentThread];
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	[NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
 	
-    for(;;) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+    while (!killTickThread) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
 	
     [pool release];
@@ -154,9 +175,9 @@ void visualize(NSBitmapImageRep *bitmap, unsigned char *data,
 void reorder(sighting robot[], sighting oldrobot[], float diagLengthSquared) {
 	// make an effort to figure out which is which
 	// assignments is a map of new robots -> old robots
-	int assignments[N_ROBOTS];
-	float distance[N_ROBOTS][N_ROBOTS];
-	for (int i=0; i<N_ROBOTS; i++) {
+	int assignments[N_ROBOTS+N_MARGIN];
+	float distance[N_ROBOTS+N_MARGIN][N_ROBOTS];
+	for (int i=0; i<N_ROBOTS+N_MARGIN; i++) {
 		for (int j=0; j<N_ROBOTS; j++) {
 			float dx = robot[i].x - oldrobot[j].x;
 			float dy = robot[i].y - oldrobot[j].y;
@@ -166,17 +187,18 @@ void reorder(sighting robot[], sighting oldrobot[], float diagLengthSquared) {
 			if (isnan(dtheta_squared))
 				dtheta_squared = diagLengthSquared;
 			
-			float oldUnConfSquared = oldrobot[i].regionMax < 250 ? diagLengthSquared : 0;
-			float newUnConfSquared = robot[i].regionMax < 250 ? diagLengthSquared : 0;
+			float oldUnConfSquared = oldrobot[i].regionMax < ROBOT_THRESH ? diagLengthSquared : 0;
+			float newUnConfSquared = robot[i].regionMax < ROBOT_THRESH ? diagLengthSquared : 0;
 			
 			distance[i][j] = dx*dx+dy*dy+dtheta_squared*R*R/4.f+oldUnConfSquared+newUnConfSquared;
 			assert(!isnan(distance[i][j]));
 		}
+		assignments[i] = -1;
 	}
 	for (int k=0; k<N_ROBOTS; k++) {
 		float minDistance = INFINITY;
 		int imin, jmin;
-		for (int i=0; i<N_ROBOTS; i++) {
+		for (int i=0; i<N_ROBOTS+N_MARGIN; i++) {
 			for (int j=0; j<N_ROBOTS; j++) {
 				if (distance[i][j] < minDistance) {
 					imin = i;
@@ -186,14 +208,20 @@ void reorder(sighting robot[], sighting oldrobot[], float diagLengthSquared) {
 			}
 		}
 		assignments[imin] = jmin;
-		for (int i=0; i<N_ROBOTS; i++)
+		for (int i=0; i<N_ROBOTS+N_MARGIN; i++)
 			distance[i][jmin] = INFINITY;
 		for (int j=0; j<N_ROBOTS; j++)
 			distance[imin][j] = INFINITY;
 	}
 	// reassign points according to assignments
 	for (int i=0; i<N_ROBOTS; i++) {
-		int j = assignments[i];
+		int j;
+		for (j=i; j<N_ROBOTS+N_MARGIN; j++) {
+			if (assignments[j] == i)
+				break;
+		}
+		if (j == N_ROBOTS+N_MARGIN)
+			printf("This should never print.  No, really.\n"); // how did this happen?
 		if (i != j) {
 			SWAP(robot[i], robot[j]);
 			SWAP(assignments[i], assignments[j]);
@@ -244,7 +272,7 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, p
 		
 		*lastTime = now;
 	}
-	send_packet(serialPort,lights,sizeof(packet));
+	send_packet(serialPort,lights,sizeof(packet_buffer));
 }
 
 void report(sighting robot[], packet_buffer *position, NSFileHandle *serialPort) {
@@ -256,7 +284,7 @@ void report(sighting robot[], packet_buffer *position, NSFileHandle *serialPort)
 		position->payload.coords[i].id = robot[i].id;
 	}
 	
-	send_packet(serialPort,position,sizeof(packet));
+	send_packet(serialPort,position,sizeof(packet_buffer));
 }
 
 - (void)tick:(id)arg {	
@@ -270,9 +298,9 @@ void report(sighting robot[], packet_buffer *position, NSFileHandle *serialPort)
 
 	float diagLengthSquared = ((float)imgSize.width)*((float)imgSize.width)+((float)imgSize.height)*((float)imgSize.height);
 	
-	sighting robot[N_ROBOTS];
+	sighting robot[N_ROBOTS+N_MARGIN];
 	
-	for (int i=0; i<N_ROBOTS; i++)
+	for (int i=0; i<N_ROBOTS+N_MARGIN; i++)
 		findRobot(data, bytesPerRow, bytesPerPixel, imgSize.width, imgSize.height, &robot[i]);
 
 	reorder(robot, oldrobot, diagLengthSquared);
@@ -296,12 +324,14 @@ void report(sighting robot[], packet_buffer *position, NSFileHandle *serialPort)
 		float X, Y;
 		X = (robot[i].x/imgSize.width)*2.f - 1.f;
 		Y = -((robot[i].y/imgSize.height)*2.f - 1.f) * imgSize.height/imgSize.width;
-
-		[robots addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						   [NSNumber numberWithFloat:X], @"X",
-						   [NSNumber numberWithFloat:Y], @"Y",
-						   [NSNumber numberWithFloat:robot[i].theta*180.f/M_PI], @"Theta",
-						   [NSString stringWithFormat:@"Robot %d%@", robot[i].id, robot[i].light?@"+":@""], @"Label", nil]];
+		if(robot[i].regionMax >= ROBOT_THRESH) {
+			[robots addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							   [NSNumber numberWithFloat:X], @"X",
+							   [NSNumber numberWithFloat:Y], @"Y",
+							   [NSNumber numberWithFloat:robot[i].theta*180.f/M_PI], @"Theta",
+							   [NSString stringWithFormat:@"Robot %d%@", robot[i].id, robot[i].light?@"+":@""], @"Label", nil]];
+			
+		}
 	}
 
 	[qcView setValue:[NSDictionary dictionaryWithObjectsAndKeys:

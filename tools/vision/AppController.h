@@ -12,7 +12,8 @@
 #import "packet.h"
 #import "vision.h"
 
-#define N_ROBOTS 3
+#define N_ROBOTS 4
+#define N_MARGIN 2
 
 @interface AppController : NSObject 
 {
@@ -20,14 +21,16 @@
 	double timestamp;
     IBOutlet QCView* qcView;
     IBOutlet NSImageView* imageView;
-    IBOutlet NSTextField* textField;
+    IBOutlet NSTextField* teamA, *teamB;
 	NSFileHandle* serialPort;
-	packet_buffer position, lights;
+	packet_buffer position, lights, start, stop;
 	
 	// variables related to lighting experiments
 	int currentRobot;
 	NSTimeInterval lastTime;
-	sighting oldrobot[N_ROBOTS];	
+	sighting oldrobot[N_ROBOTS];
+	volatile bool killTickThread;
+	volatile NSThread *tickThread;
 }
 
 - (IBAction)reset:(id)sender;
