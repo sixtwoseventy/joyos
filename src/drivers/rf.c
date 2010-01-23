@@ -248,6 +248,19 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
 
     switch (type) {
         case POSITION:
+            if (robot_id != 0xFF && rx->payload.coords[0].id != robot_id) {
+                uint8_t i;
+                for (i=1; i<4; i++) {
+                    if (rx->payload.coords[i].id == robot_id)
+                        break;
+                }
+                if (i != 4) {
+                    board_coord t;
+                    t = rx->payload.coords[0];
+                    rx->payload.coords[0] = rx->payload.coords[i];
+                    rx->payload.coords[i] = t;
+                }
+            }
             memcpy((char *)objects, rx->payload.coords, sizeof(objects));
             position_microtime = get_time_us();
             break;
