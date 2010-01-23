@@ -33,9 +33,7 @@ int rf_vprintf_P(const char *fmt, va_list ap);
 int rf_printf_P(const char *fmt, ...);
 
 
-/**
- * Prototypes for rf_scanf()
- */
+// Prototypes for rf_scanf()
 int rf_get(FILE * foo);
 char rf_recv();
 int rf_vscanf(const char *fmt, va_list ap);

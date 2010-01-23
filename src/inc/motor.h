@@ -65,7 +65,7 @@ void motor_set_vel(uint8_t motor, int16_t vel);
 
 /**
  * Set a motor to brake (stops the motor as quickly as possible).
- * Calling motorSetVel() again will disable the brake state.
+ * Calling motor_set_vel() again will disable the brake state.
  *
  * @param motor	Motor port to brake.
  */

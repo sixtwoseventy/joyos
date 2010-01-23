@@ -31,7 +31,10 @@
  * \file analog.h
  * \brief Analog Inputs
  *
- * The Happyboard has 16 analog inputs. These inputs are fed into a 10
+ * The Happyboard has 16 analog inputs. They are used for sensors such as gyroscopes,
+ * distance sensors, IR phototransistor/LED pairs, and third-party sensors.
+ * In JoyOS, the distance sensors and gyros have their own library code; do not use
+ * analog_read() with these sensors. These inputs are fed into a 10
  * Bit ADC. The ADC communicates with the main processor via SPI, and 
  * can do so at 500kHz (20k samples per second.) In reality the 
  * actual maximum sample rate is slightly lower due to overheads in the OS code.

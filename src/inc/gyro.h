@@ -29,14 +29,23 @@
 /**
  * \file gyro.h
  * \brief Functions to retrieve heading information from the ADI gyroscope.
+ * 
+ * The gyro is plugged into 4 of the analog ports on the Happyboard.
+ * It should not be used with analog_read(); instead use the provided gyro
+ * functions. Please see gyrotest for an example of correct gyro usage.
+ * You will need to wait pause half a second before calling gyro_init (which
+ * should be called in usetup). 
  */ 
 
 /**
  * Initialize and calibrate the gyro located at `port'.
  *
- * @param port				Analog port number of the gyroscope.
- * @param lsb_us_per_deg	Constant for converting readings into degrees
+ * @param port				Analog port number of the gyroscope. This refers
+ *                                      to the leftmost port of the 4 analog ports used.
+ * @param lsb_us_per_deg	Constant for converting readings into degrees. Typical
+ *                              value for gyro module Rev. B is 1400000. 
  * @param time_ms			Time (in milliseconds) for calibrating gyro.
+ * 
  */
 void gyro_init (uint8_t port, float lsb_us_per_deg, uint32_t time_ms);
 
@@ -46,7 +55,20 @@ void gyro_init (uint8_t port, float lsb_us_per_deg, uint32_t time_ms);
  */
 int gyro_update (void);
 
+/**
+ * Returns the current heading of an initialized gyroscope. This will not wrap;
+ * in other words, if you turn counterclockwise twice, you will get a reading
+ * of 720 degrees.
+ */
 float gyro_get_degrees (void);
+
+/**
+ * Sets the gyro to a specified degree. This is useful when used in conjuction
+ * with PID controlled loops that turn specified number of degrees--you can
+ * reset the gyro reading between distinct turning phases of nagivation.
+ * 
+ * @param deg                          The degree value that you wish to set the gyro to read.
+ */
 void gyro_set_degrees (float deg);
 
 #endif // __INCLUDE_GYRO_H__

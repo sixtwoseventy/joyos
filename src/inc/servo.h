@@ -48,7 +48,7 @@
 void servo_init(void);
 
 /**
- * Set a servo position.
+ * Set a servo's position.
  *
  * @param servo	Servo to set.
  * @param pos	New servo value (0..511)

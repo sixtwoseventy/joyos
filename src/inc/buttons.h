@@ -38,7 +38,8 @@
  * \brief User Input/Output - buttons, frob, beeper and battery.
  *
  * This file contains various functions needed for the pushbuttons, frobknob, 
- * and beeper. It also allows the user to read the battery voltage.
+ * and beeper (found in previous revisions of the happyboard). 
+ * It also allows the user to read the battery voltage.
  */ 
 
 /**

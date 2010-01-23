@@ -31,9 +31,19 @@
 /**
  * \file delay.h
  * \brief Simple busy-loop delays
+ * 
+ * Some busy-loop delay functions. Because of the way threading works,
+ * pause() is preferable to using these functions.
  */ 
 
+/**
+ * Wait for a certain number of milliseconds. Please use the pause() function instead.
+ */
 void delay_busy_ms(uint32_t ms);
+
+/**
+ * Wait for a certain number of microseconds. Please consider using pause() instead.
+ */
 void delay_busy_us(uint32_t us);
 
 /// Wait in milliseconds

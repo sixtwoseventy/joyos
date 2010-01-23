@@ -29,6 +29,9 @@
 /**
  * \file fpga.h
  * \brief Low-level FPGA interface
+ *
+ * These functions are used to communicate with the fgpa, for programming, etc.
+ * None of these should ever have to be called by the user.
  */ 
 
 // FPGA Base Address
@@ -60,15 +63,15 @@
 #define FPGA_VERSION_MAJ	0xFE
 #define FPGA_VERSION_MIN	0xFF
 
-/// FPGA Write Byte - write a byte to an FPGA register
+/// FPGA Write Byte - write a byte to an FPGA register. Not called by the user.
 #define fpga_write_byte(addr, v) ((volatile uint8_t*) FPGA_BASE)[(addr)] = (v)
-/// FPGA Read Byte - read a byte from an FPGA register
+/// FPGA Read Byte - read a byte from an FPGA register. Not called by the user.
 #define fpga_read_byte(addr) ((volatile uint8_t*) FPGA_BASE)[(addr)]
-/// Get the FPGA Major Version
+/// Get the FPGA Major Version. Not called by the user.
 #define fpga_get_version_major() fpga_read_byte(FPGA_VERSION_MAJ)
-/// Get the FPGA Minor Version
+/// Get the FPGA Minor Version. Not called by the user.
 #define fpga_get_version_minor() fpga_read_byte(FPGA_VERSION_MIN)
-/// Initialise FPGA
+/// Initialise FPGA. Not called by the user.
 uint8_t fpga_init(uint16_t start, uint16_t len);
 
 #endif
