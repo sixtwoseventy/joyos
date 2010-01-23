@@ -1,27 +1,4 @@
-/*
- * The MIT License
- *
- * Copyright (c) 2007 MIT 6.270 Robotics Competition
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- */
+#include "runaway.h"
 
 #include <joyos.h>
 #include <math.h>
@@ -31,16 +8,21 @@
 #define LEFT_MOTOR 1
 
 #define GYRO_PORT 		11
-#define LSB_US_PER_DEG	1400000
+#define LSB_US_PER_DEG	-1400000*365.0/360.0
 
 #define MaxVelocity 150
 #define TARGET_VELOCITY 80
 #define TURNING_SCALE .8
 
 #define ACTIVATE_THRESH 600
-#define DEACTIVATE_THRESH 375
+#define DEACTIVATE_THRESH 400
 #define DEACTIVATE_SAMPLES 10
 #define START_RAMPDOWN 5
+
+#define RINGKP .02
+#define RINGKD 0
+#define RINGKI 0
+#define PEAK_STRENGTH 2000
 
 //PID
 
@@ -51,6 +33,7 @@
 #define KI 0
 
 #define TURN_THRESH 60*KP
+#define CUTOFF_ANGLE 45
 
 uint8_t Compass = 0x42;
 uint8_t ReadCommand[] = {'A'};
@@ -71,6 +54,7 @@ uint16_t PIDDelay;
 struct pid_controller ForwardPID;
 uint8_t isActivated;
 uint8_t isForward;
+struct pid_controller RingPID;
 
 float NearbyScale = 1.0f;
 //.7
@@ -78,28 +62,30 @@ float NearbyScale = 1.0f;
 #define NEARBY_RAMP 1.2
 #define NEARBY_MIN .2
 
+#define velAlpha .8
+#define DEAD_ZONE 5
+
 float fangle;
 
+float getError();
+
 int usetup (void) {
-/*
+
+	extern volatile uint8_t robot_id;
+	robot_id = 129;
+	extern volatile uint8_t light_port;
+	light_port = 2;
 	printf("\nPlace robot,    press go.");
 	go_click ();
 	printf ("\nStabilizing...");
 	pause (500);
 	printf ("\nCalibrating     offset...\n");
-	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);*/
-
-    extern uint8_t light_port;
-    light_port = 3;
-
-    extern uint8_t robot_id;
-    robot_id = 129;
-
+	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);
 	return 0;
 }
 
 void SetTargetVelocity(float vel) {
-	TargetVelocity = vel;
+    TargetVelocity = velAlpha*vel+(1-velAlpha)*TargetVelocity;
 }
 
 
@@ -119,41 +105,44 @@ float BoundedVelocity(float ProposedVelocity)
 	}
 }
 
+float FixDeadZone(float vel){
+    if (vel < 0.) return vel - DEAD_ZONE;
+    else return vel + DEAD_ZONE;
+}
+
 void SetRightVelocity(float vel)
 {
-	motor_set_vel(RIGHT_MOTOR, (int16_t)vel);
-	//printf("\nR: %d",(int16_t)vel);
-}
+    motor_set_vel(RIGHT_MOTOR, (int16_t)FixDeadZone(vel)); }
 
 void SetLeftVelocity(float vel)
 {
-	motor_set_vel(LEFT_MOTOR, (int16_t)vel);
-	//printf("\nL: %d",(int16_t)vel);
-}
+    motor_set_vel(LEFT_MOTOR, (int16_t)FixDeadZone(vel)); }
+	
 
 void ForwardApplyMV(float MV)
 {
+	float angle = getError();
 	if (isForward) {
-		if (MV > TURN_THRESH) {
+		if (angle < -CUTOFF_ANGLE) {
 			SetRightVelocity(TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
-		} else if (MV < -TURN_THRESH) {
+		} else if (angle > CUTOFF_ANGLE) {
 			SetRightVelocity(-TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(TURNING_SCALE*TargetVelocity);
 		} else {
-			SetRightVelocity(BoundedVelocity(TargetVelocity+MV/2));
-			SetLeftVelocity(BoundedVelocity(TargetVelocity-MV/2));	
+			SetRightVelocity(BoundedVelocity(TargetVelocity+NearbyScale*MV/2));
+			SetLeftVelocity(BoundedVelocity(TargetVelocity-NearbyScale*MV/2));	
 		}
 	} else {
-		if (MV > TURN_THRESH) {
+		if (angle < -CUTOFF_ANGLE) {
 			SetRightVelocity(TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(-TURNING_SCALE*TargetVelocity);
-		} else if (MV < -TURN_THRESH) {
+		} else if (angle > CUTOFF_ANGLE) {
 			SetRightVelocity(-TURNING_SCALE*TargetVelocity);
 			SetLeftVelocity(TURNING_SCALE*TargetVelocity);
 		} else {
-			SetRightVelocity(BoundedVelocity(-TargetVelocity+MV/2));
-			SetLeftVelocity(BoundedVelocity(-TargetVelocity-MV/2));	
+			SetRightVelocity(BoundedVelocity(-TargetVelocity+NearbyScale*MV/2));
+			SetLeftVelocity(BoundedVelocity(-TargetVelocity-NearbyScale*MV/2));	
 		}
 	} 
 }
@@ -272,6 +261,36 @@ float getError() {
 	}
 }
 
+float getStrengthError() {
+	float error = PEAK_STRENGTH - FieldStrength;
+	if (error < 0) {
+		return 0;
+	} else {
+		return -error;
+	}
+}
+
+void applyNearbyScale(float val) {
+	if (val > 1.0f) {
+		NearbyScale = 1.0f;
+	} else if (val < NEARBY_MIN) {
+		NearbyScale = 0.0f;
+	} else {
+		NearbyScale = val;
+	}
+	/*
+	if (val > 1.0f) {
+		NearbyScale = 1.0f;
+	} else if (val <= .25f) {
+		//NearbyScale = 0.0f;
+		float possibleVal = NearbyScale * .8;
+		NearbyScale = (val > possibleVal) ? val : possibleVal;
+		//NearbyScale *= .8;
+	} else {
+		NearbyScale = val;
+	}*/
+}
+
 void PIDInit() {
 	SetTargetVelocity(TARGET_VELOCITY);	
 
@@ -285,12 +304,22 @@ void PIDInit() {
 			&ForwardApplyMV);
 	ForwardPID.goal = 0.0;
 	ForwardPID.enabled = 1;
+
+	init_pid(	&RingPID,
+			RINGKP,
+			RINGKD,
+			RINGKI,
+			&getStrengthError,
+			&applyNearbyScale);
+	RingPID.goal = 0.0;
+	RingPID.enabled = 1;
 }
 
 void PIDUpdate() {
 	update_pid(&ForwardPID);
+	update_pid(&RingPID);
 	//ForwardPID.goal = target;
-	pause(PID_DELAY);
+	//pause(PID_DELAY);
 }
 
 void PIDReset() {
@@ -302,6 +331,15 @@ void PIDReset() {
 			&ForwardApplyMV);
 	ForwardPID.goal = 0.0;
 	ForwardPID.enabled = 1;
+	
+	init_pid(	&RingPID,
+			RINGKP,
+			RINGKD,
+			RINGKI,
+			&getStrengthError,
+			&applyNearbyScale);
+	RingPID.goal = 0.0;
+	RingPID.enabled = 1;
 }
 
 /**
@@ -310,36 +348,25 @@ void PIDReset() {
 int
 umain (void) {
 
-
+	initRun();
 	isActivated = false;
 	isForward = true;
 	MagnetInit();
 	PIDInit();
 	uint8_t num_low_readings = 0;
+	activateRun();
 
 	while(1){
 	
 		//Read Magnet data
 		ComputeMagnetTarget();
 		
-		uint8_t oldForward = isForward;
+		//uint8_t oldForward = isForward;
 		
 		if (fangle > 90 || fangle < -90) {
 			isForward = false;
 		} else {
 			isForward = true;
-		}
-		
-		//If we changed directions, chill out
-		if (oldForward != isForward) {
-			NearbyScale *= NEARBY_DAMP;
-		} else {
-			NearbyScale *= NEARBY_RAMP;
-		}
-		if (NearbyScale > 1.0f) {
-			NearbyScale = 1.0f;
-		} else if (NearbyScale < NEARBY_MIN) {
-			NearbyScale = NEARBY_MIN;
 		}
 		
 		//Determine if we should change from activated->deactivated or vice versa
@@ -348,13 +375,15 @@ umain (void) {
 				num_low_readings++;
 				//Need START_RAMPDOWN readings to begin motor rampdown
 				if (num_low_readings > START_RAMPDOWN) {
-					SetTargetVelocity(TARGET_VELOCITY*(1-(float)(num_low_readings-START_RAMPDOWN)/(float)(DEACTIVATE_SAMPLES-START_RAMPDOWN)));
+					SetTargetVelocity(TARGET_VELOCITY*(1.0-(float)(num_low_readings-START_RAMPDOWN)/(float)(DEACTIVATE_SAMPLES-START_RAMPDOWN)));
+					//SetTargetVelocity(TARGET_VELOCITY);
 				}
 				//If you have DEACTIVATE_SAMPLES low readings, deactivate
 				if (num_low_readings == DEACTIVATE_SAMPLES) {
 					isActivated = false;
 					num_low_readings = 0;
 					SetTargetVelocity(TARGET_VELOCITY);
+					CoastMotors();
 					printf("\nDEACTIVATED");
 				}
 			} else {
@@ -368,6 +397,7 @@ umain (void) {
 				isActivated = true;
 				SetTargetVelocity(TARGET_VELOCITY);
 				printf("\nACTIVATED");
+				activateRun();
 				PIDReset();
 			}
 		}
@@ -376,8 +406,7 @@ umain (void) {
 		
 		//Stop if not activated, otherwise update PID
 		if (!isActivated) {
-			CoastMotors();
-			//pause(100);
+			step();
 		} else {
 			PIDUpdate();
 		}

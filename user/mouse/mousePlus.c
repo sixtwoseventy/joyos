@@ -93,17 +93,19 @@ float fangle;
 float getError();
 
 int usetup (void) {
-/*
+	
 	printf("\nPlace robot,    press go.");
 	go_click ();
 	printf ("\nStabilizing...");
 	pause (500);
 	printf ("\nCalibrating     offset...\n");
-	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);*/
+	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);
+	
 	extern volatile uint8_t robot_id;
 	robot_id = 128;
 	extern volatile uint8_t light_port;
 	light_port = 4;
+	
 	return 0;
 }
 
@@ -377,6 +379,7 @@ umain (void) {
 	MagnetInit();
 	PIDInit();
 	uint8_t num_low_readings = 0;
+	activateRun();
 
 	while(1){
 	
@@ -390,30 +393,6 @@ umain (void) {
 		} else {
 			isForward = true;
 		}
-		/*
-		//If we changed directions, chill out
-		if (oldForward != isForward) {
-			NearbyScale *= NEARBY_DAMP;
-		} else {
-			NearbyScale *= NEARBY_RAMP;
-		}
-		if (NearbyScale > 1.0f) {
-			NearbyScale = 1.0f;
-		} else if (NearbyScale < NEARBY_MIN) {
-			NearbyScale = NEARBY_MIN;
-		}*/
-		/*
-		int STRENGTH_CUTOFF = 1800;
-		if (FieldStrength > STRENGTH_CUTOFF) {
-			NearbyScale = 0;
-		} else {
-			NearbyScale = .01*(STRENGTH_CUTOFF-FieldStrength);
-		}
-		if (NearbyScale > 1.0f) {
-			NearbyScale = 1.0f;
-		} else if (NearbyScale < 0) {
-			NearbyScale = 0;
-		}*/
 		
 		//Determine if we should change from activated->deactivated or vice versa
 		if (isActivated) {
