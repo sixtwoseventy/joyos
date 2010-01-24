@@ -1,4 +1,13 @@
+//CHANGE ROBOT_ID TO EITHER 128 OR 129
+//CHANGE IN THE MAKEFILE WHAT THE OTHER
+//SOURCE FILE IS TO DETERMINE BEHAVIOR
+//GO HOME: "runaway.c"
+//STATIONARY: "stationary.c"
+//PATROL: "patrol.c"
+
 #include "runaway.h"
+
+#define ROBOT_ID 129
 
 #include <joyos.h>
 #include <math.h>
@@ -72,7 +81,7 @@ float getError();
 int usetup (void) {
 
 	extern volatile uint8_t robot_id;
-	robot_id = 129;
+	robot_id = ROBOT_ID;
 	extern volatile uint8_t light_port;
 	light_port = 2;
 	printf("\nPlace robot,    press go.");

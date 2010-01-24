@@ -28,7 +28,8 @@ typedef enum {
 	HALT,
 	NAVIGATE,
 	ACTIVATE_PENDING,
-	DEFEND //Stay at your current position
+	DEFEND, //Stay at your current position
+	NEXT_WAYPOINT
 } state_enum;
 
 state_enum state = INIT;
@@ -54,6 +55,9 @@ bool isForward = true;
 void updateSelfPosition(bool update_gyro);
 void determineTargetPosition();
 void updateAngleToTarget();
+
+uint8_t current_position = 0;
+#define NUM_POSITIONS 2
 
 float runGetError() {
 	int e = CORRECT_ANGLE((int)(gyro_get_degrees() - angle_to_target));
@@ -168,8 +172,13 @@ void updateAngleToTarget() {
 
 void determineTargetPosition() {
 //Currently, chase after mouse bot.
-	target_x = 1024;//objects[2].x;
-	target_y = 0;//objects[2].y;
+	if (current_position == 0) {
+		target_x = 1024;//objects[2].x;
+		target_y = -1024;//objects[2].y;
+	} else {
+		target_x = 1024;
+		target_y = 1024;
+	}
 }
 /*
 
@@ -216,15 +225,15 @@ void step() {
 			break;
 		case NAVIGATE:
 			if (!navigateToTarget()) {
-				state = DEFEND;
+				state = NEXT_WAYPOINT;
 			}
 			break;
-		case DEFEND:
+		case NEXT_WAYPOINT:
+			current_position += 1;
+			current_position %= NUM_POSITIONS;
 			updateSelfPosition(false);
-			if (getDistanceToTarget(target_x,target_y) > 6.0) {
-				state = ACTIVATE_PENDING;
-				state_time = get_time();
-			}
+			state = ACTIVATE_PENDING;
+			state_time = get_time();
 			break;
 		default:
 			break;
