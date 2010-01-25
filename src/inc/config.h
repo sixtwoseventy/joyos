@@ -34,3 +34,5 @@
 #define BAUD_RATE				19200
 
 #endif
+
+#define CHECK_BATTERY

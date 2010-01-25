@@ -142,7 +142,7 @@ void board_init (void) {
 
 	// check battery, fail if <7.5V
 #ifdef CHECK_BATTERY
-	if (!(read_battery()>=7500))
+	if (!(read_battery()>=7200))
 		board_fail("Low battery");
 #endif
 	printf(str_boot_batt,read_battery());
