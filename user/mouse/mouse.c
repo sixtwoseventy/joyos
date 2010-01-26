@@ -7,7 +7,7 @@
 
 #include "runaway.h"
 
-#define ROBOT_ID 129
+#define ROBOT_ID 128
 
 #include <joyos.h>
 #include <math.h>
@@ -17,7 +17,7 @@
 #define LEFT_MOTOR 1
 
 #define GYRO_PORT 		11
-#define LSB_US_PER_DEG	-1400000*365.0/360.0
+#define LSB_US_PER_DEG	-1400000
 
 #define MaxVelocity 150
 #define TARGET_VELOCITY 80
@@ -61,7 +61,7 @@ float TargetVelocity = 0;
 float FieldStrength = 0;
 uint16_t PIDDelay;
 struct pid_controller ForwardPID;
-uint8_t isActivated;
+volatile uint8_t isActivated=0;
 uint8_t isForward;
 struct pid_controller RingPID;
 
@@ -97,6 +97,12 @@ void SetTargetVelocity(float vel) {
     TargetVelocity = velAlpha*vel+(1-velAlpha)*TargetVelocity;
 }
 
+int CaughtThread(){
+	while(1){
+		rf_status_update(isActivated);
+		pause(100);
+	}
+}
 
 float BoundedVelocity(float ProposedVelocity)
 {
@@ -364,6 +370,8 @@ umain (void) {
 	PIDInit();
 	uint8_t num_low_readings = 0;
 	activateRun();
+
+	create_thread(&CaughtThread, STACK_DEFAULT, 0, "Caught Thread");
 
 	while(1){
 	
