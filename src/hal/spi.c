@@ -44,6 +44,10 @@ spi_acquire() {
 	return SPI_READY;
 }
 
+int spi_try_acquire() {
+    return try_acquire(&spi_lock);
+}
+
 void 
 spi_release () {
 	release(&spi_lock);

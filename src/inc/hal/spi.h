@@ -65,5 +65,6 @@ void   spi_release ();
 void spi_set_master(spi_clk_div div, uint8_t flags);
 
 int8_t spi_transfer_sync (uint8_t * data, uint8_t len);
+int spi_try_acquire();
 
 #endif

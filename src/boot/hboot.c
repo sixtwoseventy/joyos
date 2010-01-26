@@ -21,6 +21,7 @@
 #define PAGE_SIZE		0x80U
 
 void acquire(struct lock *k) {}
+int try_acquire(struct lock *k) {return 1;}
 void release(struct lock *k) {}
 void init_lock(struct lock *k, const char *name) {}
 

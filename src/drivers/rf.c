@@ -9,6 +9,7 @@
 #include <kern/lock.h>
 #include <avr/interrupt.h>
 #include <rf.h>
+#include <hal/spi.h>
 #include <hal/io.h>
 #include <motor.h>
 #include <kern/thread.h>
