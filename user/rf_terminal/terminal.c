@@ -33,7 +33,6 @@ int usetup (void) {
 int
 umain (void) {	
 
-	rf_init();
     printf("\n\nTerminal Online\n");
     printf("Waiting for robot to transmit prompt...\n");
 

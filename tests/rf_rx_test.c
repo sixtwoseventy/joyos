@@ -38,8 +38,6 @@ char buf[32];
 
 int
 umain (void) {	
-
-	rf_init();
 	
 	//This loop prints out its position, which is set by RF
 	while(1){
