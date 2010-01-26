@@ -14,6 +14,7 @@
 #define GOAL 0x05 //Sets the target position of this robot
 #define LIGHT 0x06 //Instructs robots to turn their lights on or off
 #define REPLY_STRING 0x07 //String from board to bot
+#define STATUS 0x08 // Status packet from mouse
 
 typedef struct {
 	uint8_t id;
@@ -28,13 +29,19 @@ typedef struct{
     int16_t value;
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) light_command;
 
+typedef struct{
+    uint8_t id;
+    uint8_t caught;
+} __attribute__ ((aligned (1))) __attribute__ ((packed)) status_update;
+
 typedef struct {
 	uint8_t type;
 	uint8_t address;
 	union {
 		uint8_t array[PAYLOAD_SIZE];
 		board_coord coords[4];
-        light_command lights[4];
+        	light_command lights[4];
+		status_update status;
 	} payload;
 } __attribute__ ((packed)) packet_buffer;
 

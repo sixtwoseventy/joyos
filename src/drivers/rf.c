@@ -35,6 +35,24 @@ struct lock rf_lock;
 volatile uint8_t light_port = 0xFF;
 volatile uint8_t robot_id = 0xFF;
 
+volatile uint8_t caught[4];
+
+void rf_status_update(uint8_t caught){
+
+    extern volatile uint8_t robot_id;
+
+    ATOMIC_BEGIN;
+
+    tx.type = STATUS;
+    tx.address = 0xFF;
+    tx.payload.status.id = robot_id;
+    tx.payload.status.caught = caught;
+
+    rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet_buffer));
+
+    ATOMIC_END;
+}
+
 int rf_send(char ch){
     ATOMIC_BEGIN;
 
@@ -304,6 +322,14 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             }
             break;
 
+	case STATUS:
+ 	    for (uint8_t i=0; i<4; i++){
+ 	       if (rx->payload.status.id == objects[i].id){
+ 		  caught[i] = rx->payload.status.caught;
+                  break;
+	       }
+	    }
+            break;
         default:
             break;
     }
