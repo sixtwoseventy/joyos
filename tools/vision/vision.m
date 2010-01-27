@@ -84,7 +84,7 @@ void findcentroid(Window *win, unsigned char *data, unsigned char *mask, int byt
 		}
 	}
 	centroid[0] /= norm;
-	centroid[1] /= norm;
+	centroid[1] /= norm;		
 	*sum = norm;
 }
 
@@ -149,7 +149,7 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 		}
 	}
 	// Now look for pixels more than twice as bright as the threshold
-	*light = (ht - hc[100]) > 0;
+	*light = (ht - hc[75]) > 2;
 	//	printf("Threshold %d\n", threshold);
 	//	threshold = data[x*bytesPerPixel + y*bytesPerRow]*2/4;
 	//	printf("At chosen threshold, p is %.2f rather than %.2f\n", 1 - (((float)h[threshold-1]) / ht), 375.f / ht);

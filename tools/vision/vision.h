@@ -7,7 +7,7 @@
  *
  */
 
-#define R 80
+#define R 60
 
 typedef struct {
 	uint8_t id;
@@ -16,8 +16,8 @@ typedef struct {
 	int regionMax, xmax, ymax, thresh;
 } sighting;
 
-#define ROBOT_PIXEL_THRESH 30
-#define ROBOT_THRESH 100
+#define ROBOT_PIXEL_THRESH 23
+#define ROBOT_THRESH 80
 
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,
 			int *xout, int *yout, int *regionMaxOut);

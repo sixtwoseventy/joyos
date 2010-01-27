@@ -32,34 +32,50 @@
 	[self reset:nil];
 	[self performSelectorInBackground:@selector(tickThread:) withObject:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gotDataNotification:) name:NSFileHandleReadCompletionNotification object:nil];
-}	
 
-- (void)endTickThread {
+	NSMutableArray *cmds = [NSMutableArray arrayWithObjects:@"Reset board", @"Team A", @"Team B", nil];
+	for (int i=0; i<32; i++)
+		[cmds addObject:[NSString stringWithFormat:@"Number %d", i]];
+	recog = [[NSSpeechRecognizer alloc] init];
+	[recog setCommands:cmds];
+	[recog setDelegate:self];
+	[recog startListening];
+}
+
+- (void)speechRecognizer:(NSSpeechRecognizer *)sender didRecognizeCommand:(NSString *)aCmd {
+	NSLog(@"%@", aCmd);
+	static int teamAB = 0;
+	if ([aCmd isEqualToString:@"Team A"])
+		teamAB = 1;
+	else if ([aCmd isEqualToString:@"Team B"])
+		teamAB = 2;
+	else if (![aCmd isEqualToString:@"Reset board"] && teamAB != 0) {
+		int i;
+		sscanf([aCmd cStringUsingEncoding:NSASCIIStringEncoding], "Number %d", &i);
+		[teamAB==1 ? teamA : teamB setIntValue: i];
+	} else {
+		[self reset:nil];
+	}
+
 }
 
 - (IBAction)reset:(id)sender {
 	if (tickThread) {
 		killTickThread = YES;
-//		[self performSelector:@selector(endTickThread:) onThread:tickThread withObject:nil waitUntilDone:YES];
 		usleep(100000);
-//		[tickThread join];
 	}
 	
 	sync_serial(serialPort);
 	
 	position.type = POSITION;
 	position.address = 0xFF;
-	//	generate_goal(&position.payload.coords[1]);
-	//	fill_goal(&position.payload.coords[2], &position.payload.coords[1]);
-	//	fill_goal(&position.payload.coords[3], &position.payload.coords[2]);
-	
+
 	lights.type = LIGHT;
 	lights.address = 0xFF;
 	
 	for (int i=0; i<4; i++)
 		lights.payload.lights[i].value = 0;
 	
-	// for now, store one contestant position and two mouse-bot positions
 	lights.payload.lights[0].id = position.payload.coords[0].id = [teamA integerValue];
 	lights.payload.lights[1].id = position.payload.coords[1].id = [teamB integerValue];
 	lights.payload.lights[2].id = position.payload.coords[2].id = 128;
@@ -74,7 +90,7 @@
 	}
 	
 	currentRobot = 0;
-	lights.payload.lights[currentRobot].value = 255;
+	lights.payload.lights[currentRobot].value = 150;
 	send_packet(serialPort,&lights,sizeof(packet_buffer));
 	
 	// start robots
@@ -238,8 +254,8 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, p
 	// after each second, then increment currentRobot.
 	
 	NSTimeInterval now = [[NSDate date] timeIntervalSinceReferenceDate];
-	lights->payload.lights[*currentRobot].value = (now-*lastTime) < .2 ? 0 : 255;
-	if ((now-*lastTime) > 1){
+	lights->payload.lights[*currentRobot].value = (now-*lastTime) < 0.1 ? 0 : 180;
+	if ((now-*lastTime) > .8){
 		// evaluate results of the experiment
 		int litRobot=0, litRobots=0;
 		for (int i=0; i<N_ROBOTS; i++) {
@@ -264,6 +280,8 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, p
 				printf("Found robot index %d while looking for robot index %d -- swapping\n", litRobot, *currentRobot);
 				SWAP(robot[litRobot], robot[*currentRobot]);
 			}
+		} else{
+			printf("reject experiment\n");
 		}
 		
 		// start the next experiment

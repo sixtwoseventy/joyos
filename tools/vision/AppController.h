@@ -26,11 +26,12 @@
 	packet_buffer position, lights, start, stop;
 	
 	// variables related to lighting experiments
-	int currentRobot;
+	int currentRobot;	
 	NSTimeInterval lastTime;
 	sighting oldrobot[N_ROBOTS];
 	volatile bool killTickThread;
 	volatile NSThread *tickThread;
+	NSSpeechSynthesizer *recog;
 }
 
 - (IBAction)reset:(id)sender;

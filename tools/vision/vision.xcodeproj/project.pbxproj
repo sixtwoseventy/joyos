@@ -17,6 +17,7 @@
 		AE366A3710DB5D080002516E /* seedfill.m in Sources */ = {isa = PBXBuildFile; fileRef = AE366A3610DB5D080002516E /* seedfill.m */; };
 		CF6B91441102DDF200E61DB3 /* vision.m in Sources */ = {isa = PBXBuildFile; fileRef = CF6B91431102DDF200E61DB3 /* vision.m */; };
 		CF6B91471102DE0500E61DB3 /* serial.m in Sources */ = {isa = PBXBuildFile; fileRef = CF6B91461102DE0500E61DB3 /* serial.m */; };
+		CF720631110BCADF00BA3BBF /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 			files = (
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				8441128C0BA76E9200F37770 /* Quartz.framework in Frameworks */,
+				CF720631110BCADF00BA3BBF /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
