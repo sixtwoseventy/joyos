@@ -25,7 +25,7 @@
 #define BOT2 objects[2].id<128?2:3
 
 int corners_x[]= {	-1024,	-1024,	1024,	1024,	0,	0};
-int corners_y[] = {	0,		512,	0,		512,	0,	512};
+int corners_y[] = {	0,		700,	0,		700,	0,	700};
 #define NUM_WAYPOINTS 6
 
 typedef enum {
@@ -160,7 +160,7 @@ bool navigateToTarget() {
 		determineTargetPosition();
 		updateAngleToTarget();
 	}
-	if (getDistanceToTarget(target_x,target_y) < 6.0) {
+	if (getDistanceToTarget(target_x,target_y) < 4.0) {
 		motor_set_vel(RIGHT_MOTOR,0);
 		motor_set_vel(LEFT_MOTOR,0);
 		resetPID(0);
