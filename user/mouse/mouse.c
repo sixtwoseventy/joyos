@@ -7,7 +7,7 @@
 
 #include "runaway.h"
 
-#define ROBOT_ID 128
+#define ROBOT_ID 129
 
 #include <joyos.h>
 #include <math.h>
@@ -17,7 +17,7 @@
 #define LEFT_MOTOR 1
 
 #define GYRO_PORT 		11
-#define LSB_US_PER_DEG	-1400000
+#define LSB_US_PER_DEG	-1400000*365.0/360.0
 
 #define MaxVelocity 150
 #define TARGET_VELOCITY 80
@@ -102,6 +102,7 @@ int CaughtThread(){
 		rf_status_update(isActivated);
 		pause(100);
 	}
+	return 0;
 }
 
 float BoundedVelocity(float ProposedVelocity)

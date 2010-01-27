@@ -19,6 +19,13 @@
 #define RAD_TO_DEGREES(X) (float)(X*180.0/M_PI)
 #define CORRECT_ANGLE(X) (X>0?(X+180)%360-180:(X+540)%360-180)
 #define RF_TO_INCHES(X) X*96.0/4096.0
+#define MIN(X,Y) X<Y?X:Y
+
+#define BOT1 1
+#define BOT2 objects[2].id<128?2:3
+
+int corners_x[]= {-900,-900,900,900};
+int corners_y[] = {0,512,0,512};
 
 typedef enum {
 	TURNING,
@@ -44,7 +51,7 @@ float angle_to_target = 0;
 
 struct pid_controller driver;
 
-int targetVel = 40;
+int targetVel = 80;
 
 uint32_t state_time = 0;
 
@@ -126,26 +133,34 @@ float getDistanceToTarget(int x1, int y1) {
 	return RF_TO_INCHES((float)sqrt(diffx*diffx+diffy*diffy));
 }
 
+float getDistanceGeneral(int x1, int y1, int x2, int y2) {
+	float diffx = (float)(x1-x2);
+	float diffy = (float)(y1-y2);
+	return RF_TO_INCHES((float)sqrt(diffx*diffx+diffy*diffy));
+}
+
 
 bool navigateToTarget() {
 //return true if need to be called next frame
 
-	if (get_time() - state_time > 3500) {
+	if (get_time() - state_time > 1750) {
+		determineTargetPosition();
 		updateSelfPosition(true);
 		updateAngleToTarget();
 		state_time = get_time();
 	}
-	else if (get_time() - state_time > 3000) {
+	else if (get_time() - state_time > 1500) {
 		motor_set_vel(RIGHT_MOTOR,0);
 		motor_set_vel(LEFT_MOTOR,0);
 		return true;
 	}
-	if (get_time() - last_update_time > 500) {
+	if (get_time() - last_update_time > 100) {
 		updateSelfPosition(false);
 	}
 	if (getDistanceToTarget(target_x,target_y) < 6.0) {
 		motor_set_vel(RIGHT_MOTOR,0);
 		motor_set_vel(LEFT_MOTOR,0);
+		resetPID(0);
 		return false;
 	}
 	update_pid(&driver);
@@ -180,14 +195,32 @@ void determineTargetPosition() {
 		target_y = 1024;
 	}*/
 	//TOP MID
+	//target_x = (objects[BOT1].x + objects[BOT2].x)/2;
+	//target_y = (objects[BOT1].y + objects[BOT2].y)/2;
 	
+	float max_w = 0;
+	uint8_t best = 0;
+	
+	
+	float w;
+
+	for (uint8_t i = 0; i < 4; i++) {
+		w = MIN(getDistanceGeneral(objects[BOT1].x,objects[BOT1].y,corners_x[i],corners_y[i]),
+				getDistanceGeneral(objects[BOT2].x,objects[BOT2].y,corners_x[i],corners_y[i]));
+		if (w > max_w) { best = i; max_w = w; }
+	}
+	
+	target_x = corners_x[best];
+	target_y = corners_y[best];
+	//rf_printf("(%i, %i)\n", target_x, target_y);
+	/*
 	if (current_position == 0) {
 		target_x = 1024;//objects[2].x;
 		target_y = 0;//objects[2].y;
 	} else {
 		target_x = -1024;
 		target_y = 0;
-	}
+	}*/
 	
 	//TOP HIGH
 	/*
@@ -197,8 +230,7 @@ void determineTargetPosition() {
 	} else {
 		target_x = -1024;
 		target_y = 1024;
-	}
-	*/
+	}*/
 }
 /*
 
@@ -244,20 +276,12 @@ void step() {
 			state_time = get_time();
 			break;
 		case NAVIGATE:
-			if (!navigateToTarget()) {
-				state = NEXT_WAYPOINT;
-			}
-			break;
-		case NEXT_WAYPOINT:
-			current_position += 1;
-			current_position %= NUM_POSITIONS;
-			updateSelfPosition(false);
-			state = ACTIVATE_PENDING;
-			state_time = get_time();
+			navigateToTarget();
 			break;
 		default:
+			//rf_printf("Default\n");
 			break;
 	}
 	//update_pid(&driver);
-	pause(50);
+	//pause(50);
 }
