@@ -24,8 +24,9 @@
 #define BOT1 1
 #define BOT2 objects[2].id<128?2:3
 
-int corners_x[]= {-900,-900,900,900};
-int corners_y[] = {0,512,0,512};
+int corners_x[]= {	-1024,	-1024,	1024,	1024,	0,	0};
+int corners_y[] = {	0,		512,	0,		512,	0,	512};
+#define NUM_WAYPOINTS 6
 
 typedef enum {
 	TURNING,
@@ -51,7 +52,7 @@ float angle_to_target = 0;
 
 struct pid_controller driver;
 
-int targetVel = 80;
+int targetVel = 100;
 
 uint32_t state_time = 0;
 
@@ -143,19 +144,21 @@ float getDistanceGeneral(int x1, int y1, int x2, int y2) {
 bool navigateToTarget() {
 //return true if need to be called next frame
 
-	if (get_time() - state_time > 1750) {
+	if (get_time() - state_time > 2800) {
 		determineTargetPosition();
 		updateSelfPosition(true);
 		updateAngleToTarget();
 		state_time = get_time();
 	}
-	else if (get_time() - state_time > 1500) {
+	else if (get_time() - state_time > 2500) {
 		motor_set_vel(RIGHT_MOTOR,0);
 		motor_set_vel(LEFT_MOTOR,0);
 		return true;
 	}
 	if (get_time() - last_update_time > 100) {
 		updateSelfPosition(false);
+		determineTargetPosition();
+		updateAngleToTarget();
 	}
 	if (getDistanceToTarget(target_x,target_y) < 6.0) {
 		motor_set_vel(RIGHT_MOTOR,0);
@@ -204,7 +207,7 @@ void determineTargetPosition() {
 	
 	float w;
 
-	for (uint8_t i = 0; i < 4; i++) {
+	for (uint8_t i = 0; i < NUM_WAYPOINTS; i++) {
 		w = MIN(getDistanceGeneral(objects[BOT1].x,objects[BOT1].y,corners_x[i],corners_y[i]),
 				getDistanceGeneral(objects[BOT2].x,objects[BOT2].y,corners_x[i],corners_y[i]));
 		if (w > max_w) { best = i; max_w = w; }
