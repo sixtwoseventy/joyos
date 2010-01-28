@@ -11,10 +11,10 @@
 #import "seedfill.h"
 #import "AppController.h"
 
-#define ROI_LEFT 0
-#define ROI_RIGHT 53
+#define ROI_LEFT 72
+#define ROI_RIGHT 102
 #define ROI_TOP 0
-#define ROI_BOTTOM 0
+#define ROI_BOTTOM 27
 
 // given a bitmap, obtain a location hint
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,

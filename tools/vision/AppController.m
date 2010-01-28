@@ -446,13 +446,16 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, v
 }
 
 void report(sighting robot[], volatile packet_buffer *position, NSFileHandle *serialPort) {
+	printf("*************\n");
 	for (int i=0; i<N_ROBOTS; i++){
 		position->payload.coords[i].x = (int16_t)((robot[i].x-320)*(1<<12)/640.);
 		position->payload.coords[i].y = -(int16_t)((robot[i].y-240)*(1<<12)/640.);
 		position->payload.coords[i].theta = -(int)(robot[i].theta*(1<<12)/(M_PI*2));
 		position->payload.coords[i].confidence = MIN((1<<12)-1, (unsigned int)(75.*robot[i].sum));
 		position->payload.coords[i].id = robot[i].id;
+		printf("[x=%d,y=%d]\n",position->payload.coords[i].x,position->payload.coords[i].y);
 	}
+	printf("*************\n");
 	
 	packet_buffer tx = *position;
 	send_packet(serialPort,&tx,sizeof(packet_buffer));
@@ -523,8 +526,12 @@ void report(sighting robot[], volatile packet_buffer *position, NSFileHandle *se
 	
 	sighting robot[N_ROBOTS+N_MARGIN];
 	
-	for (int i=0; i<N_ROBOTS+N_MARGIN; i++)
+	//printf("********\n");
+	for (int i=0; i<N_ROBOTS+N_MARGIN; i++){
 		findRobot(data, bytesPerRow, bytesPerPixel, imgSize.width, imgSize.height, &robot[i]);
+		//printf("sum[%d]=%f\n",i,robot[i].sum);
+	}
+	//printf("********\n");
 
 	reorder(robot, oldrobot, diagLengthSquared);
 	

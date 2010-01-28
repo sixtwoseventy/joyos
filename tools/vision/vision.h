@@ -16,8 +16,8 @@ typedef struct {
 	int xmax, ymax, thresh;
 } sighting;
 
-#define ROBOT_PIXEL_THRESH 14
-#define ROBOT_THRESH 8.
+#define ROBOT_PIXEL_THRESH 7
+#define ROBOT_THRESH 4.
 
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,
 			int *xout, int *yout);
