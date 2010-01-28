@@ -181,12 +181,22 @@ void determineTargetPosition() {
 	}*/
 	//TOP MID
 	
-	if (current_position == 0) {
-		target_x = 1024;//objects[2].x;
-		target_y = 0;//objects[2].y;
+	if (objects[0].id == 128) {
+		if (current_position == 0) {
+			target_x = 1024;//objects[2].x;
+			target_y = 0;//objects[2].y;
+		} else {
+			target_x = -1024;
+			target_y = 0;
+		}
 	} else {
-		target_x = -1024;
-		target_y = 0;
+		if (current_position == 0) {
+			target_x = 1024;
+			target_y = 1024;
+		} else {
+			target_x = -1024;
+			target_y = 1024;
+		}
 	}
 	
 	//TOP HIGH

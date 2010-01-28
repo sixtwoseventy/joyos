@@ -7,7 +7,10 @@
 
 #include "runaway.h"
 
-#define ROBOT_ID 129
+//ID defined by frob
+//frob < 512, 128
+//from >= 512, 129
+//#define ROBOT_ID 128
 
 #include <joyos.h>
 #include <math.h>
@@ -81,7 +84,7 @@ float getError();
 int usetup (void) {
 
 	extern volatile uint8_t robot_id;
-	robot_id = ROBOT_ID;
+	robot_id = frob_read()<512?128:129;
 	extern volatile uint8_t light_port;
 	light_port = 2;
 	printf("\nPlace robot,    press go.");

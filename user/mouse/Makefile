@@ -4,10 +4,10 @@
 TARGET = robot
 
 # Source files - list all your .c files here (separated by spaces)
-SRC = mouse.c blue.c
+SRC = mouse.c stationary.c
 
 # USB-Serial port number for programming the happyboard
-PORT = com6
+PORT = com9
 
 # Top level JoyOS directory
 TOPDIR = ../../

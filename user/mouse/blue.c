@@ -25,7 +25,7 @@
 #define BOT2 objects[2].id<128?2:3
 
 int corners_x[]= {	-1024,	-1024,	1024,	1024,	0,	0};
-int corners_y[] = {	0,		700,	0,		700,	0,	700};
+int corners_y[] = {	0,		512,	0,		512,	0,	512};
 #define NUM_WAYPOINTS 6
 
 typedef enum {
