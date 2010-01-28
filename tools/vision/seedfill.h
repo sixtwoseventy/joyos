@@ -3,4 +3,4 @@ typedef struct {
     int x1, y1;			/* xmax and ymax (inclusive) */
 } Window;
 
-void fill(int x, int y, unsigned char threshold, Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel);
+void fill(int x, int y, unsigned char threshold, Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int *totalOut);

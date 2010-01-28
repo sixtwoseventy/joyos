@@ -39,10 +39,10 @@ if (sp<stack+MAX_DEPTH && Y+(DY)>=win->y0 && Y+(DY)<=win->y1) \
 // read red
 #define pixelread(x, y) (data[x*bytesPerPixel+y*bytesPerRow] >= threshold) && (mask[x*bytesPerPixel+y*bytesPerRow] == 0)
 // write alpha
-#define pixelwrite(x, y) mask[x*bytesPerPixel+y*bytesPerRow] = 255
+#define pixelwrite(x, y) {mask[x*bytesPerPixel+y*bytesPerRow] = 255;total++;}
 
-void fill(int x, int y, unsigned char threshold, Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel) {
-    int l, x1, x2, dy;
+void fill(int x, int y, unsigned char threshold, Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int *totalOut) {
+    int l, x1, x2, dy,total=0;
 	int xmin=win->x1, xmax=0, ymin=win->y1, ymax=0;
     Segment stack[MAX_DEPTH], *sp = stack;	/* stack of filled segments */
 	
@@ -87,4 +87,5 @@ void fill(int x, int y, unsigned char threshold, Window *win, unsigned char *dat
 	win->x1 = xmax;
 	win->y0 = ymin;
 	win->y1 = ymax;
+	*totalOut = total;
 }

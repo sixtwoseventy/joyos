@@ -18,7 +18,7 @@
 
 // given a bitmap, obtain a location hint
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,
-			int *xout, int *yout, int *regionMaxOut) {
+			int *xout, int *yout) {
 	int max = 0;
 	int xmax = 0;
 	int ymax = 0;
@@ -34,19 +34,9 @@ void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, 
 		}
 	}
 	
-	int regionMax=0;
-	for (int y=(-2+ymax); y<(2+ymax); y++){
-		for (int x=(-2+xmax); x<(2+xmax); x++){
-			if ((y >= ROI_TOP) && (y < height-ROI_BOTTOM) && (x >= ROI_LEFT) && (x < width-ROI_RIGHT)){
-				unsigned char value = data[bytesPerPixel * x + bytesPerRow * y];
-				regionMax += value > ROBOT_PIXEL_THRESH ? value : 0;
-			}
-		}
-	}
-	
 	*xout = xmax;
 	*yout = ymax;
-	*regionMaxOut = regionMax;
+
 }
 
 // given a bitmap, blank the masked area in a window
@@ -69,8 +59,9 @@ void erase(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 }
 
 void findcentroid(Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel,
-				  float centroid[2], float *sum) {
+				  float centroid[2], float *sum, float *maxOut) {
 	float norm = 0.f;
+	float max = 0.f;
 	centroid[0] = 0.f;
 	centroid[1] = 0.f;
 	for (int y=win->y0; y<=win->y1; y++) {
@@ -80,12 +71,14 @@ void findcentroid(Window *win, unsigned char *data, unsigned char *mask, int byt
 				centroid[0] += x*value;
 				centroid[1] += y*value;
 				norm += value;
+				max = max < value ? value : max;
 			}
 		}
 	}
 	centroid[0] /= norm;
 	centroid[1] /= norm;		
 	*sum = norm;
+	*maxOut = max;
 }
 
 float angle(Window *win, unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel,
@@ -118,14 +111,14 @@ void hist(Window *win, unsigned char *data, unsigned int *h, unsigned int *total
 // given a bitmap and a location hint, determine a better location estimate
 // and an angle estimate; furthermore, generate a mask
 void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int width, int height,
-		   int x, int y, float *xout, float *yout, float *thetaout, bool *light, int *thresh, float *momentout) {
+		   int x, int y, float *xout, float *yout, float *thetaout, bool *light, int *thresh, float *momentout, float *sumout) {
 	// clear the mask
 	blank(mask, bytesPerRow, bytesPerPixel, width, height, x-R, y-R, 2*R+1, 2*R+1);
 	// choose a work region
 	Window win = {MAX(x-R, 0), MAX(y-R, 0), MIN(x+R, width-1), MIN(y+R, height-1)};
 	// choose a threshold by entropy maximization
 	unsigned int h[256], hc[256], ht, running = 0;
-	float moment;
+	float moment, max;
 	int threshold = 0;
 	int i=0;
 	hist(&win, data, h, &ht, bytesPerRow, bytesPerPixel);
@@ -148,8 +141,7 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 			break;
 		}
 	}
-	// Now look for pixels more than twice as bright as the threshold
-	*light = (ht - hc[75]) > 2;
+
 	//	printf("Threshold %d\n", threshold);
 	//	threshold = data[x*bytesPerPixel + y*bytesPerRow]*2/4;
 	//	printf("At chosen threshold, p is %.2f rather than %.2f\n", 1 - (((float)h[threshold-1]) / ht), 375.f / ht);
@@ -157,13 +149,20 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 	//	fill(x, y, threshold2, &win, data, mask, bytesPerRow, bytesPerPixel);
 	// flood fill area above threshold to generate mask (keep bounds)
 	//data[x*bytesPerPixel + y*bytesPerRow] * 2 / 4
-	fill(x, y, threshold, &win, data, mask, bytesPerRow, bytesPerPixel);
+	threshold = ROBOT_PIXEL_THRESH;
+	int total=0;
+	fill(x, y, threshold, &win, data, mask, bytesPerRow, bytesPerPixel,&total);
 	// within bounds, for masked pixels,
 	//   find centroid
 	float centroid[2];
 	float sum;
-	findcentroid(&win, data, mask, bytesPerRow, bytesPerPixel, centroid, &sum);
+	findcentroid(&win, data, mask, bytesPerRow, bytesPerPixel, centroid, &sum, &max);
 	moment /= sum;
+	
+	// Now look for pixels that stand out against the background
+	if (total != 0) *light = max - (sum/((float)total)) > .25;
+	else *light = 0;
+		
 	////	 estimate angle from difference between centroid and center
 	//float angle1 = -atan2((win.x1+win.x0)*.5f - centroid[0], (win.y1+win.y0)*.5f - centroid[1]);
 	//	 recenter to centroid
@@ -179,16 +178,17 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 	*thetaout = angle1;
 	*thresh = threshold;
 	*momentout = moment;
+	*sumout = sum;
 }
 
 void findRobot(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height, sighting *robot) {
 	locate(data+1, bytesPerRow, bytesPerPixel, width, height,
-						 &robot->xmax, &robot->ymax, &robot->regionMax);
+						 &robot->xmax, &robot->ymax);
 	
 	align(data+1, data+0, bytesPerRow, bytesPerPixel,
 		  width, height,
 		  robot->xmax, robot->ymax,
-		  &robot->x, &robot->y, &robot->theta, &robot->light, &robot->thresh, &robot->sum);
+		  &robot->x, &robot->y, &robot->theta, &robot->light, &robot->thresh, &robot->moment, &robot->sum);
 	
 	erase(data+1, data+0, bytesPerRow, bytesPerPixel, width, height,
 		  robot->xmax-R, robot->ymax-R, 2*R+1, 2*R+1);
