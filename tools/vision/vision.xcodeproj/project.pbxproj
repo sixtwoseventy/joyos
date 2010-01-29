@@ -17,6 +17,9 @@
 		AE366A3710DB5D080002516E /* seedfill.m in Sources */ = {isa = PBXBuildFile; fileRef = AE366A3610DB5D080002516E /* seedfill.m */; };
 		CF6B91441102DDF200E61DB3 /* vision.m in Sources */ = {isa = PBXBuildFile; fileRef = CF6B91431102DDF200E61DB3 /* vision.m */; };
 		CF6B91471102DE0500E61DB3 /* serial.m in Sources */ = {isa = PBXBuildFile; fileRef = CF6B91461102DE0500E61DB3 /* serial.m */; };
+		CF6F72E7111206B10050738F /* UVCCameraControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CF6F72E6111206B10050738F /* UVCCameraControl.m */; };
+		CF6F72F6111206CF0050738F /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF6F72F5111206CF0050738F /* IOKit.framework */; };
+		CF6F7310111208390050738F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF6F730F111208390050738F /* QTKit.framework */; };
 		CF720631110BCADF00BA3BBF /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +44,10 @@
 		CF6B91431102DDF200E61DB3 /* vision.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = vision.m; sourceTree = "<group>"; };
 		CF6B91451102DE0500E61DB3 /* serial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = serial.h; sourceTree = "<group>"; };
 		CF6B91461102DE0500E61DB3 /* serial.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = serial.m; sourceTree = "<group>"; };
+		CF6F72E5111206B10050738F /* UVCCameraControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UVCCameraControl.h; sourceTree = "<group>"; };
+		CF6F72E6111206B10050738F /* UVCCameraControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UVCCameraControl.m; sourceTree = "<group>"; };
+		CF6F72F5111206CF0050738F /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
+		CF6F730F111208390050738F /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		CF9A739810FFE0CB0015C437 /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = ../../src/inc/packet.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -52,6 +59,8 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				8441128C0BA76E9200F37770 /* Quartz.framework in Frameworks */,
 				CF720631110BCADF00BA3BBF /* AppKit.framework in Frameworks */,
+				CF6F72F6111206CF0050738F /* IOKit.framework in Frameworks */,
+				CF6F7310111208390050738F /* QTKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +70,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				CF6F72E5111206B10050738F /* UVCCameraControl.h */,
+				CF6F72E6111206B10050738F /* UVCCameraControl.m */,
 				CF9A739810FFE0CB0015C437 /* packet.h */,
 				849818230BCF1CE50085CECA /* AppController.h */,
 				849818220BCF1CE50085CECA /* AppController.m */,
@@ -109,6 +120,7 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				CF6F72F5111206CF0050738F /* IOKit.framework */,
 			);
 			name = vision;
 			sourceTree = "<group>";
@@ -138,6 +150,7 @@
 			children = (
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+				CF6F730F111208390050738F /* QTKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -203,6 +216,7 @@
 				AE366A3710DB5D080002516E /* seedfill.m in Sources */,
 				CF6B91441102DDF200E61DB3 /* vision.m in Sources */,
 				CF6B91471102DE0500E61DB3 /* serial.m in Sources */,
+				CF6F72E7111206B10050738F /* UVCCameraControl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

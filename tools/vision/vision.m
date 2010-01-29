@@ -11,10 +11,10 @@
 #import "seedfill.h"
 #import "AppController.h"
 
-#define ROI_LEFT 72
-#define ROI_RIGHT 102
-#define ROI_TOP 0
-#define ROI_BOTTOM 27
+#define ROI_LEFT 70
+#define ROI_RIGHT 110
+#define ROI_TOP 95
+#define ROI_BOTTOM 20
 
 // given a bitmap, obtain a location hint
 void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height,
@@ -160,7 +160,7 @@ void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesP
 	moment /= sum;
 	
 	// Now look for pixels that stand out against the background
-	if (total != 0) *light = max - (sum/((float)total)) > .25;
+	if (total != 0) *light = max - (sum/((float)total)) > .12;
 	else *light = 0;
 		
 	////	 estimate angle from difference between centroid and center

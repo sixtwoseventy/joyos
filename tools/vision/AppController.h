@@ -11,6 +11,8 @@
 #import <Quartz/Quartz.h>
 #import "packet.h"
 #import "vision.h"
+#import <QTKit/QTKit.h>
+#import "UVCCameraControl.h"
 
 #define N_ROBOTS 4
 #define N_MARGIN 4
@@ -35,10 +37,19 @@
 	NSSpeechSynthesizer *recog;
 	NSLock *tickLock;
 	int transmittedStartPacket, transmittedStopPacket;
+	
+	QTCaptureSession * captureSession;
+	QTCaptureDevice * videoDevice;
+	QTCaptureDeviceInput * videoInput;
+	
+	UVCCameraControl * cameraControl;
+	
+	IBOutlet QTCaptureView * captureView;
 }
 
 - (IBAction)reset:(id)sender;
 - (IBAction)extendCalibrationPeriod:(id)sender;
+- (IBAction) fixCameraMode:(id)sender;
 void fill_goal(board_coord* pos, board_coord* last);
 void generate_goal(board_coord* pos);
 

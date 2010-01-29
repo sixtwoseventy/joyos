@@ -23,6 +23,60 @@
 	[serialPort readInBackgroundAndNotify];
 }
 
+- (IBAction) fixCameraMode:(id)sender
+{
+	/*videoDevice = [[QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo] objectAtIndex:0];
+	[videoDevice open:nil];
+	
+	if( !videoDevice ) {
+		NSLog( @"No video input device" );
+		exit( 1 );
+	}
+	
+	videoInput = [[QTCaptureDeviceInput alloc] initWithDevice:videoDevice];
+	
+	captureSession = [[QTCaptureSession alloc] init];
+	[captureSession addInput:videoInput error:nil];
+//	[captureSession startRunning];
+	
+	captureView = [[QTCaptureView alloc] init];
+	[captureView setCaptureSession:captureSession];
+	[captureView setVideoPreviewConnection:[[captureView availableVideoPreviewConnections] objectAtIndex:0]];
+	
+	
+	// Setting a lower resolution for the CaptureOutput here, since otherwise QTCaptureView
+	// pulls full-res frames from the camera, which is slow. This is just for cosmetics.
+	NSDictionary * pixelBufferAttr = [NSDictionary dictionaryWithObjectsAndKeys:
+									  [NSNumber numberWithInt:640], kCVPixelBufferWidthKey,
+									  [NSNumber numberWithInt:480], kCVPixelBufferHeightKey, nil];
+	[[[captureSession outputs] objectAtIndex:0] setPixelBufferAttributes:pixelBufferAttr];
+//	[captureSession stopRunning];
+
+	[captureSession release];*/
+	
+	// Ok, this might be all kinds of wrong, but it was the only way I found to map a 
+	// QTCaptureDevice to a IOKit USB Device. The uniqueID method seems to always(?) return 
+	// the locationID as a HEX string in the first few chars, but the format of this string 
+	// is not documented anywhere and (knowing Apple) might change sooner or later.
+	//
+	// In most cases you'd be probably better of using the UVCCameraControls
+	// - (id)initWithVendorID:(long) productID:(long) 
+	// method instead. I.e. for the Logitech QuickCam9000:
+	// cameraControl = [[UVCCameraControl alloc] initWithVendorID:0x046d productID:0x0990];
+	//
+	// You can use USB Prober (should be in /Developer/Applications/Utilities/USB Prober.app) 
+	// to find the values of your camera.
+	
+//	UInt32 locationID = 0;
+//	sscanf( [[videoDevice uniqueID] UTF8String], "0x%8x", &locationID );
+//	cameraControl = [[UVCCameraControl alloc] initWithVendorID:0x046d productID:0x0809];
+//	[cameraControl setGain:10000.];
+	
+	//[cameraControl setAutoExposure:NO];
+	//[cameraControl setAutoWhiteBalance:NO];
+	//[cameraControl setExposure:100.0];
+}
+
 - (void) awakeFromNib
 {
 	NSMutableDictionary *composition = [NSMutableDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Vision" ofType:@"qtz"]];
@@ -126,6 +180,8 @@
 		
 		[qcView stopRendering];
 		[qcView startRendering];
+		
+		[self fixCameraMode:nil];
 		
 		sync_serial(serialPort);
 		
@@ -376,13 +432,16 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, v
 	// then we test which 't' got the brightest and swap the robot->t 
 	// assignment as necessary. evaluate the results of each experiment
 	// after each second, then increment currentRobot.
-#define LIGHTLESS_INTERVAL 0.5
+#define LIGHTLESS_INTERVAL 1.0
 	NSTimeInterval now = [[NSDate date] timeIntervalSinceReferenceDate];
 	/*if ((now-*lastTime)<LIGHTLESS_INTERVAL){
 		lights->payload.lights[*currentRobot].value = 0;
 		send_packet(serialPort,lights,sizeof(packet_buffer));
 		return;
-	} else*/ if ((now-*lastTime)<LIGHTLESS_INTERVAL*2){
+	} else*/ 
+	if ((now-*lastTime)<LIGHTLESS_INTERVAL){
+		for (int i=0; i<4; i++)
+			lights->payload.lights[i].value = 0;
 		lights->payload.lights[*currentRobot].value = 150;
 		packet_buffer tx = *lights;
 		send_packet(serialPort,&tx,sizeof(packet_buffer));
@@ -401,7 +460,7 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, v
 		// evaluate results of the experiment
 	if (litRobots){
 		if (litRobots == 1) {
-			printf("\nfound lamp after %f\n", (now-*lastTime-LIGHTLESS_INTERVAL));
+			printf("\nfound lamp after %f\n", (now-*lastTime));
 			// the id of robot[litRobot] should be lights->payload.lights[currentRobot].id
 			// and litRobot should be currentRobot
 			
@@ -446,16 +505,21 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, v
 }
 
 void report(sighting robot[], volatile packet_buffer *position, NSFileHandle *serialPort) {
-	printf("*************\n");
+	//printf("*************\n");
 	for (int i=0; i<N_ROBOTS; i++){
-		position->payload.coords[i].x = (int16_t)((robot[i].x-320)*(1<<12)/640.);
-		position->payload.coords[i].y = -(int16_t)((robot[i].y-240)*(1<<12)/640.);
-		position->payload.coords[i].theta = -(int)(robot[i].theta*(1<<12)/(M_PI*2));
+		double x = robot[i].x;
+		double y = robot[i].y;
+		double X =  8.45150883e+00 * x + -4.52579739e-01 * y + -2.62171630e+03;
+		double Y = -2.35832583e-01 * x + -8.26902404e+00 * y +  2.45461144e+03;
+		double theta = fmod(robot[i].theta+M_PI*3,M_PI*2) - M_PI;
+		position->payload.coords[i].x = (int16_t)MIN(MAX((int)X,-2048),2047); //((robot[i].x-320)*(1<<12)/640.);
+		position->payload.coords[i].y = (int16_t)MIN(MAX((int)Y,-2048),2047); //-(int16_t)((robot[i].y-240)*(1<<12)/640.);
+		position->payload.coords[i].theta = -(int)(theta*(1<<12)/(M_PI*2));
 		position->payload.coords[i].confidence = MIN((1<<12)-1, (unsigned int)(75.*robot[i].sum));
 		position->payload.coords[i].id = robot[i].id;
-		printf("[x=%d,y=%d]\n",position->payload.coords[i].x,position->payload.coords[i].y);
+		//printf("[x=%d,y=%d,theta=%d]\n",position->payload.coords[i].x,position->payload.coords[i].y,position->payload.coords[i].theta);
 	}
-	printf("*************\n");
+	//printf("*************\n");
 	
 	packet_buffer tx = *position;
 	send_packet(serialPort,&tx,sizeof(packet_buffer));
@@ -571,6 +635,7 @@ void report(sighting robot[], volatile packet_buffer *position, NSFileHandle *se
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
+	[cameraControl release];
 	[NSApp terminate:self];
 }
 
