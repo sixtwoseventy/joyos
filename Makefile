@@ -118,7 +118,7 @@ BOOTOBJ = $(BOOTSRC:.c=.o)
 # Objects for library
 DISTOBJ = $(DISTSRC:.c=.o)
 
-all: $(OSLIB) $(HLLIB) $(BOOTTARGET) 
+all: $(OSLIB) $(HLLIB) $(BOOTTARGET) size docs
 
 size: $(OSELF)
 	@echo -n "-- OS Size "
@@ -174,7 +174,6 @@ clean:
 	@rm -f $(OSELF) $(OSTARGET) $(OSLIB) $(HLLIB)
 	@rm -f $(BOOTELF) $(BOOTTARGET)
 	@rm -f gdbinit
-	@rm -rf release/*
 	@rm -rf doc/api/*
 
 gdb-config:
@@ -198,29 +197,6 @@ docs:
 	@cp doc/doxygen/main.css doc/api
 	@rm doc/api/tab* doc/api/doxygen.png
 
-release: $(OSLIB) $(HLLIB) size docs
-	@echo "-- Making release"
-	@mkdir -p release
-	@rm -rf release/*
-	@mkdir release/6.270/
-	@mkdir release/6.270/lib
-	@mkdir release/6.270/src
-	@cp -R src/inc release/6.270/inc
-	@cp -R doc/api release/6.270/doc
-	@cp bin/*.a release/6.270/lib
-	@cp -R user/irdistcal release/6.270/src
-	@cp -R user/irdisttest release/6.270/src
-	@cp -R user/happytest release/6.270/src
-	@cp -R user/gyrotest release/6.270/src
-	@cp -R user/exercises release/6.270/src
-	#@cp -R user/motiontest release/6.270/src
-	@cp -R user/robot release/6.270/src
-	@cp -R user/makedefaults.inc release/6.270/src
-	@find release/ -name ".svn" | xargs rm -rf
-
-dist: release
-	@./tools/make_release.sh
-
 distclean:
 	@rm -rf dist/*
-.PHONY: release
+.PHONY: all
