@@ -29,25 +29,23 @@
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 // Entry point to contestant code.
 // Create threads and return 0.
-int
-umain (void) {	
+int umain (void) {
 
-	rf_init();
+    rf_init();
 
-	//This loop prints out its position, which is set by RF
-	while(1)
-	{
-		printf("\n(%d,%d) angle: %d",objects[0].x,objects[0].y,objects[0].theta);		
-		pause(100);
-	}
-	
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+    //This loop prints out its position, which is set by RF
+    while(1)
+    {
+        printf("\n(%d,%d) angle: %d",objects[0].x,objects[0].y,objects[0].theta);
+        pause(100);
+    }
+
+    // Will never return, but the compiler complains without a return
+    // statement.
+    return 0;
 }
-

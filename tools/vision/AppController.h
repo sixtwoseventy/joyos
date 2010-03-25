@@ -17,7 +17,7 @@
 #define N_ROBOTS 4
 #define N_MARGIN 4
 
-@interface AppController : NSObject 
+@interface AppController : NSObject
 {
 	int score;
 	double timestamp;

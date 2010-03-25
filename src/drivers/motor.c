@@ -29,55 +29,49 @@
 #include <kern/lock.h>
 #include <stdlib.h>
 
-#define MOTOR_CTL_COAST		0
-#define MOTOR_CTL_FWD			1
-#define MOTOR_CTL_REV			2
-#define MOTOR_CTL_BRAKE		3
+#define MOTOR_CTL_COAST     0
+#define MOTOR_CTL_FWD       1
+#define MOTOR_CTL_REV       2
+#define MOTOR_CTL_BRAKE     3
 
-#define MOTOR_MA_PER_LSB 	16.11
+#define MOTOR_MA_PER_LSB    16.11
 
 struct lock motor_lock;
 
-void 
-motor_init (void) {
-	init_lock(&motor_lock, "motor lock");
+void motor_init (void) {
+    init_lock(&motor_lock, "motor lock");
 }
 
-void 
-motor_set_vel(uint8_t motor, int16_t vel) {
-	acquire(&motor_lock);
-	uint8_t mbase = FPGA_MOTOR_BASE + motor*FPGA_MOTOR_SIZE;
-	if (vel>0)
-		fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_FWD);
-	else if (vel<0)
-		fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_REV);
-	else
-		fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_COAST);
+void motor_set_vel(uint8_t motor, int16_t vel) {
+    acquire(&motor_lock);
+    uint8_t mbase = FPGA_MOTOR_BASE + motor*FPGA_MOTOR_SIZE;
+    if (vel>0)
+        fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_FWD);
+    else if (vel<0)
+        fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_REV);
+    else
+        fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_COAST);
 
-	fpga_write_byte(mbase+FPGA_MOTOR_VEL,abs(vel));
-	release(&motor_lock);
+    fpga_write_byte(mbase+FPGA_MOTOR_VEL,abs(vel));
+    release(&motor_lock);
 }
 
-void 
-motor_brake(uint8_t motor) {
-	acquire(&motor_lock);
-	uint8_t mbase = FPGA_MOTOR_BASE + motor*FPGA_MOTOR_SIZE;
-	fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_BRAKE);
-	release(&motor_lock);
+void motor_brake(uint8_t motor) {
+    acquire(&motor_lock);
+    uint8_t mbase = FPGA_MOTOR_BASE + motor*FPGA_MOTOR_SIZE;
+    fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_BRAKE);
+    release(&motor_lock);
 }
 
-uint16_t 
-motor_get_current(uint8_t motor) {
-	acquire(&motor_lock);
-	uint8_t adcPortMap[6] = {4,5,2,3,0,1};
-	uint16_t v;
-	mcp3008_get_sample(MCP3008_MOTOR, MCP3008_CH0+adcPortMap[motor],&v);
-	release(&motor_lock);
-	return v;
+uint16_t motor_get_current(uint8_t motor) {
+    acquire(&motor_lock);
+    uint8_t adcPortMap[6] = {4,5,2,3,0,1};
+    uint16_t v;
+    mcp3008_get_sample(MCP3008_MOTOR, MCP3008_CH0+adcPortMap[motor],&v);
+    release(&motor_lock);
+    return v;
 }
 
-uint16_t 
-motor_get_current_MA(uint8_t motor) {
-	return motor_get_current(motor)*MOTOR_MA_PER_LSB;
+uint16_t motor_get_current_MA(uint8_t motor) {
+    return motor_get_current(motor)*MOTOR_MA_PER_LSB;
 }
-

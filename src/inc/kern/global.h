@@ -50,7 +50,7 @@
  * Call this routine to halt the board and write an error message to the
  * UART. This routine never returns.
  *
- * @param _x_	Write "panic: _x_" to the UART.
+ * @param _x_   Write "panic: _x_" to the UART.
  */
 #define panic(_x_) panic_P (PSTR(_x_))
 
@@ -71,6 +71,6 @@ void round_end();
 #define static_assert(x) switch(x) case 0: case (x):
 
 //! Current JoyOS version
-#define JOYOS_VERSION	"0.2.5"
+#define JOYOS_VERSION "0.2.5"
 
 #endif // __INCLUDE_GLOBAL_H__

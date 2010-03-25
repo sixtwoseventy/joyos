@@ -34,16 +34,15 @@
 #include <kern/thread.h>
 #include <avr/interrupt.h>
 
-void
-init_lock(struct lock *k, const char *name) {
-	// make sure k is non-null
-	if (!k) {
-		panic("init null lock");
-	}
+void init_lock(struct lock *k, const char *name) {
+    // make sure k is non-null
+    if (!k) {
+        panic("init null lock");
+    }
 
-	k->locked = 0;
-	k->name = name;
-	k->thread = NULL;
+    k->locked = 0;
+    k->name = name;
+    k->thread = NULL;
 }
 
 uint8_t inc_lock(struct lock *k) {
@@ -60,13 +59,12 @@ uint8_t inc_lock(struct lock *k) {
     }
 }
 
-void 
-acquire(struct lock *k) {
-	if (!k)
-		panic("acquire null lock");
+void acquire(struct lock *k) {
+    if (!k)
+        panic("acquire null lock");
 
-	if (k->locked >= LOCK_MAX_ACQUIRES)
-		panic("acquired too many times");
+    if (k->locked >= LOCK_MAX_ACQUIRES)
+        panic("acquired too many times");
 
     extern struct thread *current_thread;
     while (!inc_lock(k)) {
@@ -77,52 +75,48 @@ acquire(struct lock *k) {
     }
 }
 
-int 
-try_acquire(struct lock *k) {
-	if (!k)
-		panic("acquire null lock");
+int try_acquire(struct lock *k) {
+    if (!k)
+        panic("acquire null lock");
 
-	if (k->locked >= LOCK_MAX_ACQUIRES)
-		panic("acquired too many times");
+    if (k->locked >= LOCK_MAX_ACQUIRES)
+        panic("acquired too many times");
 
     return inc_lock(k);
 }
 
 // should only be called atomically
-int
-is_held (struct lock *k) {
-	if (!k)
-		panic("is_held null lock");
+int is_held (struct lock *k) {
+    if (!k)
+        panic("is_held null lock");
 
-	extern struct thread *current_thread;
-	return current_thread == k->thread && k->locked;
+    extern struct thread *current_thread;
+    return current_thread == k->thread && k->locked;
 }
 
-void
-release(struct lock *k) {
-	if (!k)
-		panic("release null lock");
+void release(struct lock *k) {
+    if (!k)
+        panic("release null lock");
 
-	ATOMIC_BEGIN;
+    ATOMIC_BEGIN;
 
     if (!is_held(k))
-		panic("release unheld lock");
+        panic("release unheld lock");
 
-	if (!(--k->locked))
-		k->thread = NULL;
+    if (!(--k->locked))
+        k->thread = NULL;
 
-	ATOMIC_END;
+    ATOMIC_END;
 }
 
-void
-smash(struct lock *k) {
-	if (!k)
-		panic("smash null lock");
+void smash(struct lock *k) {
+    if (!k)
+        panic("smash null lock");
 
-	ATOMIC_BEGIN;
+    ATOMIC_BEGIN;
 
     k->locked = 0;
     k->thread = NULL;
 
-	ATOMIC_END;
+    ATOMIC_END;
 }

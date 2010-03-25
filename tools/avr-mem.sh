@@ -10,9 +10,9 @@ AVRSIZE=avr-size
 
 # Usage
 if test $# -lt 1; then
-	echo "Usage: avr-mem.sh <ELF file> [<AVR device name>]" >&2
+    echo "Usage: avr-mem.sh <ELF file> [<AVR device name>]" >&2
     echo "Prints sizes of the different AVR memory spaces in an ELF file." >&2
-	exit 1
+    exit 1
 fi
 
 # Memory size variables
@@ -127,8 +127,8 @@ END {
     {
         print ""
     }
-	if (eeprom > 0) 
-    { 
+    if (eeprom > 0)
+    {
         if (eeprommax > 0)
         {
             printf "EEPROM: %2.1f%%", (eeprom / eeprommax) * 100;
@@ -138,5 +138,5 @@ END {
             print ""
         }
     }
-		print ""
+    print ""
 }'

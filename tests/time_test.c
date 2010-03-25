@@ -31,15 +31,15 @@
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 int umain(void) {
-	while (1) {
-		int time = (int) (get_time() / 1000);
-		int ms = (int) (get_time() % 1000);
-		printf("\n%03d.%03d", time, ms);
-		pause (10);
-	}
-	return 0;
+    while (1) {
+        int time = (int) (get_time() / 1000);
+        int ms = (int) (get_time() % 1000);
+        printf("\n%03d.%03d", time, ms);
+        pause (10);
+    }
+    return 0;
 }

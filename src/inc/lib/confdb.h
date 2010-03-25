@@ -34,11 +34,11 @@
  * \XXfile confdb.h
  * \XXbrief Simple non-volatile configuration database
  *
- * Confdb provides a simple way to store configuration parameters in the 
+ * Confdb provides a simple way to store configuration parameters in the
  * Happyboards onboard flash memory. The Confdb stores ConfdbItems which can
  * represent either integers or floats. ConfdbItems are stored in flash and are
  * identified by a unique ID number.
- */ 
+ */
 
 // Confdb item types
 #define CONFDB_ITEM_INTEGER 0 ///< Integer Confdb item
@@ -69,43 +69,43 @@ void confdb_init();
 /**
  * Load a Confdb item from flash
  *
- * @param id	ID of the item to load
- * @param item	allocated structure to be filled with loaded item
- * @return 		CONFDB_OK if item loaded ok, otherwise error
+ * @param id    ID of the item to load
+ * @param item  allocated structure to be filled with loaded item
+ * @return      CONFDB_OK if item loaded ok, otherwise error
  */
 uint8_t confdb_load_item(uint16_t id, ConfdbItem *item);
 
 /**
  * Check if a confdb item exists
  *
- * @param id	ID to check
- * @return		true if item exists false otherwise
+ * @param id    ID to check
+ * @return      true if item exists false otherwise
  */
 uint8_t confdb_item_exists(uint16_t id);
 
 /**
  * Save a Confdb item to flash
  *
- * @param item	item to be saved
- * @return 		CONFDB_OK if item saved ok, otherwise error
+ * @param item  item to be saved
+ * @return      CONFDB_OK if item saved ok, otherwise error
  */
 uint8_t confdb_save_item(ConfdbItem *item);
 
-/** 
+/**
  * Load an integer Confdb item from flash
  *
- * @param id	ID of the item to load
- * @param value	integer to load value into
- * @return 		CONFDB_OK if item loaded ok, otherwise error
+ * @param id    ID of the item to load
+ * @param value integer to load value into
+ * @return      CONFDB_OK if item loaded ok, otherwise error
  */
 uint8_t confdb_load_integer(uint16_t id, uint16_t *value);
 
-/** 
+/**
  * Save an integer Confdb item to flash
  *
- * @param id	item id to save to
- * @param value	integer to be saved
- * @return 		CONFDB_OK if item saved ok, otherwise error
+ * @param id    item id to save to
+ * @param value integer to be saved
+ * @return      CONFDB_OK if item saved ok, otherwise error
  */
 uint8_t confdb_save_integer(uint16_t id, uint16_t value);
 

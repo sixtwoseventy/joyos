@@ -33,12 +33,12 @@
  *
  * The Happyboard has 8 digital inputs.
  *
- * The digital inputs on the Happyboard are unfiltered and as such there is 
+ * The digital inputs on the Happyboard are unfiltered and as such there is
  * "switch bounce" when they are connected to bump-sensors. To compensate for
  * this users should read digital inputs a few times with short delays between
  * readings to ensure accurate sensing.
- * 
- */ 
+ *
+ */
 
 /** Initialize digital ports. Should not be called by user. */
 void digital_init (void);
@@ -53,7 +53,7 @@ uint8_t digital_read_8();
  * Return the value of a specific digital port.
  * If the port specified is an analog port (8-23), digital_read() returns the
  * equivalent digital reading - <2.5V: FALSE >=2.5V: TRUE.
- * @param port	port to read (0-23)
+ * @param port  port to read (0-23)
  */
 uint8_t digital_read(uint8_t port);
 

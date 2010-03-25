@@ -28,52 +28,51 @@
 #include "hal/delay.h"
 #include "at45db011.h"
 
-uint8_t 
-fpga_init(uint16_t start, uint16_t len) {
-	uint16_t outSize = 0;
-	uint16_t binSize;
-	uint8_t val, i, bit, count;
-	uint8_t obuf[8];
+uint8_t fpga_init(uint16_t start, uint16_t len) {
+    uint16_t outSize = 0;
+    uint16_t binSize;
+    uint8_t val, i, bit, count;
+    uint8_t obuf[8];
 
-	while (at45db_start_continuous_read(start) == AT45DB_SPI_BUSY);
+    while (at45db_start_continuous_read(start) == AT45DB_SPI_BUSY);
 
-	// pulse prog_b line to start programming
-	FPGA_PROGB(0);
-	delay_busy_us(100);
-	FPGA_PROGB(1);
+    // pulse prog_b line to start programming
+    FPGA_PROGB(0);
+    delay_busy_us(100);
+    FPGA_PROGB(1);
 
-	// get binary size	
-	//i = at45db_get_next_byte();
-	//binSize = (i<<8) + at45db_get_next_byte();
-	binSize = len;
+    // get binary size
+    //i = at45db_get_next_byte();
+    //binSize = (i<<8) + at45db_get_next_byte();
+    binSize = len;
 
-	while (outSize<binSize) {
-		count = 1;
-		// get next byte
-		val = at45db_get_next_byte();
-		outSize++;
-		// is rle?
-		if ((val & 0xC0) == 0xC0) {
-			// yes, update count, get value
-			count = 0x3F & val;
-			val = at45db_get_next_byte();
-			outSize++;
-		}
-		// generate bit array
-		for (bit=0;bit<8;bit++)
-			obuf[bit] = val & (1<<(7-bit));
-		// output stream
-		for (i=0;i<count;i++) {
-			for (bit=0;bit<8;bit++) {
-				FPGA_DIN(obuf[bit]);
-				FPGA_CCLK(1);
-				FPGA_CCLK(0);
-			}
-		}
-	}
+    while (outSize<binSize) {
+        count = 1;
+        // get next byte
+        val = at45db_get_next_byte();
+        outSize++;
+        // is rle?
+        if ((val & 0xC0) == 0xC0) {
+            // yes, update count, get value
+            count = 0x3F & val;
+            val = at45db_get_next_byte();
+            outSize++;
+        }
+        // generate bit array
+        for (bit=0;bit<8;bit++)
+            obuf[bit] = val & (1<<(7-bit));
+        // output stream
+        for (i=0;i<count;i++) {
+            for (bit=0;bit<8;bit++) {
+                FPGA_DIN(obuf[bit]);
+                FPGA_CCLK(1);
+                FPGA_CCLK(0);
+            }
+        }
+    }
 
-	at45db_end_continuous_read();
+    at45db_end_continuous_read();
 
-	// return configuration status
-	return FPGA_DONE();
+    // return configuration status
+    return FPGA_DONE();
 }

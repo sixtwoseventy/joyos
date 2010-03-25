@@ -39,7 +39,7 @@ void delay_busy_us(uint32_t us) {
         _delay_loop_1(_delay_loop_1_max_ticks);
         us -= _delay_loop_1_max_us;
     }
-	_delay_loop_1((uint8_t)(F_CPU * us / 3000000ul));
+    _delay_loop_1((uint8_t)(F_CPU * us / 3000000ul));
 }
 
 void delay_busy_ms(uint32_t ms) {
@@ -47,6 +47,5 @@ void delay_busy_ms(uint32_t ms) {
         _delay_loop_2(_delay_loop_2_max_ticks);
         ms -= _delay_loop_2_max_ms;
     }
-	_delay_loop_2((uint16_t)(F_CPU * ms / 4000));
+    _delay_loop_2((uint16_t)(F_CPU * ms / 4000));
 }
-

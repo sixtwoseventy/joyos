@@ -297,16 +297,16 @@ const uvc_controls_t uvc_controls = {
 
 - (BOOL)setAutoExposure:(BOOL)enabled {
 	int intval = (enabled ? 0x08 : 0x01); // "auto exposure modes" ar NOT boolean (on|off) as it seems
-	return [self setData:intval 
-			  withLength:uvc_controls.autoExposure.size 
-			 forSelector:uvc_controls.autoExposure.selector 
+	return [self setData:intval
+			  withLength:uvc_controls.autoExposure.size
+			 forSelector:uvc_controls.autoExposure.selector
 					  at:uvc_controls.autoExposure.unit];
 }
 
 - (BOOL)getAutoExposure {
-	int intval = [self getDataFor:UVC_GET_CUR 
-					   withLength:uvc_controls.autoExposure.size 
-					 fromSelector:uvc_controls.autoExposure.selector 
+	int intval = [self getDataFor:UVC_GET_CUR
+					   withLength:uvc_controls.autoExposure.size
+					 fromSelector:uvc_controls.autoExposure.selector
 							   at:uvc_controls.autoExposure.unit];
 	
 	return ( intval == 0x08 ? YES : NO );
@@ -364,16 +364,16 @@ const uvc_controls_t uvc_controls = {
 
 - (BOOL)setAutoWhiteBalance:(BOOL)enabled {
 	int intval = (enabled ? 0x01 : 0x00);
-	return [self setData:intval 
-			  withLength:uvc_controls.autoWhiteBalance.size 
-			 forSelector:uvc_controls.autoWhiteBalance.selector 
+	return [self setData:intval
+			  withLength:uvc_controls.autoWhiteBalance.size
+			 forSelector:uvc_controls.autoWhiteBalance.selector
 					  at:uvc_controls.autoWhiteBalance.unit];
 }
 
 - (BOOL)getAutoWhiteBalance {
-	int intval = [self getDataFor:UVC_GET_CUR 
-					   withLength:uvc_controls.autoWhiteBalance.size 
-					 fromSelector:uvc_controls.autoWhiteBalance.selector 
+	int intval = [self getDataFor:UVC_GET_CUR
+					   withLength:uvc_controls.autoWhiteBalance.size
+					 fromSelector:uvc_controls.autoWhiteBalance.selector
 							   at:uvc_controls.autoWhiteBalance.unit];
 	
 	return ( intval ? YES : NO );

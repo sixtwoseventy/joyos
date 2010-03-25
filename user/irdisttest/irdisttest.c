@@ -26,23 +26,22 @@
 #include <joyos.h>
 #include <happylib.h>
 
-#define SHARP_M		22840
-#define SHARP_C		26
-#define SHARP_PORT	20
+#define SHARP_M     22840
+#define SHARP_C     26
+#define SHARP_PORT  20
 
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	irdist_set_calibration (SHARP_M, SHARP_C);
-	return 0;
+    irdist_set_calibration (SHARP_M, SHARP_C);
+    return 0;
 }
 
 int umain(void) {
-	for (;;) {
-		printf ("dist = %.2f in\n", irdist_read (SHARP_PORT)/2.54);
-		pause (40);
-	}
+    for (;;) {
+        printf ("dist = %.2f in\n", irdist_read (SHARP_PORT)/2.54);
+        pause (40);
+    }
 
-	return 0;
+    return 0;
 }
-

@@ -29,8 +29,8 @@
  * Display testName and 'Press Go'
  */
 int start_test(char testName[]) {
-	printf("\n%s: press Go (or Stop to skip)", testName);
-	return either_click();
+    printf("\n%s: press Go (or Stop to skip)", testName);
+    return either_click();
 }
 
 /**
@@ -38,15 +38,15 @@ int start_test(char testName[]) {
  * servos 0 - 5 positions are set by frob knob
  */
 void test_servos() {
-	uint8_t srv;
-	uint16_t pos;
-	while (!stop_press()) {
-		pos = frob_read()/2;
-		printf("\nservos=%d",pos);
-		for (srv=0;srv<6;srv++)
-			servo_set_pos(srv,pos);
-		pause(50);
-	}
+    uint8_t srv;
+    uint16_t pos;
+    while (!stop_press()) {
+        pos = frob_read()/2;
+        printf("\nservos=%d",pos);
+        for (srv=0;srv<6;srv++)
+            servo_set_pos(srv,pos);
+        pause(50);
+    }
 }
 
 /**
@@ -55,22 +55,22 @@ void test_servos() {
  * Cycle through motors with go button
  */
 void test_motors() {
-	uint8_t mot=0;
-	uint16_t pos;
+    uint8_t mot=0;
+    uint16_t pos;
 
-	while (!stop_press()) {
-		pos = frob_read()/2;
-		printf("\nmotor%d=%3d %dmA",mot,pos,motor_get_current_MA(mot));
-		motor_set_vel(mot,pos-256);
-		if (go_press()) {
-			go_click();
-			motor_set_vel(mot,0);
-			mot++;
-			if (mot==6) mot = 0;
-		}
-		pause(50);
-	}
-	motor_set_vel(mot,0);
+    while (!stop_press()) {
+        pos = frob_read()/2;
+        printf("\nmotor%d=%3d %dmA",mot,pos,motor_get_current_MA(mot));
+        motor_set_vel(mot,pos-256);
+        if (go_press()) {
+            go_click();
+            motor_set_vel(mot,0);
+            mot++;
+            if (mot==6) mot = 0;
+        }
+        pause(50);
+    }
+    motor_set_vel(mot,0);
 }
 
 /**
@@ -78,15 +78,15 @@ void test_motors() {
  * Displays all encoder counts
  */
 void test_encoders() {
-	while (!stop_press()) {
-		uint16_t e24 = encoder_read(24);
-		uint16_t e25 = encoder_read(25);
-		uint16_t e26 = encoder_read(26);
-		uint16_t e27 = encoder_read(27);
-		
-		printf("\ne24=%03d e25=%03d e26=%03d e27=%03d",e24,e25,e26,e27);
-		pause(50);
-	}
+    while (!stop_press()) {
+        uint16_t e24 = encoder_read(24);
+        uint16_t e25 = encoder_read(25);
+        uint16_t e26 = encoder_read(26);
+        uint16_t e27 = encoder_read(27);
+
+        printf("\ne24=%03d e25=%03d e26=%03d e27=%03d",e24,e25,e26,e27);
+        pause(50);
+    }
 }
 
 
@@ -95,12 +95,12 @@ void test_encoders() {
  * Display single analog input, select with frob knob
  */
 void test_analog() {
-	uint8_t port;
-	while (!stop_press()) {
-		port = (frob_read()/64) + 8;
-		printf("\nanalog%02d=%d",port,analog_read(port));
-		pause(50);
-	}
+    uint8_t port;
+    while (!stop_press()) {
+        port = (frob_read()/64) + 8;
+        printf("\nanalog%02d=%d",port,analog_read(port));
+        pause(50);
+    }
 }
 
 /**
@@ -108,47 +108,45 @@ void test_analog() {
  * Displayed as single 8bit binary num
  */
 void test_digital() {
-	while (!stop_press()) {
-		printf("\ndigital=");
-		for (uint8_t i=0;i<8;i++)
-			lcd_print_char(digital_read(i) ? '1' : '0',NULL);
-		pause(50);
-	}
+    while (!stop_press()) {
+        printf("\ndigital=");
+        for (uint8_t i=0;i<8;i++)
+            lcd_print_char(digital_read(i) ? '1' : '0',NULL);
+        pause(50);
+    }
 }
 
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 /**
  * Run all tests
  */
-int
-umain (void) {
+int umain (void) {
 
-	printf("\nHappytest v0.61 ");
+    printf("\nHappytest v0.61 ");
 
-	if (start_test("Servo Test"))
+    if (start_test("Servo Test"))
         test_servos();
-	
-	if (start_test("Motor Test"))
+
+    if (start_test("Motor Test"))
         test_motors();
 
-	if (start_test("Digital Test"))
+    if (start_test("Digital Test"))
         test_digital();
 
-	if (start_test("Analog Test"))
+    if (start_test("Analog Test"))
         test_analog();
-	
-	if (start_test("Encoder Test"))
+
+    if (start_test("Encoder Test"))
         test_encoders();
 
-	panic ("Testing new panic()");
+    panic ("Testing new panic()");
 
-	printf("\nTests complete.");
-	while (1);
-	return 0;
+    printf("\nTests complete.");
+    while (1);
+    return 0;
 }
-

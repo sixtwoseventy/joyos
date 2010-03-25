@@ -57,108 +57,108 @@ extern FILE lcdout, uartio;
 // Load board config.
 // Return true if config CRC is valid
 uint8_t board_load_config (void) {
-	uint8_t i;
-	uint16_t crc=0;
-	uint8_t *config_arr = (uint8_t*)&board_config;
-	// read config from flash
-	at45db_start_continuous_read(BOARD_CONFIG_ADDRESS);
-	at45db_continuous_read_block(sizeof(board_config),(uint8_t*)(&board_config));
-	at45db_end_continuous_read();
-	// calculate CRC
-	for (i=0;i<8;i++)
-		crc = _crc_xmodem_update(crc,config_arr[i]);
-	// check CRC
-	return (crc==board_config.crc);
+    uint8_t i;
+    uint16_t crc=0;
+    uint8_t *config_arr = (uint8_t*)&board_config;
+    // read config from flash
+    at45db_start_continuous_read(BOARD_CONFIG_ADDRESS);
+    at45db_continuous_read_block(sizeof(board_config),(uint8_t*)(&board_config));
+    at45db_end_continuous_read();
+    // calculate CRC
+    for (i=0;i<8;i++)
+        crc = _crc_xmodem_update(crc,config_arr[i]);
+    // check CRC
+    return (crc==board_config.crc);
 }
 
 #define board_fail(msg) board_fail_P(PSTR(msg))
 // Halt board on init failure and print message
 void board_fail_P(PGM_P msg) {
-	printf(str_boot_fail, msg);
-	// print message
+    printf(str_boot_fail, msg);
+    // print message
 #ifdef LCD_DEBUG
-	lcd_set_pos(16);
-	lcd_printf(msg);
-	lcd_set_pos(31);
-	lcd_print_char('\3', NULL);
+    lcd_set_pos(16);
+    lcd_printf(msg);
+    lcd_set_pos(31);
+    lcd_print_char('\3', NULL);
 #endif
-	// and stop
-	while (1);
+    // and stop
+    while (1);
 }
 
 #define EXTERNAL_RAM
 
 void memory_init(void) {
 #ifndef EXTERNAL_RAM
-	__malloc_heap_end = (void*)STACKTOP(MAX_THREADS);
+    __malloc_heap_end = (void*)STACKTOP(MAX_THREADS);
 #else
-	__malloc_heap_start = (void*)0x8000;
-	__malloc_heap_end = (void*)0xFFFF;
+    __malloc_heap_start = (void*)0x8000;
+    __malloc_heap_end = (void*)0xFFFF;
 #endif
-	printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
-	printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
+    printf ("__malloc_heap_start = %p\n", __malloc_heap_start);
+    printf ("__malloc_heap_end = %p\n", __malloc_heap_end);
 
-	uint16_t heap_size = (__malloc_heap_end - __malloc_heap_start);
-	printf("heap size: %u bytes\n", heap_size);
+    uint16_t heap_size = (__malloc_heap_end - __malloc_heap_start);
+    printf("heap size: %u bytes\n", heap_size);
 
-	if (__malloc_heap_start >= __malloc_heap_end)
-		panic("memory full");
+    if (__malloc_heap_start >= __malloc_heap_end)
+        panic("memory full");
 }
 
 // Initialise board
 void board_init (void) {
-	io_init(); // Init GPIOs
-	uart_init(BAUD_RATE);
-	stderr = &uartio;
-	printf(str_boot_uart,BAUD_RATE);
-	printf(str_boot_start);
-	digital_init();
-	encoder_init();
-	spi_init();
-	motor_init();
-	servo_init();
+    io_init(); // Init GPIOs
+    uart_init(BAUD_RATE);
+    stderr = &uartio;
+    printf(str_boot_uart,BAUD_RATE);
+    printf(str_boot_start);
+    digital_init();
+    encoder_init();
+    spi_init();
+    motor_init();
+    servo_init();
 #ifdef LCD_DEBUG
-	lcd_init(); //consider wrapping this in an #ifdef LCD_DEBUG tag?
-	stdout = &lcdout;
+    lcd_init(); //consider wrapping this in an #ifdef LCD_DEBUG tag?
+    stdout = &lcdout;
 #else
-	stdout = &uartio;
-	stdin = &uartio;
+    stdout = &uartio;
+    stdin = &uartio;
 #endif
-	adc_init();
-	isr_init();
+    adc_init();
+    isr_init();
     memory_init();
 
-	// load config, or fail if invalid
-	if (!board_load_config())
-		board_fail("Bad Config");
-	printf(str_boot_conf);
-	printf(str_boot_board,
-			board_config.version>>8,
-			board_config.version&0xFF);
-	printf(str_boot_id, board_config.id);
+    // load config, or fail if invalid
+    if (!board_load_config())
+        board_fail("Bad Config");
+    printf(str_boot_conf);
+    printf(str_boot_board,
+            board_config.version>>8,
+            board_config.version&0xFF);
+    printf(str_boot_id, board_config.id);
 
-	// print boot text to screen
-	printf(str_boot_message, board_config.version>>8, board_config.version&0xFF);
+    // print boot text to screen
+    printf(str_boot_message, board_config.version>>8, board_config.version&0xFF);
 
-	// check battery, fail if <7.5V
+    // check battery, fail if <7.5V
 #ifdef CHECK_BATTERY
-	if (!(read_battery()>=7200))
-		board_fail("Low battery");
+    if (!(read_battery()>=7200))
+        board_fail("Low battery");
 #endif
-	printf(str_boot_batt,read_battery());
+    printf(str_boot_batt,read_battery());
 
-	// initialise FPGA
-	if (!fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len))
-		board_fail("FPGA failure");
-	printf(str_boot_fpga, fpga_get_version_major(), fpga_get_version_minor());
+    // initialise FPGA
+    if (!fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len))
+        board_fail("FPGA failure");
+    printf(str_boot_fpga, fpga_get_version_major(), fpga_get_version_minor());
 
-	// all ok
+    // all ok
 #ifdef LCD_DEBUG
-	lcd_set_pos(31);
-	lcd_print_char('\1', NULL);
+    lcd_set_pos(31);
+    lcd_print_char('\1', NULL);
 #else
-	printf("Board init complete.\n");
+    printf("Board init complete.\n");
 #endif
 
-	LED_COMM(0);
+    LED_COMM(0);
 }

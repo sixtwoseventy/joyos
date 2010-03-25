@@ -28,33 +28,32 @@
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 void frob_test (uint16_t min, uint16_t max) {
-	while (!go_press()) {
-		printf ("frob[%u,%u] = %u   (%u)\n", 
-				min, max, frob_read_range (min,max), frob_read());
-		pause (100);
-	}
+    while (!go_press()) {
+        printf ("frob[%u,%u] = %u   (%u)\n",
+                min, max, frob_read_range (min,max), frob_read());
+        pause (100);
+    }
 
-	while (go_press ());
+    while (go_press ());
 }
 
 int umain(void) {
-	frob_test (0,2);
+    frob_test (0,2);
 
-	frob_test (0,100);
+    frob_test (0,100);
 
-	frob_test (0,1023);
+    frob_test (0,1023);
 
-	frob_test (500,1023);
+    frob_test (500,1023);
 
-	frob_test (0,1024);
+    frob_test (0,1024);
 
-	printf("done frobtest.\n");
-	for (;;);
+    printf("done frobtest.\n");
+    for (;;);
 
-	return 0;
+    return 0;
 }
-

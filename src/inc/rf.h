@@ -9,7 +9,7 @@
  *
  * This file allows the user to transmit packets using the nrf24l01 module,
  * as well as retrieve information received over RF
- */ 
+ */
 
 extern volatile uint32_t position_microtime;
 extern packet_buffer tx, rx;

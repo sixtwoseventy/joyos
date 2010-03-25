@@ -4,12 +4,12 @@
 #include <joyos.h>
 
 void initRun() {
-	return;
+    return;
 }
 void activateRun() {
-	motor_set_vel(RIGHT_MOTOR,0);
-	motor_set_vel(LEFT_MOTOR,0);
+    motor_set_vel(RIGHT_MOTOR,0);
+    motor_set_vel(LEFT_MOTOR,0);
 }
 void step() {
-	return;
+    return;
 }

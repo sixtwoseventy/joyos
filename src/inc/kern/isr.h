@@ -31,7 +31,7 @@
 /**
  * Configure timer 0 to call function 'func' whenever an TIMER0 interrupt
  * occurs.
- */ 
+ */
 void set_timer0_callback( void (*func) () );
 void isr_init();
 

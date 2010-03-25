@@ -41,103 +41,100 @@ uint32_t old_time;
 float fangle;
 
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
-int16_t
-strength(int16_t MagX, int16_t MagY){
-	if (MagX < 0) MagX = -MagX;
-	if (MagY < 0) MagY = -MagY;
+int16_t strength(int16_t MagX, int16_t MagY){
+    if (MagX < 0) MagX = -MagX;
+    if (MagY < 0) MagY = -MagY;
 
-	return MagX+MagY;
+    return MagX+MagY;
 }
 
 int16_t bounded_vel(float vel){
-	if (vel > 150.0) return 150;
-	else if (vel < 66.6) return 67;
-	else return (int16_t)vel;		
+    if (vel > 150.0) return 150;
+    else if (vel < 66.6) return 67;
+    else return (int16_t)vel;
 }
 
 /**
  * Run all tests
  */
-int
-umain (void) {
+int umain (void) {
 
 
-	old_time = get_time();
+    old_time = get_time();
 
-	was_overload=0;
+    was_overload=0;
 
-	i2cInit();
+    i2cInit();
 
-	i2cMasterSend(Compass,1,ResetCommand);
-	pause(10);
+    i2cMasterSend(Compass,1,ResetCommand);
+    pause(10);
 
-	while(1){
-	
-		/* Reset periodically */
+    while(1){
 
-/*		if ((get_time() - old_time) > 250){
-			old_time = get_time();
-                        i2cMasterSend(Compass,1,ResetCommand);
-                        pause(10);
+        /* Reset periodically */
 
-		}*/
+        /*if ((get_time() - old_time) > 250){
+                old_time = get_time();
+                i2cMasterSend(Compass,1,ResetCommand);
+                pause(10);
 
-		/* Read Heading Information */
+                }*/
 
-		i2cMasterSend(Compass,3,OutputAngleCommand);
-		i2cMasterSend(Compass,1,ReadCommand);
+        /* Read Heading Information */
 
-		pause(10);
+        i2cMasterSend(Compass,3,OutputAngleCommand);
+        i2cMasterSend(Compass,1,ReadCommand);
 
-		i2cMasterReceive(Compass,2,Data);
-		AngleReading = (Data[0] << 8) | Data[1];
+        pause(10);
 
-		/* Read Offset-Corrected Magnetometer X */
+        i2cMasterReceive(Compass,2,Data);
+        AngleReading = (Data[0] << 8) | Data[1];
 
-		i2cMasterSend(Compass,3,OutputMagXCommand);
-		i2cMasterSend(Compass,1,ReadCommand);
+        /* Read Offset-Corrected Magnetometer X */
 
-		pause(10);
+        i2cMasterSend(Compass,3,OutputMagXCommand);
+        i2cMasterSend(Compass,1,ReadCommand);
 
-		i2cMasterReceive(Compass,2,Data);
-		MagXReading = (Data[0] << 8) | Data[1];
+        pause(10);
 
-		/* Read Offset-Corrected Magnetometer X */
+        i2cMasterReceive(Compass,2,Data);
+        MagXReading = (Data[0] << 8) | Data[1];
 
-		i2cMasterSend(Compass,3,OutputMagYCommand);
-		i2cMasterSend(Compass,1,ReadCommand);
+        /* Read Offset-Corrected Magnetometer X */
 
-		pause(10);
+        i2cMasterSend(Compass,3,OutputMagYCommand);
+        i2cMasterSend(Compass,1,ReadCommand);
 
-		i2cMasterReceive(Compass,2,Data);
-		MagYReading = (Data[0] << 8) | Data[1];
+        pause(10);
 
-		if (strength(MagXReading,MagYReading) > 500){
-			was_overload = 1;
-		}
-		else if (was_overload & (strength(MagXReading,MagYReading) < 250)){
-			was_overload = 0;
-			old_time = get_time();
-			i2cMasterSend(Compass,1,ResetCommand);
-			pause(10);
-		}
-	
-		printf("\n%d.%d, (%d, %d)",AngleReading/10,AngleReading%10,MagXReading,MagYReading);
+        i2cMasterReceive(Compass,2,Data);
+        MagYReading = (Data[0] << 8) | Data[1];
 
-		fangle = ((float)AngleReading)/10.0;
-		if (fangle > 180.0) fangle -= 360.0;
+        if (strength(MagXReading,MagYReading) > 500){
+            was_overload = 1;
+        }
+        else if (was_overload & (strength(MagXReading,MagYReading) < 250)){
+            was_overload = 0;
+            old_time = get_time();
+            i2cMasterSend(Compass,1,ResetCommand);
+            pause(10);
+        }
 
-		motor_set_vel(0,bounded_vel(15.0-fangle));
-		motor_set_vel(1,bounded_vel(15.0+fangle));
+        printf("\n%d.%d, (%d, %d)",AngleReading/10,AngleReading%10,MagXReading,MagYReading);
 
-		pause(100);
+        fangle = ((float)AngleReading)/10.0;
+        if (fangle > 180.0) fangle -= 360.0;
 
-	}
+        motor_set_vel(0,bounded_vel(15.0-fangle));
+        motor_set_vel(1,bounded_vel(15.0+fangle));
 
-	return 0;
+        pause(100);
+
+    }
+
+    return 0;
 
 }
-

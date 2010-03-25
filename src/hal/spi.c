@@ -33,49 +33,44 @@
 
 struct lock spi_lock;
 
-void 
-spi_init (void) {
-	init_lock(&spi_lock, "spi lock");
+void spi_init (void) {
+    init_lock(&spi_lock, "spi lock");
 }
 
-int8_t 
-spi_acquire() {
-	acquire(&spi_lock);
-	return SPI_READY;
+int8_t spi_acquire() {
+    acquire(&spi_lock);
+    return SPI_READY;
 }
 
 int spi_try_acquire() {
     return try_acquire(&spi_lock);
 }
 
-void 
-spi_release () {
-	release(&spi_lock);
+void spi_release () {
+    release(&spi_lock);
 }
 
-void 
-spi_set_master (spi_clk_div div, uint8_t flags) {
-	// set spi control reg:
-	// SPE - enable
-	// MSTR - master mode
-	// flags - see spi.h
-	// div - high two bits of div are divides, low bit is 2X multiplier 
-	SPCR = _BV(SPE) | _BV(MSTR) | flags | (div>>1);
-	// set multiplier flag
-	if (div&1)
-		SPSR |= _BV(SPI2X);
-	else
-		SPSR &= ~_BV(SPI2X);
+void spi_set_master (spi_clk_div div, uint8_t flags) {
+    // set spi control reg:
+    // SPE - enable
+    // MSTR - master mode
+    // flags - see spi.h
+    // div - high two bits of div are divides, low bit is 2X multiplier
+    SPCR = _BV(SPE) | _BV(MSTR) | flags | (div>>1);
+    // set multiplier flag
+    if (div&1)
+        SPSR |= _BV(SPI2X);
+    else
+        SPSR &= ~_BV(SPI2X);
 }
 
-int8_t 
-spi_transfer_sync (uint8_t * data, uint8_t len) {
-	uint8_t i;
+int8_t spi_transfer_sync (uint8_t * data, uint8_t len) {
+    uint8_t i;
 
-	for (i = 0; i < len; i++) {
-		SPDR = data[i];
-		while (!(SPSR & _BV(SPIF)));
-		data[i] = SPDR;
-	}
-	return 0;
+    for (i = 0; i < len; i++) {
+        SPDR = data[i];
+        while (!(SPSR & _BV(SPIF)));
+        data[i] = SPDR;
+    }
+    return 0;
 }

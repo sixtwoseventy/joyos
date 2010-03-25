@@ -32,28 +32,26 @@
 #include <avr/pgmspace.h>
 
 #define PANIC_STRING "\npanic: %S\n"
-void
-panic_P (PGM_P msg) {
-	// stop everything
-	cli();
+void panic_P (PGM_P msg) {
+    // stop everything
+    cli();
     // notify user
 #ifdef LCD_DEBUG
-	extern struct lock lcd_lock;
+    extern struct lock lcd_lock;
 
-	// clobber LCD lock so we can write
+    // clobber LCD lock so we can write
     smash(&lcd_lock);
 
-	lcd_clear(); // clear lcd
-	// report panic message
-	lcd_printf_P(PSTR(PANIC_STRING), msg ? msg : ""); // print msg
+    lcd_clear(); // clear lcd
+    // report panic message
+    lcd_printf_P(PSTR(PANIC_STRING), msg ? msg : ""); // print msg
 #endif
-	extern struct lock uart_lock;
+    extern struct lock uart_lock;
 
     smash(&uart_lock);
 
-	uart_printf_P(PANIC_STRING, (void *)(msg ? msg : ""));
+    uart_printf_P(PANIC_STRING, (void *)(msg ? msg : ""));
 
-	// halt board
-	halt();
+    // halt board
+    halt();
 }
-

@@ -10,26 +10,25 @@
 #include <string.h>
 
 int panicbreak (void) {
-	for (;;) {
-		printf("\npanicbreak!");
-		pause(500);
-	}
+    for (;;) {
+        printf("\npanicbreak!");
+        pause(500);
+    }
 
-	return 0;
+    return 0;
 }
- 
+
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 int umain(void) {
-	create_thread(&panicbreak, 64, 0, "panicbreak");
+    create_thread(&panicbreak, 64, 0, "panicbreak");
 
-	while (1) {
-		yield();
-		panic("fail");
-	}
+    while (1) {
+        yield();
+        panic("fail");
+    }
 
-	return 0;
+    return 0;
 }
-

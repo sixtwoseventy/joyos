@@ -26,21 +26,19 @@
 #include <joyos.h>
 
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 /**
  * Run all tests
  */
-int
-umain (void) {
-	int foo;
-	printf("Please input an integer:\n");
-	scanf("%d", &foo);
-	printf("You input %d as your integer\n", foo);
+int umain (void) {
+    int foo;
+    printf("Please input an integer:\n");
+    scanf("%d", &foo);
+    printf("You input %d as your integer\n", foo);
 
-	printf("\nTests complete.");
-	while (1);
-	return 0;
+    printf("\nTests complete.");
+    while (1);
+    return 0;
 }
-

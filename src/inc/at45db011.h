@@ -26,10 +26,10 @@
 #ifndef _AT45DB011_H_
 #define _AT45DB011_H_
 
-#define AT45DB_PAGE_SIZE	256
+#define AT45DB_PAGE_SIZE    256
 
-#define AT45DB_READY		0
-#define AT45DB_SPI_BUSY		-1
+#define AT45DB_READY        0
+#define AT45DB_SPI_BUSY     -1
 
 int8_t at45db_start_continuous_read (uint32_t addr);
 uint8_t at45db_continuous_read_block(uint16_t len, uint8_t* data);

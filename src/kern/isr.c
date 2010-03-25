@@ -35,19 +35,19 @@
 extern uint32_t global_time;
 
 ISR(TIMER2_OVF_vect) {
-	TCNT2 = TIMER_1MS_EXPIRE;
+    TCNT2 = TIMER_1MS_EXPIRE;
 
-	global_time++;
+    global_time++;
 
-	yield();
+    yield();
 }
 
 ISR(__vector_default) {
-	panic("unknown interrupt");
+    panic("unknown interrupt");
 }
 
 /**
- * Need a externally-referenced function in the object file containg 
+ * Need a externally-referenced function in the object file containing
  * the ISRs to force the linker insert these ISRs into the IVT.
  * see http://www.nongnu.org/avr-libc/user-manual/library.html
  **/

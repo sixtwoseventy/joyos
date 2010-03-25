@@ -57,7 +57,7 @@ int rf_send(char ch){
     ATOMIC_BEGIN;
 
     tx.payload.array[rf_ch_count++] = ch;
-    
+
     if ((ch=='\n') || (rf_ch_count == PAYLOAD_SIZE)){
         tx.type = STRING;
         rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet_buffer));
@@ -70,57 +70,57 @@ int rf_send(char ch){
 }
 
 int rf_put(char ch, FILE *f) {
-	if (ch == '\n')
-	 	rf_send('\r');
+    if (ch == '\n')
+        rf_send('\r');
 
-	return rf_send(ch);
+    return rf_send(ch);
 }
 
 
 int rf_vprintf(const char *fmt, va_list ap) {
-	int count;
-	acquire(&rf_lock);
-	count = vfprintf(&rfio, fmt, ap);
-	release(&rf_lock);
+    int count;
+    acquire(&rf_lock);
+    count = vfprintf(&rfio, fmt, ap);
+    release(&rf_lock);
 
-	return count;
+    return count;
 }
 
 int rf_printf(const char *fmt, ...) {
-	va_list ap;
-	int count;
+    va_list ap;
+    int count;
 
-	va_start(ap, fmt);
-	count = rf_vprintf(fmt, ap);
-	va_end(ap);
+    va_start(ap, fmt);
+    count = rf_vprintf(fmt, ap);
+    va_end(ap);
 
-	return count;
+    return count;
 }
 
 int rf_vprintf_P(const char *fmt, va_list ap) {
-	int count;
-	acquire(&rf_lock);
-	count = vfprintf_P(&rfio, fmt, ap);
-	release(&rf_lock);
+    int count;
+    acquire(&rf_lock);
+    count = vfprintf_P(&rfio, fmt, ap);
+    release(&rf_lock);
 
-	return count;
+    return count;
 }
 
 int rf_printf_P(const char *fmt, ...) {
-	va_list ap;
-	int count;
+    va_list ap;
+    int count;
 
-	va_start(ap, fmt);
-	count = rf_vprintf_P(fmt, ap);
-	va_end(ap);
+    va_start(ap, fmt);
+    count = rf_vprintf_P(fmt, ap);
+    va_end(ap);
 
-	return count;
+    return count;
 }
 
 char rf_recv() {
-	while(rf_buf_index==PAYLOAD_SIZE || rf_str_buf[rf_buf_index]=='\0')
-		yield();
-	return rf_str_buf[rf_buf_index++];
+    while(rf_buf_index==PAYLOAD_SIZE || rf_str_buf[rf_buf_index]=='\0')
+        yield();
+    return rf_str_buf[rf_buf_index++];
 }
 
 int rf_get(FILE * f) {
@@ -128,73 +128,73 @@ int rf_get(FILE * f) {
 }
 
 int rf_vscanf(const char *fmt, va_list ap){
-	int count;
-	acquire(&rf_lock);
-	count = vfscanf(&rfio, fmt, ap);
-	release(&rf_lock);
+    int count;
+    acquire(&rf_lock);
+    count = vfscanf(&rfio, fmt, ap);
+    release(&rf_lock);
 
-	return count;
+    return count;
 }
 
 int rf_scanf(const char *fmt, ...){
-	va_list ap;
-	int count;
-	
-	va_start(ap, fmt);
-	count = rf_vscanf(fmt, ap);
-	va_end(ap);
+    va_list ap;
+    int count;
 
-	return count;
+    va_start(ap, fmt);
+    count = rf_vscanf(fmt, ap);
+    va_end(ap);
+
+    return count;
 }
 
 int rf_vscanf_P(const char *fmt, va_list ap) {
-	int count;
-	acquire(&rf_lock);
-	count = vfscanf_P(&rfio, fmt,ap);
-	release(&rf_lock);
+    int count;
+    acquire(&rf_lock);
+    count = vfscanf_P(&rfio, fmt,ap);
+    release(&rf_lock);
 
-	return count;
+    return count;
 }
 
 int rf_scanf_P(const char *fmt, ...) {
-	va_list ap;
-	int count;
-	
-	va_start(ap, fmt);
-	count = rf_vscanf_P(fmt, ap);
-	va_end(ap);
+    va_list ap;
+    int count;
 
-	return count;
+    va_start(ap, fmt);
+    count = rf_vscanf_P(fmt, ap);
+    va_end(ap);
+
+    return count;
 }
 
 uint8_t rf_has_char() {
-    return (rf_buf_index != PAYLOAD_SIZE) && 
-           (rf_str_buf[rf_buf_index] != '\0');
+    return (rf_buf_index != PAYLOAD_SIZE) &&
+        (rf_str_buf[rf_buf_index] != '\0');
 }
 
 void rf_rx(void) {
-	RF_CE(0);
+    RF_CE(0);
     delay_busy_us(150); // I don't think delay_busy_us actually goes up that high
-	nrf_write_reg(NRF_REG_CONFIG,
-        _BV(NRF_BIT_PRIM_RX) |
-        _BV(NRF_BIT_CRCO) |
-        _BV(NRF_BIT_EN_CRC) |
-        _BV(NRF_BIT_MASK_MAX_RT) |
-        _BV(NRF_BIT_MASK_TX_DR)); // PRX, 16 bit CRC enabled
+    nrf_write_reg(NRF_REG_CONFIG,
+            _BV(NRF_BIT_PRIM_RX) |
+            _BV(NRF_BIT_CRCO) |
+            _BV(NRF_BIT_EN_CRC) |
+            _BV(NRF_BIT_MASK_MAX_RT) |
+            _BV(NRF_BIT_MASK_TX_DR)); // PRX, 16 bit CRC enabled
     nrf_write_reg(NRF_REG_EN_AA, 0); // disable auto-ack for all channels
     nrf_write_reg(NRF_REG_RF_SETUP,
-        (NRF_RF_PWR_0DB << NRF_RF_PWR_BASE) |
-        (NRF_RF_DR_1MBPS << NRF_BIT_RF_DR_BASE) |
-        _BV(NRF_BIT_LNA_HCURR)); // data rate = 1MB
+            (NRF_RF_PWR_0DB << NRF_RF_PWR_BASE) |
+            (NRF_RF_DR_1MBPS << NRF_BIT_RF_DR_BASE) |
+            _BV(NRF_BIT_LNA_HCURR)); // data rate = 1MB
     nrf_write_reg(NRF_REG_RX_PW_P0, sizeof(packet_buffer));
-    nrf_write_reg(NRF_REG_CONFIG, 
-        _BV(NRF_BIT_PRIM_RX) |
-        _BV(NRF_BIT_PWR_UP) |
-        //_BV(NRF_BIT_CRCO) | // this bit was not in the configuration for some unknown reason
-        _BV(NRF_BIT_EN_CRC) |
-        _BV(NRF_BIT_MASK_MAX_RT) |
-        _BV(NRF_BIT_MASK_TX_DR)); // PWR_UP = 1
-	RF_CE(1);
+    nrf_write_reg(NRF_REG_CONFIG,
+            _BV(NRF_BIT_PRIM_RX) |
+            _BV(NRF_BIT_PWR_UP) |
+            //_BV(NRF_BIT_CRCO) | // this bit was not in the configuration for some unknown reason
+            _BV(NRF_BIT_EN_CRC) |
+            _BV(NRF_BIT_MASK_MAX_RT) |
+            _BV(NRF_BIT_MASK_TX_DR)); // PWR_UP = 1
+    RF_CE(1);
     // wait >= 130 us
     delay_busy_us(150);
 }
@@ -203,33 +203,33 @@ uint8_t rf_tx(void) {
     RF_CE(0);
     delay_busy_us(150);
     nrf_write_reg(NRF_REG_CONFIG,
-        _BV(NRF_BIT_CRCO) |
-        _BV(NRF_BIT_EN_CRC) |
-        _BV(NRF_BIT_MASK_MAX_RT) |
-        _BV(NRF_BIT_MASK_TX_DR) |
-        _BV(NRF_BIT_MASK_RX_DR)); //16 bit CRC enabled, be a transmitter
+            _BV(NRF_BIT_CRCO) |
+            _BV(NRF_BIT_EN_CRC) |
+            _BV(NRF_BIT_MASK_MAX_RT) |
+            _BV(NRF_BIT_MASK_TX_DR) |
+            _BV(NRF_BIT_MASK_RX_DR)); //16 bit CRC enabled, be a transmitter
     nrf_write_reg(NRF_REG_EN_AA, 0); //Disable auto acknowledge on all pipes
     nrf_write_reg(NRF_REG_SETUP_RETR, 0); //Disable auto-retransmit
     nrf_write_reg(NRF_REG_SETUP_AW, NRF_AW_5); //Set address width to 5bytes (default, not really needed)
     nrf_write_reg(NRF_REG_RF_SETUP,
-        (NRF_RF_PWR_0DB << NRF_RF_PWR_BASE) |
-        (NRF_RF_DR_1MBPS << NRF_BIT_RF_DR_BASE) |
-        _BV(NRF_BIT_LNA_HCURR)); //Air data rate 1Mbit, 0dBm, Setup LNA
+            (NRF_RF_PWR_0DB << NRF_RF_PWR_BASE) |
+            (NRF_RF_DR_1MBPS << NRF_BIT_RF_DR_BASE) |
+            _BV(NRF_BIT_LNA_HCURR)); //Air data rate 1Mbit, 0dBm, Setup LNA
     nrf_write_reg(NRF_REG_RF_CH, 2); //RF Channel 2 (default, not really needed)
     uint8_t addr[5] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
     nrf_write_multibyte_reg(NRF_REG_TX_ADDR, addr, 5);
     nrf_write_reg(NRF_REG_CONFIG,
-        _BV(NRF_BIT_PWR_UP) |
-        //_BV(NRF_BIT_CRCO) |
-        _BV(NRF_BIT_EN_CRC) |
-        _BV(NRF_BIT_MASK_MAX_RT) |
-        _BV(NRF_BIT_MASK_TX_DR) |
-        _BV(NRF_BIT_MASK_RX_DR)); //Power up, be a transmitter
+            _BV(NRF_BIT_PWR_UP) |
+            //_BV(NRF_BIT_CRCO) |
+            _BV(NRF_BIT_EN_CRC) |
+            _BV(NRF_BIT_MASK_MAX_RT) |
+            _BV(NRF_BIT_MASK_TX_DR) |
+            _BV(NRF_BIT_MASK_RX_DR)); //Power up, be a transmitter
     return nrf_read_status();
 }
 
 uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len) {
-	rf_tx();
+    rf_tx();
     // preserve pipe 0 address
     uint8_t pipe0_addr = nrf_read_reg(NRF_REG_RX_ADDR_P0);
     // listen for ACK to this address
@@ -288,7 +288,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             goal_position = rx->payload.coords[0];
             break;
 
-		case START:
+        case START:
             if (robot_id != 0xFF) {
                 //Remaining bytes are robots which are starting.  Check if we're one of them.
                 for (uint8_t i = 0; i < 30; i++) {
@@ -322,13 +322,13 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             }
             break;
 
-	case STATUS:
- 	    for (uint8_t i=0; i<4; i++){
- 	       if (rx->payload.status.id == objects[i].id){
- 		  caught[i] = rx->payload.status.caught;
-                  break;
-	       }
-	    }
+        case STATUS:
+            for (uint8_t i=0; i<4; i++){
+                if (rx->payload.status.id == objects[i].id){
+                    caught[i] = rx->payload.status.caught;
+                    break;
+                }
+            }
             break;
         default:
             break;
@@ -356,16 +356,16 @@ uint8_t rf_get_packet(uint8_t *buf, uint8_t *size) {
 int rf_receive (void) {
     for (;;) {
         //if (PINE & _BV(PD7)) {
-            uint8_t status = nrf_read_status();
-            if (status & _BV(NRF_BIT_RX_DR)) {
-                nrf_write_reg(NRF_REG_STATUS, _BV(NRF_BIT_RX_DR)); //reset int
+        uint8_t status = nrf_read_status();
+        if (status & _BV(NRF_BIT_RX_DR)) {
+            nrf_write_reg(NRF_REG_STATUS, _BV(NRF_BIT_RX_DR)); //reset int
 
-                packet_buffer rx;
-                uint8_t size;
-                uint8_t pipe;
-                while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
-                    rf_process_packet(&rx, size, pipe);
-            }
+            packet_buffer rx;
+            uint8_t size;
+            uint8_t pipe;
+            while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
+                rf_process_packet(&rx, size, pipe);
+        }
         //}
         yield();
     }
@@ -390,8 +390,7 @@ void rf_init (void) {
 
     rf_new_str = 0;
 
-	rf_rx(); //Enable receive mode
+    rf_rx(); //Enable receive mode
 
-	create_thread (&rf_receive, STACK_DEFAULT, 0, "rf");
+    create_thread (&rf_receive, STACK_DEFAULT, 0, "rf");
 }
-

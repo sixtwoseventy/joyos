@@ -27,20 +27,20 @@
 #define _BUTTONS_H_
 
 /** Bits of precision for the frob knob. */
-#define FROB_BITS	(10)
+#define FROB_BITS   (10)
 /** Min value of frob knob. */
-#define FROB_MIN	(0)
+#define FROB_MIN    (0)
 /** Max value of frob knob. */
-#define FROB_MAX	(1 << FROB_BITS)
+#define FROB_MAX    (1 << FROB_BITS)
 
 /**
  * \file buttons.h
  * \brief User Input/Output - buttons, frob, beeper and battery.
  *
- * This file contains various functions needed for the pushbuttons, frobknob, 
- * and beeper (found in previous revisions of the happyboard). 
+ * This file contains various functions needed for the pushbuttons, frobknob,
+ * and beeper (found in previous revisions of the happyboard).
  * It also allows the user to read the battery voltage.
- */ 
+ */
 
 /**
  * Check if the 'Go' button is pressed.
@@ -95,8 +95,8 @@ uint16_t read_battery();
 /**
  * Beep at a given frequency for a given duration.
  *
- * @param freq		Frequency to beep
- * @param duration	Duration of beep
+ * @param freq      Frequency to beep
+ * @param duration  Duration of beep
  */
 void beep(uint16_t freq, uint16_t duration);
 

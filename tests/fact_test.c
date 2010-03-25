@@ -26,25 +26,22 @@
 
 #define N_FIBS 24
 const uint32_t answers[] = {
-	0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 
-	2584, 4181, 6765, 10946, 17711, 28657 };
+    0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597,
+    2584, 4181, 6765, 10946, 17711, 28657 };
 
-uint16_t
-fib (uint16_t n) {
-	if (n == 0)
-		return 0;
-	else if (n == 1)
-		return 1;
-	else
-		return fib(n-1) + fib(n-2);
+uint16_t fib (uint16_t n) {
+    if (n == 0)
+        return 0;
+    else if (n == 1)
+        return 1;
+    else
+        return fib(n-1) + fib(n-2);
 }
 
-int
-fibonacci_test(void) {
-	printf("begin fact_test\n");
+int fibonacci_test(void) {
+    printf("begin fact_test\n");
 
 
-	printf("passed fact_test!\n");
-	return 0;
+    printf("passed fact_test!\n");
+    return 0;
 }
-

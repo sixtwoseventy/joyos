@@ -34,11 +34,11 @@
  * implementation.
  *
  * A PID is a commonly used feedback mechanism used to correct error
- * between a measured process variable and a desired setpoint. 
+ * between a measured process variable and a desired setpoint.
  *
- * A Common use in robotics (especially in 6.270) is the position control 
- * of a motor. In this case the process variable is the wheels angular 
- * position, and the setpoint is a desired target position (eg: 720 degrees, 
+ * A Common use in robotics (especially in 6.270) is the position control
+ * of a motor. In this case the process variable is the wheels angular
+ * position, and the setpoint is a desired target position (eg: 720 degrees,
  * or two wheel rotations forward). The wheel position is measured with shaft
  * encoders and the motor is commanded by the PID controller to compensate
  * for the error between the current wheel position and the desired goal.
@@ -57,28 +57,28 @@
  */
 struct pid_controller {
     // Constants
-	float kp;                     ///< Proportional constant
-	float ki;                     ///< Integral constant
-	float kd;                     ///< Derivative constant
+    float kp;                     ///< Proportional constant
+    float ki;                     ///< Integral constant
+    float kd;                     ///< Derivative constant
 
-	// input and output
-	float (*input) ();            ///< Input function
-	void (*output) (float value); ///< Output drive function
+    // input and output
+    float (*input) ();            ///< Input function
+    void (*output) (float value); ///< Output drive function
 
-	// goal
-	float goal;                   ///< PID target
+    // goal
+    float goal;                   ///< PID target
 
-	// feedback memory
-	float sum;                    ///< Integration summation
-	uint8_t has_past;             ///< If false, last_val/time are undefined
-	float last_val;               ///< previous value for D
-	uint32_t last_time;           ///< previous reading time
+    // feedback memory
+    float sum;                    ///< Integration summation
+    uint8_t has_past;             ///< If false, last_val/time are undefined
+    float last_val;               ///< previous value for D
+    uint32_t last_time;           ///< previous reading time
 
-	// state
-	uint8_t enabled; ///< whether the PID is currently running
+    // state
+    uint8_t enabled; ///< whether the PID is currently running
 };
 
-/** 
+/**
  * Initialize a PID controller structure. This function takes an empty
  * pid_controller structure and initializes its member variables.
  *
@@ -89,9 +89,9 @@ struct pid_controller {
  * @param input     input function
  * @param output    output function
  * */
-void init_pid (struct pid_controller *pid, 
-		float kp, float ki, float kd, 
-		float (*input) (), void (*output) (float value));
+void init_pid (struct pid_controller *pid,
+        float kp, float ki, float kd,
+        float (*input) (), void (*output) (float value));
 
 /**
  * Perform a single step of the PID loop.
@@ -126,7 +126,7 @@ float update_pid (struct pid_controller *pid);
  * @param stop      return when stop() is true
  */
 uint8_t dispatch_pid (
-		struct pid_controller *pid, float tolerance, uint8_t (*stop) ());
+        struct pid_controller *pid, float tolerance, uint8_t (*stop) ());
 
 #endif // __INCLUDE_PID_H__
 

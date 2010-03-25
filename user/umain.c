@@ -28,12 +28,10 @@
 uint8_t team_number[2] = {1,0};
 
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
-int
-umain (void) {
-	while (1);
-	return 0;
+int umain (void) {
+    while (1);
+    return 0;
 }
-

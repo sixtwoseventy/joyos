@@ -32,36 +32,36 @@
  *
  * These functions are used to communicate with the fgpa, for programming, etc.
  * None of these should ever have to be called by the user.
- */ 
+ */
 
 // FPGA Base Address
 #define FPGA_BASE 0x1100
 
 // FPGA Motor Registers
-#define FPGA_MOTOR_BASE 	0x00
-#define FPGA_MOTOR_SIZE		0x02
-#define FPGA_MOTOR_CTL		0x00
-#define FPGA_MOTOR_VEL		0x01
+#define FPGA_MOTOR_BASE     0x00
+#define FPGA_MOTOR_SIZE     0x02
+#define FPGA_MOTOR_CTL      0x00
+#define FPGA_MOTOR_VEL      0x01
 
 // FPGA Encoder Registers
-#define FPGA_ENCODER_BASE	0x0C
-#define FPGA_ENCODER_SIZE	0x02
-#define FPGA_ENCODER_LO		0x00
-#define FPGA_ENCODER_HI		0x01
+#define FPGA_ENCODER_BASE   0x0C
+#define FPGA_ENCODER_SIZE   0x02
+#define FPGA_ENCODER_LO     0x00
+#define FPGA_ENCODER_HI     0x01
 
 // FPGA Digital Register
-#define FPGA_DIGITAL_BASE	0x1E
-#define FPGA_DIGITAL_SIZE 0x01
+#define FPGA_DIGITAL_BASE   0x1E
+#define FPGA_DIGITAL_SIZE   0x01
 
 // FPGA Servo Registers
-#define FPGA_SERVO_BASE		0x20
-#define FPGA_SERVO_SIZE		0x02
-#define FPGA_SERVO_LO 		0x00
-#define FPGA_SERVO_HI 		0x01
+#define FPGA_SERVO_BASE     0x20
+#define FPGA_SERVO_SIZE     0x02
+#define FPGA_SERVO_LO       0x00
+#define FPGA_SERVO_HI       0x01
 
 // FPGA Version Registers
-#define FPGA_VERSION_MAJ	0xFE
-#define FPGA_VERSION_MIN	0xFF
+#define FPGA_VERSION_MAJ    0xFE
+#define FPGA_VERSION_MIN    0xFF
 
 /// FPGA Write Byte - write a byte to an FPGA register. Not called by the user.
 #define fpga_write_byte(addr, v) ((volatile uint8_t*) FPGA_BASE)[(addr)] = (v)

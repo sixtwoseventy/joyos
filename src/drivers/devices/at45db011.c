@@ -29,217 +29,201 @@
 #include "hal/delay.h"
 #include "at45db011.h"
 
-#define STAT_READY				7
-#define STAT_COMP				6
+#define STAT_READY              7
+#define STAT_COMP               6
 
-#define CMD_BLOCK_ERASE			0x50
-#define CMD_PAGE_TO_BUF_TXF		0x53 //
-#define CMD_PAGE_REWRITE		0x58
-#define CMD_PAGE_TO_BUF_CMP		0x60
-#define CMD_PAGE_ERASE			0x81
-#define CMD_PROGRAM_VIA_BUF		0x82
-#define CMD_BUF_PROGRAM_ERASE	0x83 //
-#define CMD_BUF_WRITE			0x84 //
-#define CMD_BUF_PROGRAM_NOERASE	0x88
-#define CMD_PAGE_READ			0xD2
-#define CMD_BUFFER_READ			0xD4
-#define CMD_STATUS_REG			0xD7 // 
-#define CMD_CONTINUOUS_READ		0xE8 //
+#define CMD_BLOCK_ERASE         0x50
+#define CMD_PAGE_TO_BUF_TXF     0x53
+#define CMD_PAGE_REWRITE        0x58
+#define CMD_PAGE_TO_BUF_CMP     0x60
+#define CMD_PAGE_ERASE          0x81
+#define CMD_PROGRAM_VIA_BUF     0x82
+#define CMD_BUF_PROGRAM_ERASE   0x83
+#define CMD_BUF_WRITE           0x84
+#define CMD_BUF_PROGRAM_NOERASE 0x88
+#define CMD_PAGE_READ           0xD2
+#define CMD_BUFFER_READ         0xD4
+#define CMD_STATUS_REG          0xD7
+#define CMD_CONTINUOUS_READ     0xE8
 
-#define PAGE_EXTRA_BYTES	8
-#define PAGE_OFFSET_MASK	0x000ff
-#define PAGE_ADDR_SHIFT		8
+#define PAGE_EXTRA_BYTES        8
+#define PAGE_OFFSET_MASK        0x000ff
+#define PAGE_ADDR_SHIFT         8
 
 uint8_t read_offset;
 
-static void
-wait_for_ready ()
-{
-	uint8_t byte;
+static void wait_for_ready () {
+    uint8_t byte;
 
-	byte = CMD_STATUS_REG;
+    byte = CMD_STATUS_REG;
 
-	SPI_FLASH_SS (0);
-	spi_transfer_sync (&byte, 1);
-	do {
-		spi_transfer_sync (&byte, 1);
-	} while (!(byte & _BV(STAT_READY)));
-	SPI_FLASH_SS (1);
-	delay_busy_us(1);
+    SPI_FLASH_SS (0);
+    spi_transfer_sync (&byte, 1);
+    do {
+        spi_transfer_sync (&byte, 1);
+    } while (!(byte & _BV(STAT_READY)));
+    SPI_FLASH_SS (1);
+    delay_busy_us(1);
 }
 
-int8_t
-at45db_fill_buffer_from_flash(uint32_t addr) {
-	uint8_t cmd[4];
-	
-	if (spi_acquire() == SPI_IN_USE)
-		return AT45DB_SPI_BUSY;
-	
-	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
-	
-	cmd[0] = CMD_PAGE_TO_BUF_TXF;
-	cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
-	cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
-	cmd[3] = 0;
-	
-	wait_for_ready ();
+int8_t at45db_fill_buffer_from_flash(uint32_t addr) {
+    uint8_t cmd[4];
 
-	SPI_FLASH_SS (0);
-	spi_transfer_sync (cmd, 4);
-	SPI_FLASH_SS (1);
-	delay_busy_us (1);
+    if (spi_acquire() == SPI_IN_USE)
+        return AT45DB_SPI_BUSY;
 
-	spi_release ();
+    spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 
-	return AT45DB_READY;
+    cmd[0] = CMD_PAGE_TO_BUF_TXF;
+    cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
+    cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
+    cmd[3] = 0;
+
+    wait_for_ready ();
+
+    SPI_FLASH_SS (0);
+    spi_transfer_sync (cmd, 4);
+    SPI_FLASH_SS (1);
+    delay_busy_us (1);
+
+    spi_release ();
+
+    return AT45DB_READY;
 }
 
-int8_t
-at45db_start_continuous_read (uint32_t addr)
-{
-	uint8_t cmd[4];
+int8_t at45db_start_continuous_read (uint32_t addr) {
+    uint8_t cmd[4];
 
-	if (spi_acquire() == SPI_IN_USE)
-		return AT45DB_SPI_BUSY;
-		
-	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
-	
-	cmd[0] = CMD_CONTINUOUS_READ;
-	cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
-	cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
-	cmd[3] = read_offset = addr & PAGE_OFFSET_MASK;
-	
-	wait_for_ready ();
+    if (spi_acquire() == SPI_IN_USE)
+        return AT45DB_SPI_BUSY;
 
-	SPI_FLASH_SS (0);
-	/* transmit the 4 command bytes */
-	spi_transfer_sync (cmd, 4);
+    spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 
-	/* transmit 4 don't care bytes */
-	spi_transfer_sync (cmd, 4);
+    cmd[0] = CMD_CONTINUOUS_READ;
+    cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
+    cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
+    cmd[3] = read_offset = addr & PAGE_OFFSET_MASK;
 
-	return AT45DB_READY;
+    wait_for_ready ();
+
+    SPI_FLASH_SS (0);
+    /* transmit the 4 command bytes */
+    spi_transfer_sync (cmd, 4);
+
+    /* transmit 4 don't care bytes */
+    spi_transfer_sync (cmd, 4);
+
+    return AT45DB_READY;
 }
 
-uint8_t
-at45db_get_next_byte ()
-{
-	uint8_t byte;
-	spi_transfer_sync (&byte, 1);
+uint8_t at45db_get_next_byte () {
+    uint8_t byte;
+    spi_transfer_sync (&byte, 1);
 
-	/* skip the extra 8 bytes at the end of each page */
-	if (read_offset == AT45DB_PAGE_SIZE - 1) {
-		uint8_t scratch, i;
-		for (i = 0; i < PAGE_EXTRA_BYTES; i++)
-			spi_transfer_sync (&scratch, 1);
-	}
-	read_offset++;
-	
-	return byte;
+    /* skip the extra 8 bytes at the end of each page */
+    if (read_offset == AT45DB_PAGE_SIZE - 1) {
+        uint8_t scratch, i;
+        for (i = 0; i < PAGE_EXTRA_BYTES; i++)
+            spi_transfer_sync (&scratch, 1);
+    }
+    read_offset++;
+
+    return byte;
 }
 
-uint8_t
-at45db_continuous_read_block(uint16_t len, uint8_t* data) {
-  uint16_t i;
-  for (i=0;i<len;i++)
-	data[i] = at45db_get_next_byte();
+uint8_t at45db_continuous_read_block(uint16_t len, uint8_t* data) {
+    uint16_t i;
+    for (i=0;i<len;i++)
+        data[i] = at45db_get_next_byte();
 
-  return AT45DB_READY;
+    return AT45DB_READY;
 }
 
-void
-at45db_end_continuous_read ()
-{
-	SPI_FLASH_SS (1);
-	delay_busy_us (1);
-	spi_release ();
+void at45db_end_continuous_read () {
+    SPI_FLASH_SS (1);
+    delay_busy_us (1);
+    spi_release ();
 }
 
-int8_t
-at45db_get_status (uint8_t * status)
-{
-	uint8_t cmd[2];
+int8_t at45db_get_status (uint8_t * status) {
+    uint8_t cmd[2];
 
-	cmd[0] = CMD_STATUS_REG;
-	cmd[1] = 0;
+    cmd[0] = CMD_STATUS_REG;
+    cmd[1] = 0;
 
-	if (spi_acquire() == SPI_IN_USE)
-		return AT45DB_SPI_BUSY;
+    if (spi_acquire() == SPI_IN_USE)
+        return AT45DB_SPI_BUSY;
 
-	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
-	
-	SPI_FLASH_SS (0);
-	spi_transfer_sync (cmd, 2);
-	SPI_FLASH_SS (1);
-	delay_busy_us (1);
+    spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 
-	spi_release ();
+    SPI_FLASH_SS (0);
+    spi_transfer_sync (cmd, 2);
+    SPI_FLASH_SS (1);
+    delay_busy_us (1);
 
-	*status = cmd[1];
+    spi_release ();
 
-	return AT45DB_READY;
+    *status = cmd[1];
+
+    return AT45DB_READY;
 }
 
-int8_t
-at45db_store_buffer (uint32_t addr)
-{
-	uint8_t cmd[4];
+int8_t at45db_store_buffer (uint32_t addr) {
+    uint8_t cmd[4];
 
-	if (spi_acquire() == SPI_IN_USE)
-		return AT45DB_SPI_BUSY;
+    if (spi_acquire() == SPI_IN_USE)
+        return AT45DB_SPI_BUSY;
 
-	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
-	
-	cmd[0] = CMD_BUF_PROGRAM_ERASE;
-	cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
-	cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
-	cmd[3] = 0;
-	
-	wait_for_ready ();
+    spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 
-	/* transmit the 4 command bytes */
-	SPI_FLASH_SS (0);
-	spi_transfer_sync (cmd, 4);
-	SPI_FLASH_SS (1);
-	delay_busy_us (1);
+    cmd[0] = CMD_BUF_PROGRAM_ERASE;
+    cmd[1] = (addr >> PAGE_ADDR_SHIFT) >> 7;
+    cmd[2] = (addr >> PAGE_ADDR_SHIFT) << 1;
+    cmd[3] = 0;
 
-	spi_release ();
+    wait_for_ready ();
 
-	return AT45DB_READY;
+    /* transmit the 4 command bytes */
+    SPI_FLASH_SS (0);
+    spi_transfer_sync (cmd, 4);
+    SPI_FLASH_SS (1);
+    delay_busy_us (1);
+
+    spi_release ();
+
+    return AT45DB_READY;
 }
 
-int16_t
-at45db_fill_buffer (uint32_t addr, uint8_t * data, uint16_t len)
-{
-	uint8_t cmd[4];
-	uint16_t i;
-	uint8_t offset;
+int16_t at45db_fill_buffer (uint32_t addr, uint8_t * data, uint16_t len) {
+    uint8_t cmd[4];
+    uint16_t i;
+    uint8_t offset;
 
-	if (spi_acquire() == SPI_IN_USE)
-		return AT45DB_SPI_BUSY;
+    if (spi_acquire() == SPI_IN_USE)
+        return AT45DB_SPI_BUSY;
 
-	spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
+    spi_set_master (SPI_CLK_DIV_2, SPI_FLAGS_DEFAULT);
 
-	cmd[0] = CMD_BUF_WRITE;
-	cmd[1] = 0;
-	cmd[2] = 0;
-	cmd[3] = offset = addr & PAGE_OFFSET_MASK;
+    cmd[0] = CMD_BUF_WRITE;
+    cmd[1] = 0;
+    cmd[2] = 0;
+    cmd[3] = offset = addr & PAGE_OFFSET_MASK;
 
-	SPI_FLASH_SS (0);
-	/* transmit the 4 command bytes */
-	spi_transfer_sync (cmd, 4);
+    SPI_FLASH_SS (0);
+    /* transmit the 4 command bytes */
+    spi_transfer_sync (cmd, 4);
 
-	if ((uint16_t)offset + len > AT45DB_PAGE_SIZE)
-		len = AT45DB_PAGE_SIZE - offset;
+    if ((uint16_t)offset + len > AT45DB_PAGE_SIZE)
+        len = AT45DB_PAGE_SIZE - offset;
 
-	for (i = 0; i < len; i++) {
-		cmd[0] = data[i];
-		spi_transfer_sync (cmd, 1);
-	}
-	SPI_FLASH_SS (1);
-	delay_busy_us (1);
+    for (i = 0; i < len; i++) {
+        cmd[0] = data[i];
+        spi_transfer_sync (cmd, 1);
+    }
+    SPI_FLASH_SS (1);
+    delay_busy_us (1);
 
-	spi_release ();
+    spi_release ();
 
-	return len;
+    return len;
 }

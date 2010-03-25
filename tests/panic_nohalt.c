@@ -32,13 +32,13 @@
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 int umain(void) {
-	printf ("\nwait 3 sec...");
-	motor_set_vel (0, 192);
-	pause(3000);
-	panic ("stop");
-	return 0;
+    printf ("\nwait 3 sec...");
+    motor_set_vel (0, 192);
+    pause(3000);
+    panic ("stop");
+    return 0;
 }

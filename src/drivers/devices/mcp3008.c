@@ -29,33 +29,32 @@
 #include "hal/spi.h"
 #include <kern/global.h>
 
-int8_t 
-mcp3008_get_sample(mcp3008_device dev, mcp3008_input config, uint16_t *sample) {
-	uint8_t cmd[3];
+int8_t mcp3008_get_sample(mcp3008_device dev, mcp3008_input config, uint16_t *sample) {
+    uint8_t cmd[3];
 
-	if (spi_acquire() == SPI_IN_USE)
-		return MCP3008_SPI_BUSY;
+    if (spi_acquire() == SPI_IN_USE)
+        return MCP3008_SPI_BUSY;
 
-	cmd[0] = 0x40 | (config << 2);
+    cmd[0] = 0x40 | (config << 2);
 
-	spi_set_master (SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
+    spi_set_master (SPI_CLK_DIV_16, SPI_FLAGS_DEFAULT);
 
-	switch (dev) {
-		case MCP3008_MOTOR: SPI_MOTOR_SS(0); break;
-		case MCP3008_ADC1:  SPI_ADC1_SS(0); break;
-		case MCP3008_ADC2:  SPI_ADC2_SS(0); break;
- 	}
-	spi_transfer_sync (cmd, 3);
-	switch (dev) {
-		case MCP3008_MOTOR: SPI_MOTOR_SS(1); break;
-		case MCP3008_ADC1:  SPI_ADC1_SS(1); break;
- 		case MCP3008_ADC2:  SPI_ADC2_SS(1); break;
-	}
+    switch (dev) {
+        case MCP3008_MOTOR: SPI_MOTOR_SS(0); break;
+        case MCP3008_ADC1:  SPI_ADC1_SS(0); break;
+        case MCP3008_ADC2:  SPI_ADC2_SS(0); break;
+    }
+    spi_transfer_sync (cmd, 3);
+    switch (dev) {
+        case MCP3008_MOTOR: SPI_MOTOR_SS(1); break;
+        case MCP3008_ADC1:  SPI_ADC1_SS(1); break;
+        case MCP3008_ADC2:  SPI_ADC2_SS(1); break;
+    }
 
-	*sample = ((uint16_t)cmd[1] << 8) | cmd[2];
-	*sample >>= 6;
+    *sample = ((uint16_t)cmd[1] << 8) | cmd[2];
+    *sample >>= 6;
 
-	spi_release();
+    spi_release();
 
-	return MCP3008_SUCCESS;
+    return MCP3008_SUCCESS;
 }

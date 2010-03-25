@@ -27,29 +27,26 @@
 #include "hal/adc.h"
 #include "kern/lock.h"
 
-#define PRESCALER	0x7
+#define PRESCALER   0x7
 
 struct lock adc_lock;
 
-void
-adc_init (void) {
-	init_lock(&adc_lock, "adc lock");
+void adc_init (void) {
+    init_lock(&adc_lock, "adc lock");
 }
 
-int8_t
-adc_get_sample (adc_ref ref, adc_input config, uint16_t * val)
-{
-	acquire(&adc_lock);
+int8_t adc_get_sample (adc_ref ref, adc_input config, uint16_t * val) {
+    acquire(&adc_lock);
 
-	ADMUX = (ref << 7) | _BV(REFS0) | /*_BV(ADLAR) |*/ config;
-	ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIF) | PRESCALER;
+    ADMUX = (ref << 7) | _BV(REFS0) | /*_BV(ADLAR) |*/ config;
+    ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIF) | PRESCALER;
 
-	while (!(ADCSRA & _BV(ADIF)));
-	ADCSRA |= _BV(ADIF);
+    while (!(ADCSRA & _BV(ADIF)));
+    ADCSRA |= _BV(ADIF);
 
-	*val = ADCL;
-	*val |= (ADCH << 8);
+    *val = ADCL;
+    *val |= (ADCH << 8);
 
-	release(&adc_lock);
-	return ADC_SUCCESS;
+    release(&adc_lock);
+    return ADC_SUCCESS;
 }

@@ -53,7 +53,7 @@ typedef uint8_t MotorGroup; ///< MotorGroup
  */
 MotorGroup motor_group_new(bool m0, bool m1, bool m2, bool m3, bool m4, bool m5);
 
-/** 
+/**
  * Set the velocity of each motor in the group
  *
  * @param group   group specifying which motors to set

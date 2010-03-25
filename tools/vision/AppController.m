@@ -54,17 +54,17 @@
 
 	[captureSession release];*/
 	
-	// Ok, this might be all kinds of wrong, but it was the only way I found to map a 
-	// QTCaptureDevice to a IOKit USB Device. The uniqueID method seems to always(?) return 
-	// the locationID as a HEX string in the first few chars, but the format of this string 
+	// Ok, this might be all kinds of wrong, but it was the only way I found to map a
+	// QTCaptureDevice to a IOKit USB Device. The uniqueID method seems to always(?) return
+	// the locationID as a HEX string in the first few chars, but the format of this string
 	// is not documented anywhere and (knowing Apple) might change sooner or later.
 	//
 	// In most cases you'd be probably better of using the UVCCameraControls
-	// - (id)initWithVendorID:(long) productID:(long) 
+	// - (id)initWithVendorID:(long) productID:(long)
 	// method instead. I.e. for the Logitech QuickCam9000:
 	// cameraControl = [[UVCCameraControl alloc] initWithVendorID:0x046d productID:0x0990];
 	//
-	// You can use USB Prober (should be in /Developer/Applications/Utilities/USB Prober.app) 
+	// You can use USB Prober (should be in /Developer/Applications/Utilities/USB Prober.app)
 	// to find the values of your camera.
 	
 //	UInt32 locationID = 0;
@@ -315,7 +315,7 @@ void visualize(NSBitmapImageRep *bitmap, unsigned char *data,
 			
 			data[x*bytesPerPixel + y*bytesPerRow+0] = 255;
 		}
-	} 
+	}
 	
 	[image addRepresentation:bitmap];
 	
@@ -380,7 +380,7 @@ void reorder(sighting robot[], sighting oldrobot[], float diagLengthSquared) {
 				maxConfidence = confidence[j];
 			}
 		}
-		// then match the corresponding robot to the nearest entry in 
+		// then match the corresponding robot to the nearest entry in
 		// oldrobots
 		float minDistance=INFINITY;
 		int minDistanceIndex=-1;
@@ -429,7 +429,7 @@ void reorder(sighting robot[], sighting oldrobot[], float diagLengthSquared) {
 
 void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, volatile packet_buffer *lights, NSFileHandle *serialPort) {
 	// experiment consists of commanding one robot to turn its light on.
-	// then we test which 't' got the brightest and swap the robot->t 
+	// then we test which 't' got the brightest and swap the robot->t
 	// assignment as necessary. evaluate the results of each experiment
 	// after each second, then increment currentRobot.
 #define LIGHTLESS_INTERVAL 1.0
@@ -438,7 +438,7 @@ void experiment(sighting robot[], int *currentRobot, NSTimeInterval *lastTime, v
 		lights->payload.lights[*currentRobot].value = 0;
 		send_packet(serialPort,lights,sizeof(packet_buffer));
 		return;
-	} else*/ 
+	} else*/
 	if ((now-*lastTime)<LIGHTLESS_INTERVAL){
 		for (int i=0; i<4; i++)
 			lights->payload.lights[i].value = 0;

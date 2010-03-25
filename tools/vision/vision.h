@@ -23,7 +23,7 @@ void locate(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, 
 			int *xout, int *yout);
 void erase(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int width, int height, int x, int y, int dx, int dy);
 void align(unsigned char *data, unsigned char *mask, int bytesPerRow, int bytesPerPixel, int width, int height,
-		   int x, int y, float *xout, float *yout, float *thetaout, bool *light, int *thresh, float *momentout, float *sumout);
+			int x, int y, float *xout, float *yout, float *thetaout, bool *light, int *thresh, float *momentout, float *sumout);
 void findRobot(unsigned char *data, int bytesPerRow, int bytesPerPixel, int width, int height, sighting *robot);
 
 #define SWAP(_x_, _y_) {__typeof__(_x_) _z_; _z_=_x_; _x_=_y_; _y_=_z_;}

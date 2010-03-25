@@ -29,35 +29,33 @@
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 // Entry point to contestant code.
 // Create threads and return 0.
-int
-umain (void) {
-	// Loop forever
-	while (1) {
-		// Clear LCD (with \n) and print ROBOTS at top left
-		printf("\nROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom right
-		printf("\n                          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at top right
-		printf("\n          ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-		// Clear LCD and print ROBOTS at bottom left
-		printf("\n                ROBOTS");
-		// Pause for 200 ms
-		pause(200);
-	}
+int umain (void) {
+    // Loop forever
+    while (1) {
+        // Clear LCD (with \n) and print ROBOTS at top left
+        printf("\nROBOTS");
+        // Pause for 200 ms
+        pause(200);
+        // Clear LCD and print ROBOTS at bottom right
+        printf("\n                          ROBOTS");
+        // Pause for 200 ms
+        pause(200);
+        // Clear LCD and print ROBOTS at top right
+        printf("\n          ROBOTS");
+        // Pause for 200 ms
+        pause(200);
+        // Clear LCD and print ROBOTS at bottom left
+        printf("\n                ROBOTS");
+        // Pause for 200 ms
+        pause(200);
+    }
 
-	// Will never return, but the compiler complains without a return
-	// statement.
-	return 0;
+    // Will never return, but the compiler complains without a return
+    // statement.
+    return 0;
 }
-

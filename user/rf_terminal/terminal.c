@@ -27,16 +27,15 @@
 #include <joyos.h>
 
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
-int
-umain (void) {	
+int umain (void) {
 
     printf("\n\nTerminal Online\n");
     printf("Waiting for robot to transmit prompt...\n");
 
-	while(1) {
+    while(1) {
         if (uart_has_char())
             rf_send(uart_recv());
         if (rf_has_char())
@@ -44,6 +43,5 @@ umain (void) {
         yield();
     }
 
-	return 0;
+    return 0;
 }
-

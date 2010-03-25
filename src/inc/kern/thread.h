@@ -36,8 +36,8 @@
  * \file thread.h
  * \brief Thread management.
  *
- * JoyOS includes a round-robbin pre-emptive scheduler, with a system tick of 
- * 1ms. 
+ * JoyOS includes a round-robbin pre-emptive scheduler, with a system tick of
+ * 1ms.
  */
 
 #include <setjmp.h>
@@ -49,90 +49,82 @@
 #define TIMER_1MS_EXPIRE 131
 
 // TODO probably defined elsewhere
-#define SREG_IF	0x80
+#define SREG_IF 0x80
 
-#define STACK_DEFAULT		256
+#define STACK_DEFAULT 256
 
 #define ATOMIC_BEGIN uint8_t _cli_was_enabled = SREG & SREG_IF; cli();
 #define ATOMIC_END SREG |= _cli_was_enabled;
 
 struct jbuf {
-	union {
-		struct {
-			uint8_t r2;
-			uint8_t r3;
-			uint8_t r4;
-			uint8_t r5;
-			uint8_t r6;
-			uint8_t r7;
-			uint8_t r8;
-			uint8_t r9;
-			uint8_t r10;
-			uint8_t r11;
-			uint8_t r12;
-			uint8_t r13;
-			uint8_t r14;
-			uint8_t r15;
-			uint8_t r16;
-			uint8_t r17;
-			uint16_t fp;
-			uint16_t sp;
-			uint8_t sreg;
-			uint16_t pc;
-		};
-		jmp_buf jb;
-	};
+    union {
+        struct {
+            uint8_t r2;
+            uint8_t r3;
+            uint8_t r4;
+            uint8_t r5;
+            uint8_t r6;
+            uint8_t r7;
+            uint8_t r8;
+            uint8_t r9;
+            uint8_t r10;
+            uint8_t r11;
+            uint8_t r12;
+            uint8_t r13;
+            uint8_t r14;
+            uint8_t r15;
+            uint8_t r16;
+            uint8_t r17;
+            uint16_t fp;
+            uint16_t sp;
+            uint8_t sreg;
+            uint16_t pc;
+        };
+        jmp_buf jb;
+    };
 };
 
 #define TO_JMP_BUF(jbuf) ((jbuf).jb)
 
 struct thread {
-	struct jbuf th_jmpbuf;
-	uint16_t th_stacktop;
-	uint16_t th_stacksize;
-	uint8_t th_id;
-	uint8_t th_status;
-	uint8_t th_priority;
-	uint32_t th_runs;
-	uint32_t th_wakeup_time;
-	void *th_channel;
-	char *th_name;
+    struct jbuf th_jmpbuf;
+    uint16_t th_stacktop;
+    uint16_t th_stacksize;
+    uint8_t th_id;
+    uint8_t th_status;
+    uint8_t th_priority;
+    uint32_t th_runs;
+    uint32_t th_wakeup_time;
+    void *th_channel;
+    char *th_name;
     int (*th_func)();
 };
 
 // Macros for extracting jmp_buf thingies
 
-#define JMPBUF_FP_OFFSET	16
-#define JMPBUF_SP_OFFSET	18
-#define JMPBUF_IP_OFFSET	21
-#define JMPBUF_SREG_OFFSET	20
+#define JMPBUF_FP_OFFSET    16
+#define JMPBUF_SP_OFFSET    18
+#define JMPBUF_IP_OFFSET    21
+#define JMPBUF_SREG_OFFSET  20
 
 // TODO simplify expression...
-#define JMPBUF_GET(jb, off, type)	(*((type *) (&((uint8_t *) &(jb))[off])))
+#define JMPBUF_GET(jb, off, type)   (*((type *) (&((uint8_t *) &(jb))[off])))
 
-/*
-#define JMPBUF_FP(jb)		JMPBUF_GET(jb, JMPBUF_FP_OFFSET, uint16_t)
-#define JMPBUF_SP(jb)		JMPBUF_GET(jb, JMPBUF_SP_OFFSET, uint16_t)
-// NOTE: IP is really 24bit, but we assume flash <= 128K
-#define JMPBUF_IP(jb)		JMPBUF_GET(jb, JMPBUF_IP_OFFSET, uint16_t)
-#define JMPBUF_SREG(jb)		JMPBUF_GET(jb, JMPBUF_SREG_OFFSET, uint8_t)
-*/
-
-#define JMPBUF_FP(jb)		((jb).fp)
-#define JMPBUF_SP(jb)		((jb).sp)
-#define JMPBUF_IP(jb)		((jb).pc)
-#define JMPBUF_SREG(jb)		((jb).sreg)
+#define JMPBUF_FP(jb)       ((jb).fp)
+#define JMPBUF_SP(jb)       ((jb).sp)
+#define JMPBUF_IP(jb)       ((jb).pc)
+#define JMPBUF_SREG(jb)     ((jb).sreg)
 
 
 enum {
-	THREAD_FREE,
-	THREAD_RUNNABLE,
-	THREAD_NOT_RUNNABLE,
-	THREAD_SLEEPING,
-	THREAD_PAUSED,
+    THREAD_FREE,
+    THREAD_RUNNABLE,
+    THREAD_NOT_RUNNABLE,
+    THREAD_SLEEPING,
+    THREAD_PAUSED,
 };
 
-#define MAX_THREADS	7
+#define MAX_THREADS 7
 
 // setup multithreading
 /**
@@ -148,7 +140,7 @@ void schedule(void) __ATTR_NORETURN__;
 /**
  * Load a thread and run it. Should not be called by user.
  *
- * @param t	Thread to be run.
+ * @param t Thread to be run.
  */
 void resume(struct thread *t) __ATTR_NORETURN__;
 
@@ -159,7 +151,7 @@ void resume(struct thread *t) __ATTR_NORETURN__;
  * than specified. If threads pause frequently for short periods of time
  * (1-4ms, depending) thread starvation may occur.
  *
- * @param ms	Milliseconds to pause.
+ * @param ms    Milliseconds to pause.
  */
 void pause(uint32_t ms);
 
@@ -180,15 +172,14 @@ void thread_exit(int) __ATTR_NORETURN__;
  * This routine will setup a new thread that will enter in 'func' and return
  * immediately. When 'func' returns, the new thread will terminate (via exit).
  *
- * @param func		Entry point of thread.
- * @param stacksize	Size (in bytes) of new thread.
- * @param priority	Priority of new thread. 0 = highest, 255 = lowest
- * @param name		Name of thread, used for debugging.
+ * @param func      Entry point of thread.
+ * @param stacksize Size (in bytes) of new thread.
+ * @param priority  Priority of new thread. 0 = highest, 255 = lowest
+ * @param name      Name of thread, used for debugging.
  *
  * @return Thread ID of the new thread.
  */
-uint8_t create_thread(
-	int (*func)(), uint16_t stacksize, uint8_t priority, char *name);
+uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name);
 
 /**
  * Stop everything.

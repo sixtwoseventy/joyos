@@ -28,33 +28,33 @@
 #include "hal/io.h"
 
 int uart_send(char ch) {
-	LED_COMM(1);
-	while (!(UCSR0A & _BV(UDRE0)));
-	UDR0 = ch;
-	LED_COMM(0);
-	return ch;
+    LED_COMM(1);
+    while (!(UCSR0A & _BV(UDRE0)));
+    UDR0 = ch;
+    LED_COMM(0);
+    return ch;
 }
 
-void uart_print(const char *string) {
-	while (*string)
-		uart_send(*string++);
-}
+    void uart_print(const char *string) {
+        while (*string)
+            uart_send(*string++);
+    }
 
 char uart_recv() {
-	LED_COMM(1);
-	while(!(UCSR0A & _BV(RXC0)));
-	LED_COMM(0);
-	return (UDR0);
+    LED_COMM(1);
+    while(!(UCSR0A & _BV(RXC0)));
+    LED_COMM(0);
+    return (UDR0);
 }
 
 char uart_has_char() {
-	return (UCSR0A & _BV(RXC0));
+    return (UCSR0A & _BV(RXC0));
 }
 
 void uart_init(uint16_t baudRate) {
-	UBRR0L = (uint8_t)(F_CPU/(baudRate*16L)-1);
-	UBRR0H = (F_CPU/(baudRate*16L)-1) >> 8;
-	UCSR0A = 0x00;
-	UCSR0C = 0x06;
-	UCSR0B = _BV(TXEN0)|_BV(RXEN0);
+    UBRR0L = (uint8_t)(F_CPU/(baudRate*16L)-1);
+    UBRR0H = (F_CPU/(baudRate*16L)-1) >> 8;
+    UCSR0A = 0x00;
+    UCSR0C = 0x06;
+    UCSR0B = _BV(TXEN0)|_BV(RXEN0);
 }

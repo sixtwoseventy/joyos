@@ -40,87 +40,80 @@
 #include <math.h>
 #include <hal/uart.h>
 
-void
-init_pid (struct pid_controller *pid, float kp, float ki, float kd,
-		float (*input) (), void (*output) (float value)) {
+void init_pid (struct pid_controller *pid, float kp, float ki, float kd, float (*input) (), void (*output) (float value)) {
 
-	if (pid == 0)
-		panic("init_pid: pid null");
+    if (pid == 0)
+        panic("init_pid: pid null");
 
-	pid->kp = kp;
-	pid->ki = ki;
-	pid->kd = kd;
+    pid->kp = kp;
+    pid->ki = ki;
+    pid->kd = kd;
 
-	pid->input = input;
-	pid->output = output;
+    pid->input = input;
+    pid->output = output;
 
-	pid->sum = 0;
-	pid->has_past = 0;
-	pid->enabled = 0;
+    pid->sum = 0;
+    pid->has_past = 0;
+    pid->enabled = 0;
 }
 
-float 
-update_pid_input(struct pid_controller *pid, float current_val) {
+float update_pid_input(struct pid_controller *pid, float current_val) {
 
-	printf ("current value %0.3f\n", current_val);
+    printf ("current value %0.3f\n", current_val);
 
-	float error = pid->goal - current_val;
+    float error = pid->goal - current_val;
 
-	printf ("error %0.3f\n", error);
+    printf ("error %0.3f\n", error);
 
-	// proportional feedback
-	float result = error * pid->kp;
+    // proportional feedback
+    float result = error * pid->kp;
 
-	float partial_sum = 0;
-	if (pid->has_past) {
-		float dt = 0.001 * (get_time() - pid->last_time);
+    float partial_sum = 0;
+    if (pid->has_past) {
+        float dt = 0.001 * (get_time() - pid->last_time);
 
-		// integral feedback
-		partial_sum = pid->sum + dt * error;
-		result += pid->ki * partial_sum;
+        // integral feedback
+        partial_sum = pid->sum + dt * error;
+        result += pid->ki * partial_sum;
 
-		// differential feedback
-		if (dt != 0)
-			result += pid->kd * (current_val - pid->last_val) / dt;
-	}
+        // differential feedback
+        if (dt != 0)
+            result += pid->kd * (current_val - pid->last_val) / dt;
+    }
 
-	pid->has_past = 1;
-	pid->sum = partial_sum;
-	pid->last_val = current_val;
-	pid->last_time = get_time();
+    pid->has_past = 1;
+    pid->sum = partial_sum;
+    pid->last_val = current_val;
+    pid->last_time = get_time();
 
-	if (pid->output)
-		pid->output (result);
+    if (pid->output)
+        pid->output (result);
 
-	return result;
+    return result;
 }
 
-float
-update_pid (struct pid_controller *pid) {
-	if (!pid->enabled)
-		panic("update_pid: pid disabled");
+float update_pid (struct pid_controller *pid) {
+    if (!pid->enabled)
+        panic("update_pid: pid disabled");
 
-	if (!pid->input)
-		panic("update_pid: no input");
-	
-	float current_val = pid->input();
+    if (!pid->input)
+        panic("update_pid: no input");
 
-	return update_pid_input(pid, current_val);
+    float current_val = pid->input();
+
+    return update_pid_input(pid, current_val);
 }
 
+uint8_t dispatch_pid (struct pid_controller *pid, float tolerance, uint8_t (*stop) ()) {
+    float result;
+    do {
+        // break if stopped
+        //if (stop && stop())
+        //return 0; // return failure
 
-uint8_t
-dispatch_pid (struct pid_controller *pid, float tolerance, uint8_t (*stop) ()) {
-	float result;
-	do {
-		// break if stopped
-		//if (stop && stop())
-		//	return 0; // return failure
+        result = update_pid (pid);
+        //} while (fabs (pid->goal - result) <= tolerance);
+    } while (1);
 
-		result = update_pid (pid);
-	//} while (fabs (pid->goal - result) <= tolerance);
-	} while (1);
-
-	return 1; // return success
+    return 1; // return success
 }
-

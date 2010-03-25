@@ -52,7 +52,7 @@ void i2cSetSlaveReceiveHandler(void (*i2cSlaveRx_func)(uint8_t receiveDataLength
 //! Set the user function which handles transmitting (outgoing) data as a slave
 void i2cSetSlaveTransmitHandler(uint8_t (*i2cSlaveTx_func)(uint8_t transmitDataLengthMax, uint8_t* transmitData));
 
-// Low-level I2C transaction commands 
+// Low-level I2C transaction commands
 //! Send an I2C start condition in Master mode
 void i2cSendStart(void);
 //! Send an I2C stop condition in Master mode
@@ -61,7 +61,7 @@ void i2cSendStop(void);
 void i2cWaitForComplete(void);
 //! Send an (address|R/W) combination or a data byte over I2C
 void i2cSendByte(uint8_t data);
-//! Receive a data byte over I2C  
+//! Receive a data byte over I2C
 // ackFlag = TRUE if recevied data should be ACK'ed
 // ackFlag = FALSE if recevied data should be NACK'ed
 void i2cReceiveByte(uint8_t ackFlag);

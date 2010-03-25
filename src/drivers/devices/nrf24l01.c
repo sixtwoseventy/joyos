@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  *
  */
- 
+
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
@@ -35,8 +35,7 @@
 #include <nrf24l01.h>
 #include <rf.h>
 
-uint8_t
-nrf_read_status(void) {
+uint8_t nrf_read_status(void) {
     spi_acquire();
     uint8_t cmd[1];
     cmd[0] = NRF_SPI_NOP;
@@ -48,8 +47,7 @@ nrf_read_status(void) {
     return cmd[0];
 }
 
-uint8_t
-nrf_read_reg(uint8_t reg) {
+uint8_t nrf_read_reg(uint8_t reg) {
     spi_acquire();
     uint8_t cmd[2];
     cmd[0] = NRF_SPI_R_REGISTER | reg;
@@ -61,8 +59,7 @@ nrf_read_reg(uint8_t reg) {
     return cmd[1];
 }
 
-uint8_t
-nrf_read_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
+uint8_t nrf_read_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
     spi_acquire();
     uint8_t cmd[6];
     cmd[0] = NRF_SPI_R_REGISTER | reg;
@@ -75,8 +72,7 @@ nrf_read_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
     return cmd[0];
 }
 
-uint8_t
-nrf_write_reg(uint8_t reg, uint8_t data) {
+uint8_t nrf_write_reg(uint8_t reg, uint8_t data) {
     spi_acquire();
     uint8_t cmd[2];
     cmd[0] = NRF_SPI_W_REGISTER | reg;
@@ -89,8 +85,7 @@ nrf_write_reg(uint8_t reg, uint8_t data) {
     return cmd[0];
 }
 
-uint8_t
-nrf_write_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
+uint8_t nrf_write_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
     spi_acquire();
     uint8_t cmd[6];
     cmd[0] = NRF_SPI_W_REGISTER | reg;
@@ -103,8 +98,7 @@ nrf_write_multibyte_reg(uint8_t reg, uint8_t *data, uint8_t len) {
     return cmd[0];
 }
 
-uint8_t
-nrf_read_rx_payload_len() {
+uint8_t nrf_read_rx_payload_len() {
     spi_acquire();
     uint8_t cmd[2];
     cmd[0] = NRF_SPI_R_RX_LP_WID;
@@ -116,8 +110,7 @@ nrf_read_rx_payload_len() {
     return cmd[1];
 }
 
-uint8_t
-nrf_read_rx_payload(uint8_t *data, uint8_t len) {
+uint8_t nrf_read_rx_payload(uint8_t *data, uint8_t len) {
     spi_acquire();
     uint8_t cmd[33];
     cmd[0] = NRF_SPI_R_RX_PAYLOAD;
@@ -130,8 +123,7 @@ nrf_read_rx_payload(uint8_t *data, uint8_t len) {
     return cmd[0];
 }
 
-uint8_t
-nrf_flush_tx() {
+uint8_t nrf_flush_tx() {
     spi_acquire();
     uint8_t cmd[1];
     cmd[0] = NRF_SPI_FLUSH_TX;
@@ -143,8 +135,7 @@ nrf_flush_tx() {
     return cmd[0];
 }
 
-uint8_t
-nrf_flush_rx() {
+uint8_t nrf_flush_rx() {
     spi_acquire();
     uint8_t cmd[1];
     cmd[0] = NRF_SPI_FLUSH_RX;
@@ -156,8 +147,7 @@ nrf_flush_rx() {
     return cmd[0];
 }
 
-uint8_t
-nrf_reuse_tx_pl() {
+uint8_t nrf_reuse_tx_pl() {
     spi_acquire();
     uint8_t cmd[1];
     cmd[0] = NRF_SPI_REUSE_TX_PL;
@@ -169,8 +159,7 @@ nrf_reuse_tx_pl() {
     return cmd[0];
 }
 
-uint8_t
-nrf_write_tx_payload(uint8_t *data, uint8_t len) {
+uint8_t nrf_write_tx_payload(uint8_t *data, uint8_t len) {
     spi_acquire();
     uint8_t cmd[33];
     cmd[0] = NRF_SPI_W_TX_PAYLOAD;

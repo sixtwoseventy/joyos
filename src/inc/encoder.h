@@ -30,23 +30,23 @@
  * \file encoder.h
  * \brief Shaft Encoders.
  *
- * The Happyboard has 4 16-bit shaft encoders. The shaft encoders are fed 
- * into the FPGA which manages the filtering and counting. The inputs are 
+ * The Happyboard has 4 16-bit shaft encoders. The shaft encoders are fed
+ * into the FPGA which manages the filtering and counting. The inputs are
  * filtered with a simple debouncing-filter to remove spurious counts.
- */ 
+ */
 
 /** Initialize the encoders. Should not be called by user. */
 void encoder_init (void);
 
 /**
  * Reset the encoder count value for a specific shaft encoder
- * @param encoder	encoder to reset (24-27)
+ * @param encoder encoder to reset (24-27)
  */
 void encoder_reset(uint8_t encoder);
 
 /**
  * Return the count value for a specific shaft encoder
- * @param encoder	encoder to read (24-27)
+ * @param encoder   encoder to read (24-27)
  */
 uint16_t encoder_read(uint8_t encoder);
 

@@ -31,35 +31,31 @@
 
 struct lock digital_lock;
 
-void
-digital_init () {
-	init_lock(&digital_lock, "digital lock");
+void digital_init () {
+    init_lock(&digital_lock, "digital lock");
 }
 
-uint8_t 
-digital_read_8() {
-	acquire(&digital_lock);
-	// read from the FPGA all 8 digital ports
-	uint8_t result = ~(fpga_read_byte(FPGA_DIGITAL_BASE));
-	release(&digital_lock);
-	return result;
+uint8_t digital_read_8() {
+    acquire(&digital_lock);
+    // read from the FPGA all 8 digital ports
+    uint8_t result = ~(fpga_read_byte(FPGA_DIGITAL_BASE));
+    release(&digital_lock);
+    return result;
 }
 
-uint8_t 
-digital_read(uint8_t port) {
-	uint8_t result = 0;
-	if (port<8) {
-		acquire(&digital_lock);
-		// grab a byte from the FPGA and mask the port's bit...
-		result = ((~(fpga_read_byte(FPGA_DIGITAL_BASE)))>>port)&1;
-		release(&digital_lock);
-	} else if (port<24) {
-		// is analog value of `port' greater than half the max+1 ?
-		result = analog_read(port)>((ANALOG_MAX+1)>>1);
-	} else {
-		panic("digital_read");
-	}
+uint8_t digital_read(uint8_t port) {
+    uint8_t result = 0;
+    if (port<8) {
+        acquire(&digital_lock);
+        // grab a byte from the FPGA and mask the port's bit...
+        result = ((~(fpga_read_byte(FPGA_DIGITAL_BASE)))>>port)&1;
+        release(&digital_lock);
+    } else if (port<24) {
+        // is analog value of `port' greater than half the max+1 ?
+        result = analog_read(port)>((ANALOG_MAX+1)>>1);
+    } else {
+        panic("digital_read");
+    }
 
-	return result;
+    return result;
 }
-

@@ -27,36 +27,34 @@
 #include <kern/thread.h>
 #include <mcp3008.h>
 
-uint16_t 
-analog_read(uint8_t port) {
-	uint16_t v;
-	if (port>=8 && port<16) {
-		// keep trying until sample is successful...
-		while (mcp3008_get_sample(MCP3008_ADC1, MCP3008_CH0+(15-port), &v)
-				!= MCP3008_SUCCESS) {
-			// XXX: for now notify user of fail
-			panic("mcp3008 fail");
+uint16_t analog_read(uint8_t port) {
+    uint16_t v;
+    if (port>=8 && port<16) {
+        // keep trying until sample is successful...
+        while (mcp3008_get_sample(MCP3008_ADC1, MCP3008_CH0+(15-port), &v)
+                != MCP3008_SUCCESS) {
+            // XXX: for now notify user of fail
+            panic("mcp3008 fail");
 
-			// yield and try again
-			yield();
-		}
-	}
+            // yield and try again
+            yield();
+        }
+    }
 
-	else if (port>=16 && port<24) {
-		while (mcp3008_get_sample(MCP3008_ADC2, MCP3008_CH0+(23-port), &v) 
-				!= MCP3008_SUCCESS) {
-			// XXX: for now notify user of fail
-			panic("mcp3008 fail");
+    else if (port>=16 && port<24) {
+        while (mcp3008_get_sample(MCP3008_ADC2, MCP3008_CH0+(23-port), &v)
+                != MCP3008_SUCCESS) {
+            // XXX: for now notify user of fail
+            panic("mcp3008 fail");
 
-			// yield and try again
-			yield();
-		}
-	}
+            // yield and try again
+            yield();
+        }
+    }
 
-	else {
-		panic("analog_read");
-	}
+    else {
+        panic("analog_read");
+    }
 
-	return v;
+    return v;
 }
-

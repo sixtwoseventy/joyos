@@ -31,10 +31,10 @@
 /**
  * \file delay.h
  * \brief Simple busy-loop delays
- * 
+ *
  * Some busy-loop delay functions. Because of the way threading works,
  * pause() is preferable to using these functions.
- */ 
+ */
 
 /**
  * Wait for a certain number of milliseconds. Please use the pause() function instead.

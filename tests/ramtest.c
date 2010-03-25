@@ -29,7 +29,7 @@
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 // Entry point to contestant code.
@@ -37,26 +37,24 @@ int usetup (void) {
 
 #define TEST_SIZE 0x7FF0
 
-int
-umain (void) {	
+int umain (void) {
 
-	uint8_t* ptr = malloc(TEST_SIZE);
+    uint8_t* ptr = malloc(TEST_SIZE);
 
-	if (!ptr) panic("malloc() failed.");
-	
-	uint16_t index;
-	for(index=0;index<TEST_SIZE;index++){
-		ptr[index]=(uint8_t)index;
-	}
+    if (!ptr) panic("malloc() failed.");
 
-	for(index=0;index<TEST_SIZE;index++){
-		if (ptr[index] != (uint8_t)index){
-			panic("RAM Test Error.");
-		}
-	}
+    uint16_t index;
+    for(index=0;index<TEST_SIZE;index++){
+        ptr[index]=(uint8_t)index;
+    }
 
-	printf("RAM Test Successful.\n");
+    for(index=0;index<TEST_SIZE;index++){
+        if (ptr[index] != (uint8_t)index){
+            panic("RAM Test Error.");
+        }
+    }
 
-	return 0;
+    printf("RAM Test Successful.\n");
+
+    return 0;
 }
-

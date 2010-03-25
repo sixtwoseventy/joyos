@@ -45,71 +45,60 @@
 
 int either_click() {
     int which = 0;
-	while (!SWITCH_GO() && !SWITCH_STOP());
+    while (!SWITCH_GO() && !SWITCH_STOP());
     which = SWITCH_GO();
-	delay_busy_us(100);
-	while (SWITCH_GO() || SWITCH_STOP());
+    delay_busy_us(100);
+    while (SWITCH_GO() || SWITCH_STOP());
     return which;
 }
 
-void 
-go_click() {
-	while (!SWITCH_GO());
-	delay_busy_us(100);
-	while (SWITCH_GO());
+void go_click() {
+    while (!SWITCH_GO());
+    delay_busy_us(100);
+    while (SWITCH_GO());
 }
 
-void 
-stop_click() {
-	while (!SWITCH_STOP());
-	delay_busy_us(100);
-	while (SWITCH_STOP());
+void stop_click() {
+    while (!SWITCH_STOP());
+    delay_busy_us(100);
+    while (SWITCH_STOP());
 }
 
-uint8_t 
-go_press() {
-	return SWITCH_GO();
+uint8_t go_press() {
+    return SWITCH_GO();
 }
 
-uint8_t 
-stop_press() {
-	return SWITCH_STOP();
+uint8_t stop_press() {
+    return SWITCH_STOP();
 }
 
-uint16_t 
-frob_read() {
-	uint16_t v;
-	adc_get_sample(ADC_REF_AVCC,ADC_CH1,&v);
-	return v;
+uint16_t frob_read() {
+    uint16_t v;
+    adc_get_sample(ADC_REF_AVCC,ADC_CH1,&v);
+    return v;
 }
 
-uint16_t 
-frob_read_range(uint16_t min, uint16_t max) {
-//	uint16_t div = max-min+1;
-//	return (frob_read()/div) + min;
+uint16_t frob_read_range(uint16_t min, uint16_t max) {
+//    uint16_t div = max-min+1;
+//    return (frob_read()/div) + min;
 
-	uint16_t range = max-min+1;
-	return (uint16_t) (((uint32_t)frob_read()*range)/FROB_MAX + min);
+    uint16_t range = max-min+1;
+    return (uint16_t) (((uint32_t)frob_read()*range)/FROB_MAX + min);
 }
 
-
-uint16_t 
-read_battery() {
-	uint16_t v;
-	mcp3008_get_sample(MCP3008_MOTOR, MCP3008_CH7,&v);
-	return VBAT_ADC_TO_MV(v);
+uint16_t read_battery() {
+    uint16_t v;
+    mcp3008_get_sample(MCP3008_MOTOR, MCP3008_CH7,&v);
+    return VBAT_ADC_TO_MV(v);
 }
 
-void 
-beep(uint16_t freq, uint16_t duration) {
-	uint32_t count=(((uint32_t)duration)*freq)/1000ul;
-	uint16_t p = 500000ul / freq;
-	while (count--) {
-		BEEPER(1);
-		delay_busy_us(p);
-		BEEPER(0);
-		delay_busy_us(p);
-	}
+void beep(uint16_t freq, uint16_t duration) {
+    uint32_t count=(((uint32_t)duration)*freq)/1000ul;
+    uint16_t p = 500000ul / freq;
+    while (count--) {
+        BEEPER(1);
+        delay_busy_us(p);
+        BEEPER(0);
+        delay_busy_us(p);
+    }
 }
-
-

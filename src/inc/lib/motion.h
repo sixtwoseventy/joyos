@@ -36,7 +36,7 @@
  *
  * A MotionController provides a PID-controlled MotorGroup.
  *
- * Given a MotorGroup (one or more motors), an encoder port and a target 
+ * Given a MotorGroup (one or more motors), an encoder port and a target
  * position, the MotionController will attempt to drive the MotorGroup to the
  * given target.
  */
@@ -45,11 +45,11 @@
  * MotionController structure
  */
 typedef struct {
-	int32_t position;           ///< current encoder position
-	uint8_t encoder;            ///< encoder port to read from
-	uint16_t encoder_old_pos;   ///< old encoder position
-	MotorGroup output;          ///< MotorGroup to drive
-	struct pid_controller pid;  ///< PID controller
+    int32_t position;           ///< current encoder position
+    uint8_t encoder;            ///< encoder port to read from
+    uint16_t encoder_old_pos;   ///< old encoder position
+    MotorGroup output;          ///< MotorGroup to drive
+    struct pid_controller pid;  ///< PID controller
 } MotionController;
 
 /**
@@ -62,11 +62,11 @@ typedef struct {
  * @param ki            Integral constant for PID
  * @param kd            Derivative constant for PID
  */
-void motion_init(MotionController *motion, MotorGroup motor, uint8_t encoder_port, 
-		float kp, float ki, float kd);
+void motion_init(MotionController *motion, MotorGroup motor, uint8_t encoder_port,
+        float kp, float ki, float kd);
 
 /**
- * Set the target position for the MotionController. The controller will 
+ * Set the target position for the MotionController. The controller will
  * immediately start driving the motor towards the goal.
  *
  * @param motion  MotionController to set

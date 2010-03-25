@@ -40,8 +40,8 @@
 /**
  * \file board.h
  * \brief Common board functionality.
- * 
- * This file initializes most of the drivers for the happyboard. 
+ *
+ * This file initializes most of the drivers for the happyboard.
  */
 
 #define BOARD_CONFIG_ADDRESS 0
@@ -63,15 +63,15 @@ BoardConfig board_config;
 /**
  * Initializes the board. Should not be called by the user. It is run before user
  * code near the beginnning of the JoyOS startup sequence. Specifically:
- * 
+ *
  * 1) It sets various registers in the ATMega128 for IO, eXternal MEMory, and UART.
- * 
+ *
  * 2) It loads the FPGA code, board config, checks the battery.
- * 
+ *
  * 3) It initializes many locks, including those for: uart, digital, encoder, SPI,
  *    motor, servo, LCD, ADC, and ISR.
- * 
- * 4) It allocates memory for malloc() usage; defaults to having .heap section in 
+ *
+ * 4) It allocates memory for malloc() usage; defaults to having .heap section in
  *    external memory (SRAM chip).
  */
 void board_init (void);

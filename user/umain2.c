@@ -24,13 +24,13 @@
  */
 
 /* Gyro demo program for gyro with noise injection.
-   Howard Samuels, 11/16/2004 
+   Howard Samuels, 11/16/2004
    howard.samuels@analog.com
-   
+
    Modified for Happyboard
    Ross Glashan, 07/05/2005
    rng@mit.edu
-*/
+ */
 
 #include <global.h>
 #include <board.h>
@@ -45,49 +45,48 @@
 #define MOTOR_LEFT 4
 #define MOTOR_RIGHT 3
 
-#define DEGS_TO_RADS	0.01745328f
+#define DEGS_TO_RADS    0.01745328f
 
 int display_angle (void) {
-	for (;;) {
-		int theta = (int) get_degrees ();
-		printf("\ntheta = %d", theta);
-		pause(500);
-	}
+    for (;;) {
+        int theta = (int) get_degrees ();
+        printf("\ntheta = %d", theta);
+        pause(500);
+    }
 
-	return 0;
+    return 0;
 }
- 
+
 // usetup is called during the calibration period. It must return before the
 // period ends.
 int usetup (void) {
-	printf("\nPlace robot,    press go.");
-	goClick();
-	printf("\nStabilizing...");
-	pause(500); /* Wait for robot to stabilize mechanically */
-	printf("\nCalibrating     offset...");
-	init_gyro(GYRO_PORT, 638, 10000);
-	printf("\nDone calibration");
+    printf("\nPlace robot,    press go.");
+    goClick();
+    printf("\nStabilizing...");
+    pause(500); /* Wait for robot to stabilize mechanically */
+    printf("\nCalibrating     offset...");
+    init_gyro(GYRO_PORT, 638, 10000);
+    printf("\nDone calibration");
 
-	rf_set_team(60);
-	return 0;
+    rf_set_team(60);
+    return 0;
 }
 
 float read_angle () {
-	return get_degrees () * DEGS_TO_RADS;
+    return get_degrees () * DEGS_TO_RADS;
 }
 
 void set_turn (float value) {
-	printf("\nActuate %f", (double) value);
+    printf("\nActuate %f", (double) value);
 }
 
 int umain(void) {
-	create_thread(&display_angle, 64, 0, "display angle");
+    create_thread(&display_angle, 64, 0, "display angle");
 
-	//struct pid_controller pid;
-	//init_pid (&pid, 1, 0, 0, &read_angle, &set_turn);
+    //struct pid_controller pid;
+    //init_pid (&pid, 1, 0, 0, &read_angle, &set_turn);
 
-	while (1);
+    while (1);
 
-	return 0;
+    return 0;
 }
-

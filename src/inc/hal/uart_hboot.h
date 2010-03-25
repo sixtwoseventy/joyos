@@ -31,12 +31,12 @@
  * \brief UART (USB serial port) functionality.
  *
  * The Happyboard has a FT232RL USB serial bridge chip on board, which makes it
- * appear as a serial port on most OS's (Windows/Mac/Linux). Users can print 
- * information to the UART and monitor it on a computer using a terminal 
+ * appear as a serial port on most OS's (Windows/Mac/Linux). Users can print
+ * information to the UART and monitor it on a computer using a terminal
  * emulator program such as hyperterminal or minicom.
  *
  * The Happyboard configures the UART for 19200 baud, 8N1.
- */ 
+ */
 
 /**
  * Send a character over UART.

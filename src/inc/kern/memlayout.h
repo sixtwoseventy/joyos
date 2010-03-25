@@ -61,21 +61,20 @@
  * +----------------------+
  */
 
-//#define STACKSIZE			400
-#define STACKSIZE			300
-#define KSTACKSIZE			328 // not needed?
+//#define STACKSIZE         400
+#define STACKSIZE           300
+#define KSTACKSIZE          328 // not needed?
 
-//#define KSTACKTOP			0x1100
-#define KSTACKTOP			0x10ff
-#define STACK_BLOCK_TOP		(KSTACKTOP - KSTACKSIZE)
+//#define KSTACKTOP         0x1100
+#define KSTACKTOP           0x10ff
+#define STACK_BLOCK_TOP     (KSTACKTOP - KSTACKSIZE)
 
 // Set STACK_SAFETY_ZONE bytes at the bottom of a thread's stack region to
 // SAFETY_VALUE to help detect overflow.
-#define STACK_SAFETY_ZONE	0x0
-#define SAFETY_VALUE		0x42
+#define STACK_SAFETY_ZONE   0x0
+#define SAFETY_VALUE        0x42
 
-#define STACKTOP(tid)		\
-	(STACK_BLOCK_TOP - (STACKSIZE+STACK_SAFETY_ZONE) * (tid))
+#define STACKTOP(tid) (STACK_BLOCK_TOP - (STACKSIZE+STACK_SAFETY_ZONE) * (tid))
 
 #endif // __INCLUDE_MEMLAYOUT_H__
 

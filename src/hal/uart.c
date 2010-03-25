@@ -35,75 +35,70 @@ FILE uartio = FDEV_SETUP_STREAM(uart_put, uart_get, _FDEV_SETUP_RW);
 struct lock uart_lock;
 
 int uart_send(char ch) {
-	LED_COMM(1);
-	while (!(UCSR0A & _BV(UDRE0)));
-	UDR0 = ch;
-	LED_COMM(0);
-	return ch;
+    LED_COMM(1);
+    while (!(UCSR0A & _BV(UDRE0)));
+    UDR0 = ch;
+    LED_COMM(0);
+    return ch;
 }
 
-int 
-uart_put(char ch, FILE *f) {
-	if (ch == '\n')
-	 	uart_send('\r');
+int uart_put(char ch, FILE *f) {
+    if (ch == '\n')
+        uart_send('\r');
 
-	return uart_send(ch);
+    return uart_send(ch);
 }
 
-void uart_print(const char *string) {
-	while (*string)
-		uart_send(*string++);
+    void uart_print(const char *string) {
+        while (*string)
+            uart_send(*string++);
+    }
+
+int uart_vprintf(const char *fmt, va_list ap) {
+    int count;
+    acquire(&uart_lock);
+    count = vfprintf(&uartio, fmt, ap);
+    release(&uart_lock);
+
+    return count;
 }
 
-int
-uart_vprintf(const char *fmt, va_list ap) {
-	int count;
-	acquire(&uart_lock);
-	count = vfprintf(&uartio, fmt, ap);
-	release(&uart_lock);
+int uart_printf(const char *fmt, ...) {
+    va_list ap;
+    int count;
 
-	return count;
+    va_start(ap, fmt);
+    count = uart_vprintf(fmt, ap);
+    va_end(ap);
+
+    return count;
 }
 
-int
-uart_printf(const char *fmt, ...) {
-	va_list ap;
-	int count;
+int uart_vprintf_P(const char *fmt, va_list ap) {
+    int count;
+    acquire(&uart_lock);
+    count = vfprintf_P(&uartio, fmt, ap);
+    release(&uart_lock);
 
-	va_start(ap, fmt);
-	count = uart_vprintf(fmt, ap);
-	va_end(ap);
-
-	return count;
+    return count;
 }
 
-int
-uart_vprintf_P(const char *fmt, va_list ap) {
-	int count;
-	acquire(&uart_lock);
-	count = vfprintf_P(&uartio, fmt, ap);
-	release(&uart_lock);
+int uart_printf_P(const char *fmt, ...) {
+    va_list ap;
+    int count;
 
-	return count;
-}
+    va_start(ap, fmt);
+    count = uart_vprintf_P(fmt, ap);
+    va_end(ap);
 
-int
-uart_printf_P(const char *fmt, ...) {
-	va_list ap;
-	int count;
-
-	va_start(ap, fmt);
-	count = uart_vprintf_P(fmt, ap);
-	va_end(ap);
-
-	return count;
+    return count;
 }
 
 char uart_recv() {
-	LED_COMM(1);
-	while(!(UCSR0A & _BV(RXC0)));
-	LED_COMM(0);
-	return (UDR0);
+    LED_COMM(1);
+    while(!(UCSR0A & _BV(RXC0)));
+    LED_COMM(0);
+    return (UDR0);
 }
 
 int uart_get(FILE *f) {
@@ -111,55 +106,55 @@ int uart_get(FILE *f) {
 }
 
 uint8_t uart_has_char() {
-	return (UCSR0A & _BV(RXC0));
+    return (UCSR0A & _BV(RXC0));
 }
 
 int uart_vscanf(const char *fmt, va_list ap){
-	int count;
-	acquire(&uart_lock);
-	count = vfscanf(&uartio, fmt, ap);
-	release(&uart_lock);
+    int count;
+    acquire(&uart_lock);
+    count = vfscanf(&uartio, fmt, ap);
+    release(&uart_lock);
 
-	return count;
+    return count;
 }
 
 int uart_scanf(const char *fmt, ...){
-	va_list ap;
-	int count;
-	
-	va_start(ap, fmt);
-	count = uart_vscanf(fmt, ap);
-	va_end(ap);
+    va_list ap;
+    int count;
 
-	return count;
+    va_start(ap, fmt);
+    count = uart_vscanf(fmt, ap);
+    va_end(ap);
+
+    return count;
 }
 
 int uart_vscanf_P(const char *fmt, va_list ap) {
-	int count;
-	acquire(&uart_lock);
-	count = vfscanf_P(&uartio, fmt,ap);
-	release(&uart_lock);
+    int count;
+    acquire(&uart_lock);
+    count = vfscanf_P(&uartio, fmt,ap);
+    release(&uart_lock);
 
-	return count;
+    return count;
 }
 
 int uart_scanf_P(const char *fmt, ...) {
-	va_list ap;
-	int count;
-	
-	va_start(ap, fmt);
-	count = uart_vscanf_P(fmt, ap);
-	va_end(ap);
+    va_list ap;
+    int count;
 
-	return count;
+    va_start(ap, fmt);
+    count = uart_vscanf_P(fmt, ap);
+    va_end(ap);
+
+    return count;
 }
 
 void uart_init(uint16_t baudRate) {
-	UBRR0L = (uint8_t)(F_CPU/(baudRate*16L)-1);
-	UBRR0H = (F_CPU/(baudRate*16L)-1) >> 8;
-	UCSR0A = 0x00;
-	UCSR0C = 0x06;
-	UCSR0B = _BV(TXEN0)|_BV(RXEN0);
+    UBRR0L = (uint8_t)(F_CPU/(baudRate*16L)-1);
+    UBRR0H = (F_CPU/(baudRate*16L)-1) >> 8;
+    UCSR0A = 0x00;
+    UCSR0C = 0x06;
+    UCSR0B = _BV(TXEN0)|_BV(RXEN0);
 
-	init_lock(&uart_lock, "UART lock");
+    init_lock(&uart_lock, "UART lock");
 }

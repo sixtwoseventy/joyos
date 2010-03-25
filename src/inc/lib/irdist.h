@@ -34,8 +34,8 @@
  */
 
 /**
- * Set calibration values for IR distance sensors. Calibration values can be 
- * calculated using the irdistcal program. 
+ * Set calibration values for IR distance sensors. Calibration values can be
+ * calculated using the irdistcal program.
  *
  * @param m  calibration gradient
  * @param c  calibration offset

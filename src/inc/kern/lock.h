@@ -42,17 +42,17 @@
 
 // lock structure
 struct lock {
-	unsigned char locked;
-	const char *name;
-	struct thread *thread;
+    unsigned char locked;
+    const char *name;
+    struct thread *thread;
 };
 
 /**
  * Initialize the lock 'k'.
  * This routine must be called before lock 'k' is used.
  *
- * @param k		Lock to initialize, must be non-null.
- * @param name	Debugging name for lock.
+ * @param k     Lock to initialize, must be non-null.
+ * @param name  Debugging name for lock.
  */
 void init_lock(struct lock *k, const char *name);
 
@@ -62,7 +62,7 @@ void init_lock(struct lock *k, const char *name);
  * A thread can recursively acquire the same lock multiple times, but it must
  * release once for every acquire.
  *
- * @param k	Lock to acquire. Must be non-null.
+ * @param k Lock to acquire. Must be non-null.
  */
 void acquire(struct lock *k);
 
@@ -71,14 +71,14 @@ void acquire(struct lock *k);
  * If another thread holds the lock, return 0.
  * If the lock was acquired, return 1.
  *
- * @param k	Lock to acquire. Must be non-null.
+ * @param k Lock to acquire. Must be non-null.
  */
 int try_acquire(struct lock *k);
 
 /**
  * Checks to see if lock 'k' is held by the current thread.
  *
- * @param k	Lock to check. Must be non-null.
+ * @param k Lock to check. Must be non-null.
  * @return Non-zero if lock is held by current thread, zero otherwise.
  */
 int is_held(struct lock *k);
@@ -86,7 +86,7 @@ int is_held(struct lock *k);
 /**
  * Release the lock 'k'.
  *
- * @param k	Lock to release. Must be non-null.
+ * @param k Lock to release. Must be non-null.
  */
 void release(struct lock *k);
 
@@ -94,7 +94,7 @@ void release(struct lock *k);
  * Smash the lock 'k', releasing it.
  * Should only ever be called by the kernel.
  *
- * @param k	Lock to release. Must be non-null.
+ * @param k Lock to release. Must be non-null.
  */
 void smash(struct lock *k);
 

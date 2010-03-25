@@ -10,7 +10,7 @@
  * This file defines a number of useful geartrain/distance/rotaion calculation
  * and conversion routines.
  *
- * To use these functions the user must define the following values before 
+ * To use these functions the user must define the following values before
  * including geartrain.h
  *
  *  - ENCODER_TO_WHEEL_RATIO - the ratio between the encoder and the wheel

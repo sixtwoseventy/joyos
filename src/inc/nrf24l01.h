@@ -40,7 +40,7 @@
 #define NRF_BIT_PWR_UP          1
 #define NRF_BIT_PRIM_RX         0
 
-// Auto Acknowledge 
+// Auto Acknowledge
 #define NRF_REG_EN_AA               0x01
 
 #define NRF_BIT_ENAA_P5         5

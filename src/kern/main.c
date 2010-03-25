@@ -51,33 +51,33 @@ void round_start() {
 }
 
 void round_end() {
-	printf("\nRound end");
-	halt();
+    printf("\nRound end");
+    halt();
 }
 
 int robot_monitor (void) {
-	// start the calibration period...
+    // start the calibration period...
 
-	printf("Running usetup()...\n");
-	usetup();
-	printf("Finished usetup().\n");
+    printf("Running usetup()...\n");
+    usetup();
+    printf("Finished usetup().\n");
 
-	printf("Press Go to start or Stop to wait for RF.\n");
+    printf("Press Go to start or Stop to wait for RF.\n");
     if (!either_click())
         while (!rf_start)
             yield();
 
-	printf("Running umain()...\n");
-	return umain();
+    printf("Running umain()...\n");
+    return umain();
 }
 
 int main (void) {
-	board_init();
+    board_init();
 
-	printf("JoyOS v"JOYOS_VERSION"\n");
+    printf("JoyOS v"JOYOS_VERSION"\n");
 
-	init_thread();
-	create_thread(&robot_monitor, STACK_DEFAULT, 0, "main");
+    init_thread();
+    create_thread(&robot_monitor, STACK_DEFAULT, 0, "main");
     rf_init();
-	schedule();
+    schedule();
 }

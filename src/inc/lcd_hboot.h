@@ -31,7 +31,7 @@
  * \brief LCD control, formatting, printout.
  *
  * The happyboard LCD is a 2x16 character device. The OS code treats the LCD as
- * a single 1x32 line display. This means that printf("012345690123456789") 
+ * a single 1x32 line display. This means that printf("012345690123456789")
  * will display:
  *
  * \code
@@ -42,19 +42,19 @@
  * \endcode
  *
  * For general LCD printing, printf() is suggested. printf() is a wrapper around
- * the functions documented below. As such these functions should only be used 
+ * the functions documented below. As such these functions should only be used
  * when printf() is insufficient.
  *
- * Printing a newline character ("\n" in C) to the display clears it. Thus, 
- * printf("hello world\n"), will not display anything (the display is cleared 
+ * Printing a newline character ("\n" in C) to the display clears it. Thus,
+ * printf("hello world\n"), will not display anything (the display is cleared
  * after the text is displayed). Instead, you should use printf("\nhello world")
  * - this will clear the display and then display the text.
  *
- * The OS will occasionally use the bottom right character of the display for 
+ * The OS will occasionally use the bottom right character of the display for
  * warning/information icons, which may obscure user printouts (if they use the
  * full 32 characters of the display).
  *
- * The LCD supports 8 user-defined characters. On startup these characters are 
+ * The LCD supports 8 user-defined characters. On startup these characters are
  * set to a system defaults as follows:
  *
  * \code
@@ -68,11 +68,11 @@
  * 7: unused
  * \endcode
  *
- * These special characters can be reconfigured by the user with the 
+ * These special characters can be reconfigured by the user with the
  * lcd_set_custom_char() function, as long as you remember this will change the
  * OS warning indicator icons.
  *
- */ 
+ */
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -91,15 +91,15 @@ void lcd_init(void);
  * uint8_t my_custom_char[] PROGMEM = { 12, 23, 34, 45, 56, 67, 78, 89 };
  * \endcode
  *
- * @param chnum		character to set
- * @param data		8 byte array of pixel data
+ * @param chnum     character to set
+ * @param data      8 byte array of pixel data
  */
 void lcd_set_custom_char(uint8_t chnum,uint8_t *data);
 
 /**
  * Display a string to the LCD.
  *
- * @param string	string to display
+ * @param string    string to display
  */
 void lcd_print(const char *string);
 

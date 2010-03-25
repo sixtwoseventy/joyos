@@ -38,40 +38,38 @@
 // Duplicate this thread (with it's own stack).
 // In the parent thread, this returns the thread id (tid) of the child.
 // In the child thread, this returns 0.
-int
-fork (void) {
+int fork (void) {
 
-	panic("fork");
+    panic("fork");
 
-	struct thread *child;
+    struct thread *child;
 
-	// record interrupt status
-	uint8_t was_enabled = SREG & SREG_IF;
-	// lock thread table
-	cli();
+    // record interrupt status
+    uint8_t was_enabled = SREG & SREG_IF;
+    // lock thread table
+    cli();
 
-	// allocate new thread for child
-	child = NULL; // FIXME
+    // allocate new thread for child
+    child = NULL; // FIXME
 
-	// copy state to child thread
-	//if (setjmp(child->th_jmpbuf) != 0) {
-	if (setjmp(TO_JMP_BUF(child->th_jmpbuf)) != 0) {
-		// we're the child now and we've just been scheduled
-		// interrupts should be enabled
+    // copy state to child thread
+    //if (setjmp(child->th_jmpbuf) != 0) {
+    if (setjmp(TO_JMP_BUF(child->th_jmpbuf)) != 0) {
+        // we're the child now and we've just been scheduled
+        // interrupts should be enabled
 
-		// fork returns 0
-		return 0;
-	}
+        // fork returns 0
+        return 0;
+    }
 
-	// allocate child stack and copy contents of parent stack
+    // allocate child stack and copy contents of parent stack
 
-	// enable child thread
-	child->th_status = THREAD_RUNNABLE;
+    // enable child thread
+    child->th_status = THREAD_RUNNABLE;
 
-	// restore interrupt status
-	SREG |= was_enabled;
+    // restore interrupt status
+    SREG |= was_enabled;
 
-	// we're the parent and our work is done, we're ready to return
-	return child->th_id;
+    // we're the parent and our work is done, we're ready to return
+    return child->th_id;
 }
-

@@ -26,12 +26,10 @@
 #include <joyos.h>
 
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
-int
-umain (void) {
-	while (1);
-	return 0;
+int umain (void) {
+    while (1);
+    return 0;
 }
-

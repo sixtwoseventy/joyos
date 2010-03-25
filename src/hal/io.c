@@ -25,34 +25,33 @@
 
 #include "hal/io.h"
 
-void 
-io_init() {
-	// XMEM
-	MCUCR |= _BV(SRE); //SRAM Enable;
-	XMCRB &= ~_BV(XMBK);
-	XMCRA &= ~_BV(SRW11);
-	MCUCR &= ~_BV(SRW10);
+void io_init() {
+    // XMEM
+    MCUCR |= _BV(SRE); //SRAM Enable;
+    XMCRB &= ~_BV(XMBK);
+    XMCRA &= ~_BV(SRW11);
+    MCUCR &= ~_BV(SRW10);
 
-	// Port B: SPI, Beeper, FPGA conf
-	DDRB = 0xF7;
-	PORTB |= _BV(6);
-	// PORT D: I2C, switches, leds
-	DDRD = 0xFC; 
-	// PORTE: uart, lcd, RF
-	DDRE = 0x4E;
-	PORTE |= _BV(4) | _BV(5);
-	// PORTF: ADC, JTAG
-	DDRF = 0x0D;
-	// PORTG: mem, FPGA conf
-	DDRG = 0x00;
+    // Port B: SPI, Beeper, FPGA conf
+    DDRB = 0xF7;
+    PORTB |= _BV(6);
+    // PORT D: I2C, switches, leds
+    DDRD = 0xFC;
+    // PORTE: uart, lcd, RF
+    DDRE = 0x4E;
+    PORTE |= _BV(4) | _BV(5);
+    // PORTF: ADC, JTAG
+    DDRF = 0x0D;
+    // PORTG: mem, FPGA conf
+    DDRG = 0x00;
 
-	// disable all SPI devices
-	SPI_FLASH_SS(1);
-	SPI_MOTOR_SS(1);
-	SPI_ADC1_SS(1);
-	SPI_ADC2_SS(1);
-	SPI_RF_SS(1);
+    // disable all SPI devices
+    SPI_FLASH_SS(1);
+    SPI_MOTOR_SS(1);
+    SPI_ADC1_SS(1);
+    SPI_ADC2_SS(1);
+    SPI_RF_SS(1);
 
     // Stand by mode
-	RF_CE(0);
+    RF_CE(0);
 }

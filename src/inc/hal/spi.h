@@ -26,32 +26,31 @@
 #ifndef _SPI_H_
 #define _SPI_H_
 
-#define SPI_FLAG_LSB_FIRST			_BV(DORD)
-#define SPI_FLAG_MSB_FIRST			0
-#define SPI_FLAG_IDLE_HIGH			_BV(CPOL)
-#define SPI_FLAG_IDLE_LOW				0
-#define SPI_FLAG_SAMPLE_TRAIL		_BV(CPHA)
-#define SPI_FLAG_SAMPLE_LEAD		0
+#define SPI_FLAG_LSB_FIRST      _BV(DORD)
+#define SPI_FLAG_MSB_FIRST      0
+#define SPI_FLAG_IDLE_HIGH      _BV(CPOL)
+#define SPI_FLAG_IDLE_LOW       0
+#define SPI_FLAG_SAMPLE_TRAIL   _BV(CPHA)
+#define SPI_FLAG_SAMPLE_LEAD    0
 
-#define SPI_FLAGS_DEFAULT (SPI_FLAG_MSB_FIRST | SPI_FLAG_IDLE_LOW | \
-													SPI_FLAG_SAMPLE_LEAD)
+#define SPI_FLAGS_DEFAULT (SPI_FLAG_MSB_FIRST | SPI_FLAG_IDLE_LOW | SPI_FLAG_SAMPLE_LEAD)
 
 typedef enum {
-	SPI_CLK_DIV_2 	= 1, // 001
-	SPI_CLK_DIV_4		= 0, // 000
-	SPI_CLK_DIV_8		= 3, // 011
-	SPI_CLK_DIV_16	= 2, // 010
-	SPI_CLK_DIV_32	= 5, // 101
-	SPI_CLK_DIV_64	= 4, // 100
-	SPI_CLK_DIV_128	= 6, // 110
+    SPI_CLK_DIV_2   = 1, // 001
+    SPI_CLK_DIV_4   = 0, // 000
+    SPI_CLK_DIV_8   = 3, // 011
+    SPI_CLK_DIV_16  = 2, // 010
+    SPI_CLK_DIV_32  = 5, // 101
+    SPI_CLK_DIV_64  = 4, // 100
+    SPI_CLK_DIV_128 = 6, // 110
 } spi_clk_div;
 
-#define SPI_READY	0
-#define SPI_IN_USE	-1
+#define SPI_READY   0
+#define SPI_IN_USE  -1
 
 void spi_init(void);
 
-/** 
+/**
  * Lock the SPI bus for access from a single thread.
  * spi_aquire() needs to be called before any communication on the
  * spi bus. spi_release() should be called after the communication

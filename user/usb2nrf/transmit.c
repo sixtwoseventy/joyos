@@ -27,7 +27,7 @@
 #include <joyos.h>
 
 int usetup (void) {
-	return 0;
+    return 0;
 }
 
 uint8_t buf[32];
@@ -49,7 +49,7 @@ umain (void) {
             }
             rf_send_packet(0xE7, buf, len);
         }
-	}
+    }
 
-	return 0;
+    return 0;
 }

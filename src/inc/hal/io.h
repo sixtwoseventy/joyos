@@ -33,48 +33,48 @@
 /**
  * \file io.h
  * \brief General Purpose IO support
- */ 
+ */
 
 #define GPIO_WRITE(val, port, pin) do { \
-	if (val) (port)|=(uint8_t)_BV(pin); \
-	else (port)&=(uint8_t)~((uint8_t)_BV(pin)); \
+    if (val) (port)|=(uint8_t)_BV(pin); \
+    else (port)&=(uint8_t)~((uint8_t)_BV(pin)); \
 } while (0)
 
 #define GPIO_WRITE_PORT(val, port, mask) do { \
-	(port)&=~(mask); \
-	(port)|=(val); \
+    (port)&=~(mask); \
+    (port)|=(val); \
 } while (0)
 
 #define GPIO_READ(port, pin) (((uint8_t)(port) & (uint8_t)_BV(pin))!=0)
 
-#define SPI_ADC1_SS(v)	GPIO_WRITE(v, PORTB, 0)
-#define SPI_MOTOR_SS(v)	GPIO_WRITE(v, PORTE, 2)
-#define SPI_RF_SS(v)		GPIO_WRITE(v, PORTE, 3)
-#define SPI_ADC2_SS(v)	GPIO_WRITE(v, PORTF, 0)
-#define SPI_FLASH_SS(v)	GPIO_WRITE(v, PORTF, 2)
+#define SPI_ADC1_SS(v)  GPIO_WRITE(v, PORTB, 0)
+#define SPI_MOTOR_SS(v) GPIO_WRITE(v, PORTE, 2)
+#define SPI_RF_SS(v)    GPIO_WRITE(v, PORTE, 3)
+#define SPI_ADC2_SS(v)  GPIO_WRITE(v, PORTF, 0)
+#define SPI_FLASH_SS(v) GPIO_WRITE(v, PORTF, 2)
 
-#define RF_CE(v)				GPIO_WRITE(v, PORTF, 3)
+#define RF_CE(v)        GPIO_WRITE(v, PORTF, 3)
 
-#define FPGA_DIN(v) 		GPIO_WRITE(v, PORTB, 5)
-#define FPGA_PROGB(v) 	GPIO_WRITE(v, PORTB, 6)
-#define FPGA_CCLK(v) 		GPIO_WRITE(v, PORTB, 7)
-#define FPGA_DONE()			GPIO_READ(PING, 3)
-#define FPGA_INITB()		GPIO_READ(PING, 4)
+#define FPGA_DIN(v)     GPIO_WRITE(v, PORTB, 5)
+#define FPGA_PROGB(v)   GPIO_WRITE(v, PORTB, 6)
+#define FPGA_CCLK(v)    GPIO_WRITE(v, PORTB, 7)
+#define FPGA_DONE()     GPIO_READ(PING, 3)
+#define FPGA_INITB()    GPIO_READ(PING, 4)
 
-#define SWITCH_GO()			(!GPIO_READ(PINE, 5))
-#define SWITCH_STOP() 	(!GPIO_READ(PINE, 4))
+#define SWITCH_GO()     (!GPIO_READ(PINE, 5))
+#define SWITCH_STOP()   (!GPIO_READ(PINE, 4))
 
-#define LED_COMM(v)			GPIO_WRITE(v, PORTE, 6)
-//#define LED_PWR(v)			GPIO_WRITE(v, PORTE, 7) #Power light line taken by RF interrupt
+#define LED_COMM(v)     GPIO_WRITE(v, PORTE, 6)
+//#define LED_PWR(v)    GPIO_WRITE(v, PORTE, 7) #Power light line taken by RF interrupt
 
-#define BEEPER(v)				GPIO_WRITE(v, PORTB, 4)
+#define BEEPER(v)       GPIO_WRITE(v, PORTB, 4)
 
-#define LCD_PIN_RS			7
-#define LCD_PIN_E				6
-#define LCD_PORT				PORTD
+#define LCD_PIN_RS      7
+#define LCD_PIN_E       6
+#define LCD_PORT        PORTD
 
-#define LCD_E(v)				GPIO_WRITE(v, LCD_PORT, LCD_PIN_E)
-#define LCD_RS(v)				GPIO_WRITE(v, LCD_PORT, LCD_PIN_RS)
+#define LCD_E(v)        GPIO_WRITE(v, LCD_PORT, LCD_PIN_E)
+#define LCD_RS(v)       GPIO_WRITE(v, LCD_PORT, LCD_PIN_RS)
 
 
 /** Initialize basic IO. Should not be called by user. */

@@ -39,35 +39,30 @@
  *
  */
 
-#define SERVO_RAW_MIN		65		
-#define SERVO_RAW_MAX		595
+#define SERVO_RAW_MIN   65
+#define SERVO_RAW_MAX   595
 #define SERVO_RAW_RANGE 530 // (SERVO_RAW_MAX-SERVO_RAW_MIN)
 #define SERVO_RAW_SCALE (((float)SERVO_RAW_RANGE)/511.0)
 
 struct lock servo_lock;
 
-void
-servo_init (void) {
-	init_lock (&servo_lock, "servo lock");
+void servo_init (void) {
+    init_lock (&servo_lock, "servo lock");
 }
 
-void 
-servo_set_pos_raw(uint8_t servo, uint16_t pos) {
-	acquire (&servo_lock);
-	uint8_t sbase = FPGA_SERVO_BASE + servo*FPGA_SERVO_SIZE;
-	fpga_write_byte(sbase+FPGA_SERVO_LO,pos&0xFF);
-	fpga_write_byte(sbase+FPGA_SERVO_HI,pos>>8);
-	release (&servo_lock);
+void servo_set_pos_raw(uint8_t servo, uint16_t pos) {
+    acquire (&servo_lock);
+    uint8_t sbase = FPGA_SERVO_BASE + servo*FPGA_SERVO_SIZE;
+    fpga_write_byte(sbase+FPGA_SERVO_LO,pos&0xFF);
+    fpga_write_byte(sbase+FPGA_SERVO_HI,pos>>8);
+    release (&servo_lock);
 }
 
 /* pos = 0-511 */
-void 
-servo_set_pos(uint8_t servo, uint16_t pos) {
-	uint16_t posRaw = SERVO_RAW_MIN + (uint16_t)((float)(pos)*SERVO_RAW_SCALE);
-	servo_set_pos_raw(servo,posRaw);
+void servo_set_pos(uint8_t servo, uint16_t pos) {
+    uint16_t posRaw = SERVO_RAW_MIN + (uint16_t)((float)(pos)*SERVO_RAW_SCALE);
+    servo_set_pos_raw(servo,posRaw);
 }
 
-
-void 
-servo_set_range(uint8_t servo, uint16_t lower, uint16_t upper) {
+void servo_set_range(uint8_t servo, uint16_t lower, uint16_t upper) {
 }

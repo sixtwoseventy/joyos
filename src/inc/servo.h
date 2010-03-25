@@ -26,23 +26,23 @@
 #ifndef _SERVO_H_
 #define _SERVO_H_
 
-#define SERVO_0 	0
-#define SERVO_1 	1
-#define SERVO_2 	2
-#define SERVO_3 	3
-#define SERVO_4 	4
-#define SERVO_5 	5
+#define SERVO_0     0
+#define SERVO_1     1
+#define SERVO_2     2
+#define SERVO_3     3
+#define SERVO_4     4
+#define SERVO_5     5
 
 /**
  * \file servo.h
  * \brief Servo outputs.
  *
  * The happyboard as 6 servo outputs.
- * 
+ *
  * Each servo has a 9bit register used to set it's position. Setting the servo to 0 will
  * cause it to move to its counter-clockwise limit, while setting it to 511, will cause
  * it to move to its clockwise limit.
- */ 
+ */
 
 /** Initialize servos. Should not be called by user. */
 void servo_init(void);
@@ -50,8 +50,8 @@ void servo_init(void);
 /**
  * Set a servo's position.
  *
- * @param servo	Servo to set.
- * @param pos	New servo value (0..511)
+ * @param servo Servo to set.
+ * @param pos   New servo value (0..511)
  */
 void servo_set_pos(uint8_t servo, uint16_t pos);
 void servo_set_range(uint8_t servo, uint16_t lower, uint16_t upper);
