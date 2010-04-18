@@ -49,25 +49,49 @@ void draw(){
 
 }
 
+// determines if the current robot collides with the walls or
+// any other robot.  assumes that the robotList has already been
+// locked by the calling thread.
+boolean collision(Robot r){
+  
+  if (r.wallCollision()) return true;
+  
+  Robot anotherRobot;
+  Iterator i = robotList.iterator();
+  while (i.hasNext()){
+    
+    anotherRobot = (Robot)i.next();
+    if (r == anotherRobot) continue;
+    else if (r.collidesWith(anotherRobot)) return true;
+    
+  }
+  
+  return false;
+  
+}
+
 class KinematicsEngine implements Runnable{
   
   public void run(){
     while(true){
       
-        Robot r = null;
-        Iterator i = robotList.iterator();
+        synchronized(robotList){
       
-        while(i.hasNext()){
-      
-          r = (Robot)i.next();
-          r.savePosition();
-          r.updatePosition();
-          
-          if (r.collision()){
-            r.restorePosition();
-            r.stuck=true;
-          } else{
-            r.stuck=false;
+          Robot r = null;
+          Iterator i = robotList.iterator();
+        
+          while(i.hasNext()){
+        
+            r = (Robot)i.next();
+            r.savePosition();
+            r.updatePosition();
+            
+            if (collision(r)){
+              r.restorePosition();
+              r.stuck=true;
+            } else{
+              r.stuck=false;
+            }
           }
         }
         
@@ -113,11 +137,16 @@ class Robot{
     else if (port == rightMotor) velR = vel;
   }
   
-  public boolean collision(){
+  public boolean wallCollision(){
     return  ((robotX-robotWidth/2.)  < -boardWidth/2.)  || 
             ((robotX+robotWidth/2.)  >  boardWidth/2.)  ||
             ((robotY-robotLength/2.) < -boardLength/2.) ||
             ((robotY+robotLength/2.) >  boardLength/2.);
+  }
+  
+  public boolean collidesWith(Robot r){
+    float d = sqrt((robotX-r.robotX)*(robotX-r.robotX)+(robotY-r.robotY)*(robotY-r.robotY));
+    return d < (robotWidth/2. + r.robotWidth/2.);
   }
   
   public void savePosition(){
@@ -296,12 +325,7 @@ class RobotListener implements Runnable{
             socketOut = new PrintWriter(clientSocket.getOutputStream(), true);
             socketIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             
-            // create the new robot, add it to the list of objects to be plotted and tracked
-            
-            r = new Robot();
-            
-            robotList.add(r);
-            (new Thread(new RobotSocket(socketIn, socketOut, r))).start();
+            (new Thread(new RobotSocket(socketIn, socketOut))).start();
             
           }
           
@@ -321,13 +345,29 @@ class RobotSocket implements Runnable{
   BufferedReader socketIn = null;
   Robot r = null;
   
-  public RobotSocket(BufferedReader socketIn, PrintWriter socketOut, Robot r){
+  public RobotSocket(BufferedReader socketIn, PrintWriter socketOut){
     this.socketIn = socketIn;
     this.socketOut = socketOut;
-    this.r = r;
   }
   
   public void run(){
+    
+    boolean stillStuck = true;
+    r = new Robot();
+    
+    do{
+      
+      synchronized(robotList){
+        
+        if (!collision(r)){
+          robotList.add(r);
+          stillStuck = false;
+        }
+        
+      }
+      
+    } while(stillStuck);    
+
     
     String command = "";
     /* supported commands:
