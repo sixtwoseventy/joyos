@@ -15,6 +15,7 @@ int centerY = windowY/2;
 
 // list of all robots currently on the playing table
 volatile LinkedList robotList = new LinkedList();
+LinkedList theWalls = new LinkedList();
 
 void setup(){
   size(windowX, windowY);
@@ -22,7 +23,14 @@ void setup(){
   ellipseMode(CENTER);
   renderBackground();
   frameRate(fRate);
-    
+  
+  Robot theBoard = new Robot();
+  
+  theWalls.add(new Line(-boardWidth/2., -boardLength/2., -boardWidth/2.,  boardLength/2., theBoard));
+  theWalls.add(new Line(-boardWidth/2.,  boardLength/2.,  boardWidth/2.,  boardLength/2., theBoard));
+  theWalls.add(new Line( boardWidth/2.,  boardLength/2.,  boardWidth/2., -boardLength/2., theBoard));
+  theWalls.add(new Line( boardWidth/2., -boardLength/2., -boardWidth/2., -boardLength/2., theBoard));
+  
   (new Thread(new KinematicsEngine())).start();
   (new Thread(new RobotListener())).start();
 }
@@ -54,7 +62,7 @@ void draw(){
 // locked by the calling thread.
 boolean collision(Robot r){
   
-  if (r.wallCollision()) return true;
+  if (Shape.inCollision(r.body, theWalls)) return true;
   
   Robot anotherRobot;
   Iterator i = robotList.iterator();
@@ -62,7 +70,7 @@ boolean collision(Robot r){
     
     anotherRobot = (Robot)i.next();
     if (r == anotherRobot) continue;
-    else if (r.collidesWith(anotherRobot)) return true;
+    else if (Shape.inCollision(r.body, anotherRobot.body)) return true;
     
   }
   
@@ -104,6 +112,258 @@ class KinematicsEngine implements Runnable{
   
 }
 
+abstract class Shape{
+  
+  public Robot myRobot;
+  
+  public abstract boolean intersectsWith(Shape x);
+  
+  public static boolean inCollision(LinkedList obj1, LinkedList obj2){
+    
+    synchronized(obj1){
+      synchronized(obj2){
+        Shape x;
+        Iterator i = obj1.iterator();
+        while(i.hasNext()){
+          Shape y;
+          Iterator j = obj2.iterator();
+          x = (Shape)i.next();
+          while(j.hasNext()){
+            y = (Shape)j.next();
+            if (y.intersectsWith(x)) return true;
+          }
+        }
+      }
+    }
+    
+    return false;
+    
+  }
+  
+  public static boolean circleIntersectsWithCircle(Circle c1, Circle c2){
+    float cx1 = c1.x+c1.myRobot.robotX;
+    float cy1 = c1.y+c1.myRobot.robotY;
+    float cx2 = c2.x+c2.myRobot.robotX;
+    float cy2 = c2.y+c2.myRobot.robotY;
+    
+    // save time by avoiding the use of sqrt in the computation
+    return ((cx1-cx2)*(cx1-cx2)+(cy1-cy2)*(cy1-cy2)) < (c1.r*c1.r+c2.r*c2.r);
+  }
+  
+  public static boolean circleIntersectsWithLine(Circle c, Line s){
+    
+    // shift circle center
+    float cx = c.x+c.myRobot.robotX;
+    float cy = c.y+c.myRobot.robotY;
+    
+    // rotate points 
+    // TODO replace with matrix math
+    
+    float lineCos = cos(s.myRobot.robotTheta);
+    float lineSin = sin(s.myRobot.robotTheta);
+    
+    float x1 = (s.x1*lineCos-s.y1*lineSin)+s.myRobot.robotX;
+    float y1 = (s.x1*lineSin+s.y1*lineCos)+s.myRobot.robotY;
+    float x2 = (s.x2*lineCos-s.y2*lineSin)+s.myRobot.robotX;
+    float y2 = (s.x2*lineSin+s.y2*lineCos)+s.myRobot.robotY;
+    
+    // code adapted from
+    // http://blog.csharphelper.com/2010/03/28/determine-where-a-line-intersects-a-circle-in-c.aspx
+
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    float a = dx*dx + dy*dy;
+    float b = 2*(dx*(x1-cx)+dy*(y1-cy));
+    float c = (x1-cx)*(x1-cx)+(y1-cy)*(y1-cy)-c.r*c.r;
+    
+    det = b*b - 4*a*c;
+    
+    if ((a <= 0.0000001) || (det < 0)){
+      // no solutions
+      return false;
+    } else if (det == 0)
+      // one solution
+      float t = -b / (2 * a);
+      return (0. <= t) && (t <= 1.);
+    } else{
+      // two solutions
+      float t1 = (float)((-b + sqrt(det)) / (2 * a));
+      float t2 = (float)((-b - sqrt(det)) / (2 * a));
+      return (0. <= t1) && (t1 <= 1.) ||
+             (0. <= t2) && (t2 <= 1.);
+    }
+    
+  }
+  
+  public static boolean lineIntersectsWithLine(Line s1, Line s2){
+    
+    // rotate points
+    // TODO replace with matrix math
+    
+    float lineCos = cos(s1.myRobot.robotTheta);
+    float lineSin = sin(s1.myRobot.robotTheta);
+    
+    float s1x1 = (s1.x1*lineCos-s1.y1*lineSin)+s1.myRobot.robotX;
+    float s1y1 = (s1.x1*lineSin+s1.y1*lineCos)+s1.myRobot.robotY;
+    float s1x2 = (s1.x2*lineCos-s1.y2*lineSin)+s1.myRobot.robotX;
+    float s1y2 = (s1.x2*lineSin+s1.y2*lineCos)+s1.myRobot.robotY;
+       
+    lineCos = cos(s2.myRobot.robotTheta);
+    lineSin = sin(s2.myRobot.robotTheta);
+       
+    float s2x1 = (s2.x1*lineCos-s2.y1*lineSin)+s2.myRobot.robotX;
+    float s2y1 = (s2.x1*lineSin+s2.y1*lineCos)+s2.myRobot.robotY;
+    float s2x2 = (s2.x2*lineCos-s2.y2*lineSin)+s2.myRobot.robotX;
+    float s2y2 = (s2.x2*lineSin+s2.y2*lineCos)+s2.myRobot.robotY;
+    
+    // s1: y1(t1) = dy1*t1 + y1, x1(t1) = dx1*t1 + x1
+    float dy1 = s1y2 - s1y1;
+    float dx1 = s1x2 - s1x1;
+    // s2: y2(t2) = dy2*t2 + y2, x2(t2) = dx2*t2 + x2
+    float dy2 = s2y2 - s2y1;
+    float dx2 = s2x2 - s2x1;
+    
+    float det = dy1*dx2 - dy2*dx1;
+    float num1 = dx2*(s2y1-s1y1)-dy2*(s2x1-s1x1);
+    float num2 = dx1*(s2y1-s1y1)-dy1*(s2x1-s1x1);
+    
+    // intersection point is the pair (t1,t2) such that
+    // y1(t1) == y2(t2) and x1(t1) == x2(t2)
+    //
+    // corresponds to:
+    // t1 == num1/det
+    // t2 == num2/det
+      
+    if (det == 0){
+      // parallel lines
+      if (num1 != 0) return false;
+      else{
+        // every value of t1, t2 result in common points, so there is
+        // an intersection only if some part of the segments 
+        // t1 = [0,1] and t2 = [0,1] overlap
+        if (dx2 != 0){
+          return segmentOverlap(s1x1,s1x2,s2x1,s2x2);
+        } else{
+          return segmentOverlap(s1y1,s1y2,s2y1,s2y2);
+        }
+      }
+    } else{
+      float t1 = num1/det;
+      float t2 = num2/det;
+      return (0. <= t1) && (t1 <= 1.) && (0. <= t2) && (t2 <= 1.); 
+    }
+    
+  }
+
+  public static boolean segmentOverlap(float a, float b, float x, float y){
+    // returns true if [a,b] and [x,y] overlap
+    if (a < b){
+      if (x < y){
+        if (x < a) return a <= y;
+        else return (x <= b) && (b <= y);
+      } else{
+        if (y < a) return a <= x;
+        else return (y <= b) && (b <= x);
+      }
+    } else{
+      if (x < y){
+        if (x < b) return b <= y;
+        else return (x <= a) && (a <= y);
+      } else{
+        if (y < b) return b <= x;
+        else return (y <= a) && (a <= x);
+      }
+    }
+  }
+  
+}
+
+class Rectangle extends Shape{
+  
+  public LinkedList myLines;
+  
+  public Rectangle(float x, float y, float width, float height, Robot myRobot){
+    myLines = new LinkedList();
+    myLines.add(new Line(x - width/2., y - height/2., x - width/2., y + height/2., myRobot));
+    myLines.add(new Line(x - width/2., y + height/2., x + width/2., y + height/2., myRobot));
+    myLines.add(new Line(x + width/2., y + height/2., x + width/2., y - height/2., myRobot));
+    myLines.add(new Line(x + width/2., y - height/2., x - width/2., y - height/2., myRobot));     
+  }
+  
+  public boolean intersectsWith(Shape x){
+    
+    Iterator i = myLines.iterator();
+    while (i.hasNext()){
+      if (((Line)i.next()).intersectsWith(x)) return true;
+    }
+    
+    return false;
+    
+  }
+  
+}
+
+class Circle extends Shape{
+  
+  public float x, y, r;
+  
+  public Circle(float x, float y, float r, Robot myRobot){
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    super.myRobot = myRobot;
+  }
+  
+  public boolean intersectsWith(Shape x){
+    
+    String type = x.getClass().getName();
+    
+    if(type.equals("Rectangle")){
+      return ((Rectangle)x).intersectsWith(this);
+    } else if (type.equals("Circle")){
+      return super.circleIntersectsWithCircle((Circle)x, this);
+    } else if (type.equals("Line")){
+      return super.circleIntersectsWithLine(this, (Line)x);
+    } else {
+      return false;
+    }
+    
+  }
+  
+}
+
+class Line extends Shape{
+  
+  public float x1, y1, x2, y2;
+  
+  public Line(float x1, float y1, float x2, float y2, Robot myRobot){
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x2 = x2;
+    this.y2 = y2;
+    super.myRobot = myRobot;
+  }
+  
+  public boolean intersectsWith(Shape x){
+    
+    String type = x.getClass().getName();
+    
+    if(type.equals("Rectangle")){
+      return ((Rectangle)x).intersectsWith(this);
+    } else if (type.equals("Circle")){
+      return super.circleIntersectsWithLine((Circle)x, this);
+    } else if (type.equals("Line")){
+      return super.lineIntersectsWithLine((Line)x, this);
+    } else {
+      return false;
+    }
+    
+  }
+  
+  public
+  
+}
+
 class Robot{
   
   // motor parameters
@@ -132,23 +392,18 @@ class Robot{
   public int lastTime=-1;
   public volatile boolean stuck=false;
   
+  // list of all shapes comprising the body
+  public volatile LinkedList body = new LinkedList();
+  
+  public Robot(){
+    body.add(new Circle(0., 0., robotWidth/2., this));
+  }
+  
   public void motor_set_vel(int port, int vel){
     if (port == leftMotor) velL = vel;
     else if (port == rightMotor) velR = vel;
   }
-  
-  public boolean wallCollision(){
-    return  ((robotX-robotWidth/2.)  < -boardWidth/2.)  || 
-            ((robotX+robotWidth/2.)  >  boardWidth/2.)  ||
-            ((robotY-robotLength/2.) < -boardLength/2.) ||
-            ((robotY+robotLength/2.) >  boardLength/2.);
-  }
-  
-  public boolean collidesWith(Robot r){
-    float d = sqrt((robotX-r.robotX)*(robotX-r.robotX)+(robotY-r.robotY)*(robotY-r.robotY));
-    return d < (robotWidth/2. + r.robotWidth/2.);
-  }
-  
+    
   public void savePosition(){
     oldX = robotX;
     oldY = robotY;  
@@ -368,7 +623,6 @@ class RobotSocket implements Runnable{
       
     } while(stillStuck);    
 
-    
     String command = "";
     /* supported commands:
      * exit: 'e'
@@ -394,6 +648,16 @@ class RobotSocket implements Runnable{
         }
         else if (chars[0] == 'a'){
             socketOut.println("" + r.robotTheta);
+        }
+        else if (chars[0] == 'd'){
+            // TODO implement distance sensor
+            int port = Integer.parseInt(command.substring(2));
+            socketOut.println("" + 0);
+        }
+        else if (chars[0] == 'e'){
+            // TODO implement encoder
+            int port = Integer.parseInt(command.substring(2));
+            socketOut.println("" + 0);
         }
         
       } catch (Exception e){
