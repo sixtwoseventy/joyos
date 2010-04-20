@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include "hal/io.h"
 
 void io_init() {
@@ -55,3 +57,5 @@ void io_init() {
     // Stand by mode
     RF_CE(0);
 }
+
+#endif

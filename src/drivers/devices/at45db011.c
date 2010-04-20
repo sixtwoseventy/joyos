@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include "config.h"
 #include "hal/io.h"
 #include "hal/spi.h"
@@ -227,3 +229,6 @@ int16_t at45db_fill_buffer (uint32_t addr, uint8_t * data, uint16_t len) {
 
     return len;
 }
+
+#endif
+

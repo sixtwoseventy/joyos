@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
@@ -171,3 +173,6 @@ uint8_t nrf_write_tx_payload(uint8_t *data, uint8_t len) {
     spi_release();
     return cmd[0];
 }
+
+#endif
+

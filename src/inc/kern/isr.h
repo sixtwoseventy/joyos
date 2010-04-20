@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef __INCLUDE_ISR_H__
 #define __INCLUDE_ISR_H__
 
@@ -36,4 +38,6 @@ void set_timer0_callback( void (*func) () );
 void isr_init();
 
 #endif // __INCLUDE_ISR_H__
+
+#endif
 

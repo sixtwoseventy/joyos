@@ -23,16 +23,27 @@
  *
  */
 
+#ifndef SIMULATE
 #include <avr/interrupt.h>
+#endif
+
 #include <lcd.h>
 #include <hal/uart.h>
 #include <kern/global.h>
 #include <kern/lock.h>
 #include <kern/thread.h>
+
+#ifndef SIMULATE
 #include <avr/pgmspace.h>
+#else
+#include <stdio.h>
+#endif
 
 #define PANIC_STRING "\npanic: %S\n"
+
+#ifndef SIMULATE
 void panic_P (PGM_P msg) {
+
     // stop everything
     cli();
     // notify user
@@ -55,3 +66,12 @@ void panic_P (PGM_P msg) {
     // halt board
     halt();
 }
+
+#else
+
+void panic_P (char* msg){
+	printf(PANIC_STRING, msg ? msg : "");
+	halt();
+}
+
+#endif

@@ -1,14 +1,7 @@
 # User source files
-#USERSRC = tests/rf_tx_test.c
-#USERSRC = tests/rftest.c
-#USERSRC = user/usb2nrf/transmit.c
-USERSRC = tests/rf_rx_test.c
-#AVRDUDE_PORT ?= /dev/tty.usbserial-A800cB5K
+USERSRC = tests/client.c
 AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBaY
-#AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBag
-#AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cB5K
 AVRDUDE_USERPORT ?= /dev/ttyUSB0
-#AVRDUDE_USERPORT ?= /dev/tty.usbserial-A800cBag
 
 CC = avr-gcc
 MCU = atmega128
@@ -199,4 +192,8 @@ docs:
 
 distclean:
 	@rm -rf dist/*
+
+simulate:
+	@gcc $(SRC) src/drivers/socket.c $(INCLUDES) -o client -D SIMULATE -lpthread
+
 .PHONY: all

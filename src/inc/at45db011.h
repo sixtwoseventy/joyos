@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _AT45DB011_H_
 #define _AT45DB011_H_
 
@@ -39,5 +41,7 @@ int8_t at45db_get_status(uint8_t * status);
 int8_t at45db_store_buffer(uint32_t addr);
 int16_t at45db_fill_buffer(uint32_t addr, uint8_t * data, uint16_t len);
 int8_t at45db_fill_buffer_from_flash(uint32_t addr);
+
+#endif
 
 #endif

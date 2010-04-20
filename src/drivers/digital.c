@@ -23,11 +23,21 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include <config.h>
 #include <fpga.h>
 #include <analog.h>
 #include <kern/lock.h>
 #include <kern/global.h>
+
+#else
+
+#include <joyos.h>
+
+#endif
+
+#ifndef SIMULATE
 
 struct lock digital_lock;
 
@@ -35,15 +45,30 @@ void digital_init () {
     init_lock(&digital_lock, "digital lock");
 }
 
+#endif
+
 uint8_t digital_read_8() {
+
+	#ifndef SIMULATE
+
     acquire(&digital_lock);
     // read from the FPGA all 8 digital ports
     uint8_t result = ~(fpga_read_byte(FPGA_DIGITAL_BASE));
     release(&digital_lock);
     return result;
+
+	#else
+
+	return 0;
+
+	#endif
+
 }
 
 uint8_t digital_read(uint8_t port) {
+
+	#ifndef SIMULATE
+
     uint8_t result = 0;
     if (port<8) {
         acquire(&digital_lock);
@@ -58,4 +83,12 @@ uint8_t digital_read(uint8_t port) {
     }
 
     return result;
+
+	#else
+
+	return 0;
+
+	#endif
+
 }
+

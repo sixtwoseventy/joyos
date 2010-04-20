@@ -26,6 +26,10 @@
 #ifndef __INCLUDE_LOCK_H__
 #define __INCLUDE_LOCK_H__
 
+#ifdef SIMULATE
+#include <pthread.h>
+#endif
+
 /**
  * \file lock.h
  * \brief Locks
@@ -37,14 +41,20 @@
  * drivers are locked to ensure thread-safe operation
  */
 
+#ifndef SIMULATE
 /// Maximum number of recursive acquires
 #define LOCK_MAX_ACQUIRES 255 // protects against overflow
+#endif
 
 // lock structure
 struct lock {
+	#ifndef SIMULATE
     unsigned char locked;
     const char *name;
     struct thread *thread;
+	#else
+	pthread_mutex_t obj;
+	#endif
 };
 
 /**

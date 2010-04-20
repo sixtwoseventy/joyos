@@ -28,4 +28,8 @@
 #include <kern/lock.h>
 #include <kern/thread.h>
 
+#ifndef SIMULATE
+#include <socket.h>
+#endif
+
 #endif

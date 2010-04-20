@@ -30,6 +30,7 @@
 //
 // Written by: Greg Belote [gbelote@mit.edu]
 
+#ifndef SIMULATE
 #include <board.h>
 #include <buttons.h>
 #include <kern/global.h>
@@ -39,6 +40,10 @@
 #include <kern/util.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
+#else
+#include <joyos.h>
+#include <stdio.h>
+#endif
 
 // defined by user
 extern int umain (void);
@@ -72,12 +77,21 @@ int robot_monitor (void) {
 }
 
 int main (void) {
+
     board_init();
+	#ifdef SIMULATE
+	init_socket();
+	#endif
 
     printf("JoyOS v"JOYOS_VERSION"\n");
 
+	#ifndef SIMULATE
     init_thread();
     create_thread(&robot_monitor, STACK_DEFAULT, 0, "main");
     rf_init();
     schedule();
+	#else 
+	robot_monitor();
+	#endif
+
 }

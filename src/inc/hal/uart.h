@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _UART_H_
 #define _UART_H_
 
@@ -64,10 +66,14 @@ void uart_print(const char *string);
 
 int uart_vprintf(const char *fmt, va_list ap);
 
+#endif
+
 /**
  * Print a formated string to UART.
  */
 int uart_printf(const char *fmt, ...);
+
+#ifndef SIMULATE
 
 int uart_vprintf_P(const char *fmt, va_list ap);
 int uart_printf_P(const char *fmt, ...);
@@ -86,10 +92,14 @@ uint8_t uart_has_char();
 
 int uart_vscanf_P(const char *fmt, va_list ap);
 
+#endif
+
 /**
  * Parse a formatted string from UART.
 */
 int uart_scanf(const char *fmt, ...);
+
+#ifndef SIMULATE
 
 int uart_vscanf_P(const char *fmt, va_list ap);
 int uart_scanf_P(const char *fmt, ...);
@@ -98,5 +108,7 @@ int uart_scanf_P(const char *fmt, ...);
  * Initialize the UART driver.
  */
 void uart_init(uint16_t baudRate);
+
+#endif
 
 #endif

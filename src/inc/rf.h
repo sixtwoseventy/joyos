@@ -3,6 +3,7 @@
 
 #include <nrf24l01.h>
 #include <packet.h>
+
 /**
  * \file rf.h
  * \brief User transmission and receipt of packet information over RF
@@ -12,9 +13,12 @@
  */
 
 extern volatile uint32_t position_microtime;
+extern volatile board_coord objects[4];
+
+#ifndef SIMULATE
+
 extern packet_buffer tx, rx;
 
-extern volatile board_coord objects[4];
 extern volatile uint8_t caught[4];
 
 extern volatile board_coord goal_position; //The target position received from a goal packet
@@ -50,13 +54,15 @@ uint8_t rf_has_char();
  */
 uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len);
 
+extern volatile uint8_t light_port;
+extern volatile uint8_t robot_id;
+
 /**
  * Initializes RF.  Should not be called by user
  */
 void rf_init();
 
-extern volatile uint8_t light_port;
-extern volatile uint8_t robot_id;
+#endif
 
 #endif //_RF_H_
 

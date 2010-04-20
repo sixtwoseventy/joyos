@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _NRF24L01_H_
 #define _NRF24L01_H_
 
@@ -202,5 +204,7 @@ uint8_t nrf_flush_tx();
 uint8_t nrf_flush_rx();
 uint8_t nrf_reuse_tx_pl();
 uint8_t nrf_get_packet(uint8_t *buf, uint8_t *size);
+
+#endif
 
 #endif

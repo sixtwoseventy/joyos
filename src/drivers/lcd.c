@@ -23,13 +23,20 @@
  *
  */
 
+
 #include <lcd.h>
 #include <config.h>
 #include <hal/io.h>
 #include <hal/delay.h>
 #include <kern/lock.h>
 #include <kern/thread.h>
+#ifndef SIMULATE
 #include <avr/pgmspace.h>
+#else
+#include <stdarg.h>
+#endif
+
+#ifndef SIMULATE
 
 #define NIBBLE_HI(b) ((b)>>4)
 #define NIBBLE_LO(b) ((b)&0x0F)
@@ -102,8 +109,13 @@ char lcdContents[0x20];
 // setup LCD file descriptor (for printf)
 // NOTE: when printing directly to lcdout, lcd_lock should be held
 FILE lcdout = FDEV_SETUP_STREAM(lcd_print_char, NULL, _FDEV_SETUP_WRITE);
+
+#endif
+
 // Lock that protects writing to the lcd
 struct lock lcd_lock;
+
+#ifndef SIMULATE
 
 void lcd_write(uint8_t is_data, uint8_t value) {
     acquire(&lcd_lock);
@@ -138,6 +150,7 @@ void lcd_set_custom_char(uint8_t chnum,uint8_t *data) {
 }
 
 void lcd_init(void) {
+
     int i;
     delay_busy_ms(100);
     lcd_write(LCD_CTRL, 0x33); // should be? LCD_IFLEN|LCD_2LINES
@@ -191,16 +204,26 @@ int lcd_vprintf(const char *fmt, va_list ap) {
     return count;
 }
 
+#endif
+
 int lcd_printf(const char *fmt, ...) {
     va_list ap;
     int count;
 
     va_start(ap, fmt);
+
+	#ifndef SIMULATE
     count = lcd_vprintf(fmt, ap);
+	#else
+	count = vprintf(fmt, ap);
+	#endif
+
     va_end(ap);
 
     return count;
 }
+
+#ifndef SIMULATE
 
 int lcd_vprintf_P (PGM_P fmt, va_list ap) {
     int count;
@@ -211,6 +234,8 @@ int lcd_vprintf_P (PGM_P fmt, va_list ap) {
 
     return count;
 }
+
+
 
 int lcd_printf_P (PGM_P fmt, ...) {
     va_list ap;
@@ -285,3 +310,5 @@ void lcd_clear(void) {
     lcdPosActual = 0;
     release(&lcd_lock);
 }
+
+#endif

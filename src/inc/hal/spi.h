@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _SPI_H_
 #define _SPI_H_
 
@@ -67,3 +69,6 @@ int8_t spi_transfer_sync (uint8_t * data, uint8_t len);
 int spi_try_acquire();
 
 #endif
+
+#endif
+

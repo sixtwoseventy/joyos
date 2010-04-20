@@ -53,7 +53,9 @@ void gyro_init (uint8_t port, float lsb_us_per_deg, uint32_t time_ms);
  * Internal routine for updating gyroscope. Don't call this unless you know what
  * you're doing.
  */
+#ifndef SIMULATE
 int gyro_update (void);
+#endif
 
 /**
  * Returns the current heading of an initialized gyroscope. This will not wrap;
@@ -69,7 +71,9 @@ float gyro_get_degrees (void);
  *
  * @param deg                          The degree value that you wish to set the gyro to read.
  */
+#ifndef SIMULATE
 void gyro_set_degrees (float deg);
+#endif
 
 #endif // __INCLUDE_GYRO_H__
 

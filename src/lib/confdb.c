@@ -1,3 +1,5 @@
+#ifndef SIMULATE
+
 #include "lib/confdb.h"
 #include "at45db011.h"
 
@@ -52,3 +54,6 @@ uint8_t confdb_save_integer(uint16_t id, uint16_t value) {
     confdb_save_item(&item);
     return CONFDB_OK;
 }
+
+#endif
+

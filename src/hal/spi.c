@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include "config.h"
 #include "hal/io.h"
 #include "hal/spi.h"
@@ -74,3 +76,5 @@ int8_t spi_transfer_sync (uint8_t * data, uint8_t len) {
     }
     return 0;
 }
+
+#endif

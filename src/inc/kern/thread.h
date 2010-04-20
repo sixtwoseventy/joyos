@@ -40,19 +40,24 @@
  * 1ms.
  */
 
+#ifndef SIMULATE
 #include <setjmp.h>
-#include <stdint.h>
 #include <config.h>
+#endif
+#include <stdint.h>
 
+#ifndef SIMULATE
 #define TIMER_PRESCALER (64)
 //#define TIMER_1MS_EXPIRE ((uint8_t)(0xff-(F_CPU/TIMER_PRESCALER/1000)+1))
 #define TIMER_1MS_EXPIRE 131
 
 // TODO probably defined elsewhere
 #define SREG_IF 0x80
+#endif
 
 #define STACK_DEFAULT 256
 
+#ifndef SIMULATE
 #define ATOMIC_BEGIN uint8_t _cli_was_enabled = SREG & SREG_IF; cli();
 #define ATOMIC_END SREG |= _cli_was_enabled;
 
@@ -144,6 +149,8 @@ void schedule(void) __ATTR_NORETURN__;
  */
 void resume(struct thread *t) __ATTR_NORETURN__;
 
+#endif
+
 /**
  * Pause a thread for 'ms' milliseconds. The calling thread will give up the
  * processor until time expires. If interrupts are disabled, a busy loop will
@@ -165,7 +172,11 @@ void yield(void);
  * This will free the thread's stack space, but not any of it's dynamically
  * allocated memory (malloc).
  */
+#ifndef SIMULATE
 void thread_exit(int) __ATTR_NORETURN__;
+#else
+void thread_exit(int);
+#endif
 
 /**
  * Create a new thread.
@@ -184,7 +195,11 @@ uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char 
 /**
  * Stop everything.
  */
+#ifndef SIMULATE
 void halt(void) __ATTR_NORETURN__;
+#else
+void halt(void);
+#endif
 
 /**
  * Return the number of milliseconds elapsed since startup.
@@ -193,12 +208,16 @@ uint32_t get_time (void);
 
 long get_time_us (void);
 
+#ifndef SIMULATE
+
 void dump_jmpbuf(struct jbuf *);
 
 /**
  * Output to the UART the state of every thread.
  */
 void dump_threadstates ();
+
+#endif
 
 #endif // __INCLUDE_THREAD_H__
 

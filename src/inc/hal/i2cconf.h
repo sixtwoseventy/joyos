@@ -15,6 +15,8 @@
 //
 //*****************************************************************************
 
+#ifndef SIMULATE
+
 #ifndef I2CCONF_H
 #define I2CCONF_H
 
@@ -24,6 +26,8 @@
 // the largest I2C packet you expect to send and receive, respectively.
 #define I2C_SEND_DATA_BUFFER_SIZE       0x20
 #define I2C_RECEIVE_DATA_BUFFER_SIZE    0x20
+
+#endif
 
 #endif
 

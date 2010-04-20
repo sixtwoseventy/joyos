@@ -29,6 +29,8 @@
 //
 // Written by: Greg Belote [gbelote@mit.edu]
 
+#ifndef SIMULATE
+
 #include <kern/global.h>
 #include <kern/thread.h>
 #include <kern/util.h> // XXX: debugging
@@ -39,6 +41,16 @@
 #include <string.h>
 #include <avr/interrupt.h>
 #include <kern/lock.h>
+
+#else
+
+#include <joyos.h>
+#include <pthread.h>
+#include <time.h>
+
+#endif
+
+#ifndef SIMULATE
 
 extern struct lock uart_lock;
 
@@ -56,30 +68,7 @@ void setup_timer(void) {
     TIMSK |= _BV(TOIE2);
 }
 
-uint32_t get_time (void) {
-    ATOMIC_BEGIN;
-
-    uint32_t current_time;
-    current_time = global_time;
-
-    ATOMIC_END;
-
-    return current_time;
-}
-
 #define US_PER_TICK ((1000000UL*TIMER_PRESCALER)/F_CPU)
-
-long get_time_us (void) {
-    ATOMIC_BEGIN;
-
-    long current_time;
-    current_time = global_time * 1000 +
-        (uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
-
-    ATOMIC_END;
-
-    return current_time;
-}
 
 void init_thread(void) {
     ATOMIC_BEGIN;
@@ -214,7 +203,54 @@ void resume(struct thread *t) {
     longjmp(TO_JMP_BUF(current_thread->th_jmpbuf), 1);
 }
 
+#endif
+
+long get_time_us (void) {
+
+	#ifndef SIMULATE
+
+    ATOMIC_BEGIN;
+
+    long current_time;
+    current_time = global_time * 1000 +
+        (uint32_t) (TCNT2 - TIMER_1MS_EXPIRE) * US_PER_TICK;
+
+    ATOMIC_END;
+
+    return current_time;
+
+	#else
+
+	return (long)(1000000. * ((float)clock()) / ((float)CLOCKS_PER_SEC));
+
+	#endif
+}
+
+uint32_t get_time (void) {
+
+	#ifndef SIMULATE
+	
+    ATOMIC_BEGIN;
+
+    uint32_t current_time;
+    current_time = global_time;
+
+    ATOMIC_END;
+
+    return current_time;
+
+	#else
+
+	return (uint32_t)(1000. * ((float)clock()) / ((float)CLOCKS_PER_SEC));
+
+	#endif
+
+}
+
 void pause(uint32_t ms) {
+
+	#ifndef SIMULATE
+
     // if interrupts are disabled...
     if (!(SREG & SREG_IF)) {
         // spin for a while
@@ -230,9 +266,19 @@ void pause(uint32_t ms) {
 
         ATOMIC_END;
     }
+
+	#else
+	
+	delay_busy_ms(ms);
+
+	#endif
+
 }
 
 void yield(void) {
+
+	#ifndef SIMULATE
+
     ATOMIC_BEGIN;
 
     // store registers not in jmp_buf on stack
@@ -274,9 +320,19 @@ void yield(void) {
             "pop r1\n\t" ::);
 
     ATOMIC_END;
+
+	#else
+
+	pthread_yield();
+
+	#endif
+
 }
 
 void thread_exit(int status) {
+
+	#ifndef SIMULATE
+
     ATOMIC_BEGIN;
 
     if (!current_thread)
@@ -287,7 +343,15 @@ void thread_exit(int status) {
 
     panic("scheduled thread that had already exited");
     ATOMIC_END;
+
+	#else 
+
+	pthread_exit(NULL);
+
+	#endif
 }
+
+#ifndef SIMULATE
 
 uint16_t allocate_stack(uint16_t size, uint8_t tid) {
     return STACKTOP(tid);
@@ -314,12 +378,32 @@ uint16_t allocate_stack(uint16_t size, uint8_t tid) {
      */
 }
 
+#endif
+
+#ifndef SIMULATE
+
 void thread_stub(void) {
+
     SREG |= SREG_IF;
     thread_exit(current_thread->th_func());
+
 }
 
+#else
+
+void* thread_stub(void* arg){
+	
+	// cast argument to a function pointer and call it
+	(*((int (*)())arg))();
+
+}
+
+#endif
+
 uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char *name) {
+
+	#ifndef SIMULATE
+
     ATOMIC_BEGIN;
 
     int i;
@@ -345,9 +429,21 @@ uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char 
 
     ATOMIC_END;
     return i;
+
+	#else
+
+    pthread_t tid;
+    pthread_create(&tid, NULL, thread_stub, (void*)func);
+
+	#endif
 }
 
 void halt(void) {
+
+	uint8_t i;
+
+	#ifndef SIMULATE
+
     // stop interrupts
     cli();
 
@@ -356,13 +452,17 @@ void halt(void) {
     motor_lock.locked = 0;
     motor_lock.thread = NULL;
 
+	#endif
+
     // brake each motor
-    for (uint8_t i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++)
         motor_brake (i);
 
     // enter busy loop forever
     for(;;);
 }
+
+#ifndef SIMULATE
 
 void dump_jmpbuf(struct jbuf *jb) {
     printf("Dumping jmp_buf:\n");
@@ -404,3 +504,6 @@ int display_thread_states (void) {
 
     return 0;
 }
+
+#endif
+

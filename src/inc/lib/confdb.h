@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _CONFDB_H_
 #define _CONFDB_H_
 
@@ -110,3 +112,6 @@ uint8_t confdb_load_integer(uint16_t id, uint16_t *value);
 uint8_t confdb_save_integer(uint16_t id, uint16_t value);
 
 #endif
+
+#endif
+

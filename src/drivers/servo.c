@@ -23,9 +23,17 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include <config.h>
 #include <fpga.h>
 #include <kern/lock.h>
+
+#else
+
+#include <joyos.h>
+
+#endif
 
 /**
  * The FPGA has 10bit Servo registers for driving from 0ms - 3.96ms range
@@ -38,6 +46,8 @@
  * Actual range in bits is more like 9bits
  *
  */
+
+#ifndef SIMULATE
 
 #define SERVO_RAW_MIN   65
 #define SERVO_RAW_MAX   595
@@ -58,10 +68,18 @@ void servo_set_pos_raw(uint8_t servo, uint16_t pos) {
     release (&servo_lock);
 }
 
+#endif
+
 /* pos = 0-511 */
 void servo_set_pos(uint8_t servo, uint16_t pos) {
+
+	#ifndef SIMULATE
+
     uint16_t posRaw = SERVO_RAW_MIN + (uint16_t)((float)(pos)*SERVO_RAW_SCALE);
     servo_set_pos_raw(servo,posRaw);
+
+	#endif
+
 }
 
 void servo_set_range(uint8_t servo, uint16_t lower, uint16_t upper) {

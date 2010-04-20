@@ -26,7 +26,11 @@
 #ifndef _IRDIST_H_
 #define _IRDIST_H_
 
+#ifndef SIMULATE
 #include <kern/global.h>
+#else
+#include <joyos.h>
+#endif
 
 /**
  * \file irdist.h

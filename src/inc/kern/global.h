@@ -26,6 +26,8 @@
 #ifndef __INCLUDE_GLOBAL_H__
 #define __INCLUDE_GLOBAL_H__
 
+#ifndef SIMULATE
+
 /**
  * \file global.h
  * \brief Miscellaneous kernel support functions.
@@ -45,6 +47,8 @@
 
 //void abort (void);
 
+#endif
+
 /**
  * System panic.
  * Call this routine to halt the board and write an error message to the
@@ -52,9 +56,18 @@
  *
  * @param _x_   Write "panic: _x_" to the UART.
  */
-#define panic(_x_) panic_P (PSTR(_x_))
 
+#ifndef SIMULATE
+#define panic(_x_) panic_P (PSTR(_x_))
+#else
+#define panic(_x_) panic_P (_x_)
+#endif
+
+#ifndef SIMULATE
 void panic_P (PGM_P msg) __ATTR_NORETURN__;
+#else
+void panic_P (char* msg);
+#endif
 
 /**
  * Enables start of the round.  That is, if this is called, then the robot will
@@ -69,6 +82,7 @@ void round_end();
 
 // throw compiler error if x is false
 #define static_assert(x) switch(x) case 0: case (x):
+
 
 //! Current JoyOS version
 #define JOYOS_VERSION "0.2.5"

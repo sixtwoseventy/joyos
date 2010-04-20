@@ -1,3 +1,5 @@
+#ifndef SIMULATE
+
 // Include headers from OS
 #include <config.h>
 #include <hal/delay.h>
@@ -14,10 +16,21 @@
 #include <motor.h>
 #include <kern/thread.h>
 
-packet_buffer tx, rx;
+#else
 
-volatile uint32_t position_microtime;
+#include <joyos.h>
+#include <stdarg.h>
+#include <socket.h>
+#include <stdio.h>
+
+#endif
+
 volatile board_coord objects[4];
+volatile uint32_t position_microtime;
+
+#ifndef SIMULATE
+
+packet_buffer tx, rx;
 
 volatile board_coord goal_position; //The target position received from a goal packet
 
@@ -86,16 +99,24 @@ int rf_vprintf(const char *fmt, va_list ap) {
     return count;
 }
 
+#endif
+
 int rf_printf(const char *fmt, ...) {
     va_list ap;
     int count;
 
     va_start(ap, fmt);
+	#ifndef SIMULATE
     count = rf_vprintf(fmt, ap);
+	#else
+	count = vprintf(fmt, ap);
+	#endif
     va_end(ap);
 
     return count;
 }
+
+#ifndef SIMULATE
 
 int rf_vprintf_P(const char *fmt, va_list ap) {
     int count;
@@ -136,16 +157,24 @@ int rf_vscanf(const char *fmt, va_list ap){
     return count;
 }
 
+#endif
+
 int rf_scanf(const char *fmt, ...){
     va_list ap;
     int count;
 
     va_start(ap, fmt);
+	#ifndef SIMULATE
     count = rf_vscanf(fmt, ap);
+	#else
+	count = vscanf(fmt, ap);
+	#endif
     va_end(ap);
 
     return count;
 }
+
+#ifndef SIMULATE
 
 int rf_vscanf_P(const char *fmt, va_list ap) {
     int count;
@@ -353,7 +382,12 @@ uint8_t rf_get_packet(uint8_t *buf, uint8_t *size) {
     return pipe;
 }
 
+#endif
+
 int rf_receive (void) {
+
+	#ifndef SIMULATE
+
     for (;;) {
         //if (PINE & _BV(PD7)) {
         uint8_t status = nrf_read_status();
@@ -370,10 +404,38 @@ int rf_receive (void) {
         yield();
     }
     return 0;
+
+	#else
+
+	float x;
+	float y;
+
+	while(1){
+
+		write(sockfd, "x\n", 2);
+		read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
+		sscanf(socket_buffer, "%f", &x);
+
+		write(sockfd, "y\n", 2);
+		read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
+		sscanf(socket_buffer, "%f", &y);
+
+		position_microtime = get_time_us();
+
+		pause(10);
+
+	}
+  
+
+	#endif
+
 }
 
 // Initialize RF
 void rf_init (void) {
+
+	#ifndef SIMULATE
+
     extern struct thread *current_thread;
     if (current_thread != NULL)
         return;
@@ -391,6 +453,8 @@ void rf_init (void) {
     rf_new_str = 0;
 
     rf_rx(); //Enable receive mode
+
+	#endif
 
     create_thread (&rf_receive, STACK_DEFAULT, 0, "rf");
 }

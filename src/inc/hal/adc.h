@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _ADC_H_
 #define _ADC_H_
 
@@ -75,3 +77,6 @@ void adc_init (void);
 int8_t adc_get_sample (adc_ref ref, adc_input config, uint16_t * val);
 
 #endif
+
+#endif
+

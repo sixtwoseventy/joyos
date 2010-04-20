@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _FPGA_H_
 #define _FPGA_H_
 
@@ -75,3 +77,6 @@
 uint8_t fpga_init(uint16_t start, uint16_t len);
 
 #endif
+
+#endif 
+

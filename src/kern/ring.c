@@ -1,3 +1,5 @@
+#ifndef SIMULATE
+
 #include <kern/global.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,3 +95,6 @@ uint16_t ring_read(ring_buf *ring, uint8_t *buf, uint16_t count) {
     release(&ring->lock);
     return count;
 }
+
+#endif
+

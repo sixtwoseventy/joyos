@@ -23,10 +23,20 @@
  *
  */
 
+#ifndef SIMULATE
 #include "config.h"
+#endif
 #include "hal/uart.h"
+#ifndef SIMULATE
 #include "hal/io.h"
+#endif
 #include <kern/lock.h>
+#ifdef SIMULATE
+#include <stdio.h>
+#include <stdarg.h>
+#endif
+
+#ifndef SIMULATE
 
 // setup LCD file descriptor (for printf)
 //FILE uartout = FDEV_SETUP_STREAM(uart_put, NULL, _FDEV_SETUP_WRITE);
@@ -63,16 +73,24 @@ int uart_vprintf(const char *fmt, va_list ap) {
     return count;
 }
 
+#endif
+
 int uart_printf(const char *fmt, ...) {
     va_list ap;
     int count;
 
     va_start(ap, fmt);
+	#ifndef SIMULATE
     count = uart_vprintf(fmt, ap);
+	#else
+    count = vprintf(fmt, ap);
+	#endif
     va_end(ap);
 
     return count;
 }
+
+#ifndef SIMULATE
 
 int uart_vprintf_P(const char *fmt, va_list ap) {
     int count;
@@ -118,16 +136,25 @@ int uart_vscanf(const char *fmt, va_list ap){
     return count;
 }
 
+#endif
+
 int uart_scanf(const char *fmt, ...){
     va_list ap;
     int count;
 
     va_start(ap, fmt);
+	#ifndef SIMULATE
     count = uart_vscanf(fmt, ap);
+	#else
+    count = vscanf(fmt, ap);
+	#endif
+
     va_end(ap);
 
     return count;
 }
+
+#ifndef SIMULATE
 
 int uart_vscanf_P(const char *fmt, va_list ap) {
     int count;
@@ -158,3 +185,6 @@ void uart_init(uint16_t baudRate) {
 
     init_lock(&uart_lock, "UART lock");
 }
+
+#endif
+

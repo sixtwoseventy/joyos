@@ -24,8 +24,15 @@
  */
 
 #include <config.h>
+#ifndef SIMULATE
 #include <fpga.h>
 #include <mcp3008.h>
+#else
+#include <socket.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#endif
 #include <kern/lock.h>
 #include <stdlib.h>
 
@@ -39,10 +46,13 @@
 struct lock motor_lock;
 
 void motor_init (void) {
+	#ifndef SIMULATE
     init_lock(&motor_lock, "motor lock");
+	#endif
 }
 
 void motor_set_vel(uint8_t motor, int16_t vel) {
+	#ifndef SIMULATE
     acquire(&motor_lock);
     uint8_t mbase = FPGA_MOTOR_BASE + motor*FPGA_MOTOR_SIZE;
     if (vel>0)
@@ -54,15 +64,28 @@ void motor_set_vel(uint8_t motor, int16_t vel) {
 
     fpga_write_byte(mbase+FPGA_MOTOR_VEL,abs(vel));
     release(&motor_lock);
+	#else
+
+	acquire(&socket_lock);
+	sprintf(socket_buffer, "m %d %d\n", motor, vel);
+	write(sockfd, socket_buffer, strlen(socket_buffer));
+	release(&socket_lock);
+
+	#endif
 }
 
 void motor_brake(uint8_t motor) {
+	#ifndef SIMULATE
     acquire(&motor_lock);
     uint8_t mbase = FPGA_MOTOR_BASE + motor*FPGA_MOTOR_SIZE;
     fpga_write_byte(mbase+FPGA_MOTOR_CTL, MOTOR_CTL_BRAKE);
     release(&motor_lock);
+	#else
+	motor_set_vel(motor, 0);
+	#endif
 }
 
+#ifndef SIMULATE
 uint16_t motor_get_current(uint8_t motor) {
     acquire(&motor_lock);
     uint8_t adcPortMap[6] = {4,5,2,3,0,1};
@@ -75,3 +98,5 @@ uint16_t motor_get_current(uint8_t motor) {
 uint16_t motor_get_current_MA(uint8_t motor) {
     return motor_get_current(motor)*MOTOR_MA_PER_LSB;
 }
+#endif
+

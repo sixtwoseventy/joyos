@@ -26,12 +26,14 @@
 #ifndef _MOTOR_H_
 #define _MOTOR_H_
 
+#ifndef SIMULATE
 #define MOTOR_0     0
 #define MOTOR_1     1
 #define MOTOR_2     2
 #define MOTOR_3     3
 #define MOTOR_4     4
 #define MOTOR_5     5
+#endif
 
 /**
  * \file motor.h
@@ -69,7 +71,9 @@ void motor_set_vel(uint8_t motor, int16_t vel);
  *
  * @param motor Motor port to brake.
  */
+#ifndef SIMULATE
 void motor_brake(uint8_t motor);
+#endif
 
 /**
  * Read the current in a given motor.
@@ -77,7 +81,9 @@ void motor_brake(uint8_t motor);
  * @param motor Motor to sense current of.
  * @return the current of motor 'motor'.
  */
+#ifndef SIMULATE
 uint16_t motor_get_current(uint8_t motor);
+#endif
 
 /**
  * Read the current in a given motor in milliamps.
@@ -85,6 +91,8 @@ uint16_t motor_get_current(uint8_t motor);
  * @param motor Motor to sense current of.
  * @return the current of motor 'motor', in milliamps.
  */
+#ifndef SIMULATE
 uint16_t motor_get_current_MA(uint8_t motor);
+#endif
 
 #endif

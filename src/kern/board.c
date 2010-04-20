@@ -23,21 +23,35 @@
  *
  */
 
+#ifndef SIMULATE
 #include <config.h>
+#endif
 #include <board.h>
+#ifndef SIMULATE
 #include <hal/io.h>
 #include <hal/spi.h>
 #include <hal/adc.h>
+#endif
 #include <hal/delay.h>
 #include <kern/global.h>
 #include <kern/lock.h>
+#ifndef SIMULATE
 #include <kern/isr.h>
 #include <kern/memlayout.h>
+#endif
 #include <kern/thread.h>
+#ifndef SIMULATE
 #include <at45db011.h>
 #include <util/crc16.h>
+#else
+#include <stdio.h>
+#endif
+
+#ifndef SIMULATE
 
 extern FILE lcdout, uartio;
+
+#endif
 
 // Boot failure message
 #define str_boot_fail "Init fail: %S\n"
@@ -57,6 +71,9 @@ extern FILE lcdout, uartio;
 // Load board config.
 // Return true if config CRC is valid
 uint8_t board_load_config (void) {
+
+	#ifndef SIMULATE
+
     uint8_t i;
     uint16_t crc=0;
     uint8_t *config_arr = (uint8_t*)&board_config;
@@ -69,8 +86,17 @@ uint8_t board_load_config (void) {
         crc = _crc_xmodem_update(crc,config_arr[i]);
     // check CRC
     return (crc==board_config.crc);
+
+	#else
+
+	printf("Skipping board config check...\n");
+	return 1;
+
+	#endif
+
 }
 
+#ifndef SIMULATE
 #define board_fail(msg) board_fail_P(PSTR(msg))
 // Halt board on init failure and print message
 void board_fail_P(PGM_P msg) {
@@ -85,6 +111,18 @@ void board_fail_P(PGM_P msg) {
     // and stop
     while (1);
 }
+#else
+#define board_fail(msg) board_fail_P(msg)
+// Halt board on init failure and print message
+void board_fail_P(char* msg) {
+	// print message
+    printf(str_boot_fail, msg);
+    // and stop
+    while (1);
+}
+#endif
+
+#ifndef SIMULATE
 
 #define EXTERNAL_RAM
 
@@ -105,15 +143,25 @@ void memory_init(void) {
         panic("memory full");
 }
 
+#endif
+
 // Initialise board
 void board_init (void) {
+
+	#ifndef SIMULATE
     io_init(); // Init GPIOs
     uart_init(BAUD_RATE);
     stderr = &uartio;
     printf(str_boot_uart,BAUD_RATE);
     printf(str_boot_start);
+	#else
+	printf("Skipping UART initialization...\n");
+	#endif
+	#ifndef SIMULATE
     digital_init();
+	#endif
     encoder_init();
+	#ifndef SIMULATE
     spi_init();
     motor_init();
     servo_init();
@@ -127,6 +175,7 @@ void board_init (void) {
     adc_init();
     isr_init();
     memory_init();
+	#endif
 
     // load config, or fail if invalid
     if (!board_load_config())
@@ -147,18 +196,29 @@ void board_init (void) {
 #endif
     printf(str_boot_batt,read_battery());
 
+	#ifndef SIMULATE
     // initialise FPGA
     if (!fpga_init(FPGA_CONFIG_ADDRESS, board_config.fpga_len))
         board_fail("FPGA failure");
     printf(str_boot_fpga, fpga_get_version_major(), fpga_get_version_minor());
+	#else
+	printf("Skipping FPGA initialization...\n");
+	#endif
 
     // all ok
+#ifndef SIMULATE
 #ifdef LCD_DEBUG
     lcd_set_pos(31);
     lcd_print_char('\1', NULL);
 #else
+	printf("Board init complete.\n");
+#endif
+#else
     printf("Board init complete.\n");
 #endif
 
+#ifndef SIMULATE
     LED_COMM(0);
+#endif
+
 }

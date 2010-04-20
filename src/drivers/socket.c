@@ -1,20 +1,33 @@
-#include "../inc/joyos.h"
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <kern/lock.h>
+#include <kern/global.h>
+#include <socket.h>
+
+// socket i/o variables 
+int sockfd;
+char socket_buffer[SOCKET_BUF_SIZE];
+struct lock socket_lock;
 
 // TODO replace functionality with bump sensors
 int isStuck(){
 
+	int result;
+
+	acquire(&socket_lock);
 	write(sockfd, "s\n", 2);
 	read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
-
-    return socket_buffer[0] == 't';
-  
-}
-
-// TODO replace with panic
-void error(char *msg)
-{
-  perror(msg);
-  exit(0);
+    result = (int)(socket_buffer[0] == 't');
+	release(&socket_lock);
+	
+  	return result;
 }
 
 void init_socket(){
@@ -23,18 +36,16 @@ void init_socket(){
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
+	init_lock(&socket_lock, "socket");
+
     portno = 4444;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (sockfd < 0) 
-        error("ERROR opening socket");
+    if (sockfd < 0) panic("error opening socket");
 
     server = gethostbyname("dawgwood");
 
-    if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host\n");
-        exit(0);
-    }
+    if (server == NULL) panic("socket error, no such host\n");
 
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -44,7 +55,7 @@ void init_socket(){
     serv_addr.sin_port = htons(portno);
 
     if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) 
-        error("ERROR connecting");
+        panic("error connecting to socket");
 
 }
 

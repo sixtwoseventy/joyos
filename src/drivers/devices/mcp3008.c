@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include "config.h"
 #include "mcp3008.h"
 #include "hal/io.h"
@@ -58,3 +60,6 @@ int8_t mcp3008_get_sample(mcp3008_device dev, mcp3008_input config, uint16_t *sa
 
     return MCP3008_SUCCESS;
 }
+
+#endif
+

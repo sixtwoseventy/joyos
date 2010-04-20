@@ -15,6 +15,8 @@
 //
 //*****************************************************************************
 
+#ifndef SIMULATE
+
 #ifndef I2C_H
 #define I2C_H
 
@@ -84,4 +86,6 @@ void i2cMasterReceiveNI(uint8_t deviceAddr, uint8_t length, uint8_t *data);
 
 #endif
 
+
+#endif
 

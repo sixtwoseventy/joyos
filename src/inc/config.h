@@ -26,12 +26,16 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#ifndef SIMULATE
+
 #define F_CPU 8000000UL
 
 #include <inttypes.h>
 #include <stdbool.h>
 
 #define BAUD_RATE 19200
+
+#endif
 
 #endif
 

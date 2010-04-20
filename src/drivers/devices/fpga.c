@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include "config.h"
 #include "hal/io.h"
 #include "hal/delay.h"
@@ -76,3 +78,6 @@ uint8_t fpga_init(uint16_t start, uint16_t len) {
     // return configuration status
     return FPGA_DONE();
 }
+
+#endif
+

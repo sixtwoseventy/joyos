@@ -2,7 +2,11 @@
 #define _PACKET_H_
 
 #include <stdint.h>
+#ifndef SIMULATE
 #include <stdio.h>
+#endif
+
+#ifndef SIMULATE
 
 #define PAYLOAD_SIZE 30
 
@@ -16,13 +20,21 @@
 #define REPLY_STRING 0x07 //String from board to bot
 #define STATUS 0x08 // Status packet from mouse
 
+#endif
+
 typedef struct {
     uint8_t id;
     signed x : 12;
     signed y : 12;
     signed theta : 12;
     unsigned confidence : 12;
+#ifndef SIMULATE
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) board_coord;
+#else
+} board_coord;
+#endif
+
+#ifndef SIMULATE
 
 typedef struct{
     uint8_t id;
@@ -44,5 +56,7 @@ typedef struct {
         status_update status;
     } payload;
 } __attribute__ ((packed)) packet_buffer;
+
+#endif
 
 #endif

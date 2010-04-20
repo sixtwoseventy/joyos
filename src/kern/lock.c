@@ -29,10 +29,19 @@
 //
 // Written by: Greg Belote [gbelote@mit.edu]
 
+#ifndef SIMULATE
+
 #include <kern/global.h>
 #include <kern/lock.h>
 #include <kern/thread.h>
 #include <avr/interrupt.h>
+
+#else
+
+#include <pthread.h>
+#include <joyos.h>
+
+#endif
 
 void init_lock(struct lock *k, const char *name) {
     // make sure k is non-null
@@ -40,10 +49,21 @@ void init_lock(struct lock *k, const char *name) {
         panic("init null lock");
     }
 
+	#ifndef SIMULATE
+
     k->locked = 0;
     k->name = name;
     k->thread = NULL;
+
+	#else
+
+	pthread_mutex_init(&(k->obj), NULL);
+
+	#endif
+
 }
+
+#ifndef SIMULATE
 
 uint8_t inc_lock(struct lock *k) {
     ATOMIC_BEGIN;
@@ -59,9 +79,13 @@ uint8_t inc_lock(struct lock *k) {
     }
 }
 
+#endif
+
 void acquire(struct lock *k) {
     if (!k)
         panic("acquire null lock");
+
+	#ifndef SIMULATE
 
     if (k->locked >= LOCK_MAX_ACQUIRES)
         panic("acquired too many times");
@@ -73,17 +97,35 @@ void acquire(struct lock *k) {
         else
             panic("deadlock in acquire -- called from kernel thread on unavailable lock");
     }
+
+	#else
+
+	pthread_mutex_lock (&(k->obj));
+         
+	#endif
+
 }
 
 int try_acquire(struct lock *k) {
     if (!k)
         panic("acquire null lock");
 
+	#ifndef SIMULATE
+
     if (k->locked >= LOCK_MAX_ACQUIRES)
         panic("acquired too many times");
 
     return inc_lock(k);
+
+	#else
+
+	return pthread_mutex_trylock (&(k->obj)) == 0;
+
+	#endif
+
 }
+
+#ifndef SIMULATE
 
 // should only be called atomically
 int is_held (struct lock *k) {
@@ -94,9 +136,13 @@ int is_held (struct lock *k) {
     return current_thread == k->thread && k->locked;
 }
 
+#endif
+
 void release(struct lock *k) {
     if (!k)
         panic("release null lock");
+
+	#ifndef SIMULATE
 
     ATOMIC_BEGIN;
 
@@ -107,7 +153,16 @@ void release(struct lock *k) {
         k->thread = NULL;
 
     ATOMIC_END;
+
+	#else
+
+    pthread_mutex_unlock(&(k->obj));
+
+	#endif
+
 }
+
+#ifndef SIMULATE
 
 void smash(struct lock *k) {
     if (!k)
@@ -120,3 +175,6 @@ void smash(struct lock *k) {
 
     ATOMIC_END;
 }
+
+#endif
+

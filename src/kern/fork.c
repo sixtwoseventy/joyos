@@ -30,6 +30,8 @@
 //
 // Written by: Greg Belote [gbelote@mit.edu]
 
+#ifndef SIMULATE
+
 #include <kern/thread.h>
 #include <kern/global.h>
 #include <avr/interrupt.h>
@@ -73,3 +75,6 @@ int fork (void) {
     // we're the parent and our work is done, we're ready to return
     return child->th_id;
 }
+
+#endif
+

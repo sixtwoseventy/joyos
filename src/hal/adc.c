@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include "hal/io.h"
 #include "hal/adc.h"
 #include "kern/lock.h"
@@ -50,3 +52,6 @@ int8_t adc_get_sample (adc_ref ref, adc_input config, uint16_t * val) {
     release(&adc_lock);
     return ADC_SUCCESS;
 }
+
+#endif
+

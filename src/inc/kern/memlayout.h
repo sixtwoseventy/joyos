@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef __INCLUDE_MEMLAYOUT_H__
 #define __INCLUDE_MEMLAYOUT_H__
 
@@ -76,5 +78,8 @@
 
 #define STACKTOP(tid) (STACK_BLOCK_TOP - (STACKSIZE+STACK_SAFETY_ZONE) * (tid))
 
+#endif
+
 #endif // __INCLUDE_MEMLAYOUT_H__
+
 

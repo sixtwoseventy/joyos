@@ -23,11 +23,22 @@
  *
  */
 
+#ifndef SIMLUATE
+
 #include <kern/global.h>
 #include <kern/thread.h>
 #include <mcp3008.h>
 
+#else
+
+#include <joyos.h>
+
+#endif
+
 uint16_t analog_read(uint8_t port) {
+	
+	#ifndef SIMULATE
+
     uint16_t v;
     if (port>=8 && port<16) {
         // keep trying until sample is successful...
@@ -57,4 +68,12 @@ uint16_t analog_read(uint8_t port) {
     }
 
     return v;
+
+	#else
+
+	return 0;
+
+	#endif
+
 }
+

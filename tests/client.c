@@ -1,4 +1,6 @@
 #include <joyos.h>
+#include <math.h>
+#include <stdio.h>
 
 // robot port assignments
 #define LEFT_MOTOR 0 
@@ -18,6 +20,11 @@ void forward(){
   motor_set_vel(RIGHT_MOTOR, 255);
 }
 
+void backward(){
+  motor_set_vel(LEFT_MOTOR, -255);
+  motor_set_vel(RIGHT_MOTOR, -255);
+}
+
 int usetup(){
 
 	return 0;
@@ -29,7 +36,11 @@ int umain(){
   
   while(1){
     
-    if (isStuck()) turnLeft();
+    if (isStuck()){
+		backward();
+		pause(500);
+		turnLeft();
+	}
   
     forward();
     

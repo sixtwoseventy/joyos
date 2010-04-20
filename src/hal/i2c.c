@@ -49,6 +49,8 @@
 //
 //*****************************************************************************
 
+#ifndef SIMULATE
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/twi.h>
@@ -574,3 +576,6 @@ outb(TWCR, (inb(TWCR)&TWCR_CMD_MASK)|_BV(TWINT)|_BV(TWEA)|_BV(TWSTO));
 sbi(TWCR, TWIE);
 }
  */
+
+#endif
+

@@ -26,6 +26,8 @@
 #ifndef __INCLUDE_BOARD_H__
 #define __INCLUDE_BOARD_H__
 
+#ifndef SIMULATE
+
 #include <hal/uart.h>
 #include <lcd.h>
 #include <fpga.h>
@@ -36,6 +38,12 @@
 #include <motor.h>
 #include <buttons.h>
 #include <rf.h>
+
+#else
+
+#include <joyos.h>
+
+#endif
 
 /**
  * \file board.h

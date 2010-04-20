@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef __INCLUDE_UTIL_H__
 #define __INCLUDE_UTIL_H__
 
@@ -32,3 +34,5 @@ void waitForClick (char *);
 void dumpBytes (uint8_t *, uint8_t);
 
 #endif // __INCLUDE_UTIL_H__
+
+#endif

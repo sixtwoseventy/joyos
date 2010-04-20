@@ -74,9 +74,19 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <avr/pgmspace.h>
+
+#else
+
+#include <joyos.h>
+
+#endif
+
+#ifndef SIMULATE
 
 // TODO lock
 
@@ -118,6 +128,8 @@ void lcd_print(const char *string);
  */
 int lcd_vprintf(const char *fmt, va_list ap);
 
+#endif
+
 /**
  * Display a formated string to the LCD.
  *
@@ -125,6 +137,7 @@ int lcd_vprintf(const char *fmt, va_list ap);
  */
 int lcd_printf(const char *fmt, ...);
 
+#ifndef SIMULATE
 
 int lcd_vprintf_P (PGM_P fmt, va_list ap);
 int lcd_printf_P (PGM_P fmt, ...);
@@ -153,5 +166,7 @@ uint8_t lcd_get_pos(void);
  * @param p     position to move to [0..31]
  */
 void lcd_set_pos(uint8_t p);
+
+#endif
 
 #endif

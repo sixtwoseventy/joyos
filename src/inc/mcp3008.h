@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #ifndef _MCP3008_H_
 #define _MCP3008_H_
 
@@ -56,5 +58,7 @@ typedef enum {
 
 void init_mcp3008 (void);
 int8_t mcp3008_get_sample (mcp3008_device dev, mcp3008_input config, uint16_t * sample);
+
+#endif
 
 #endif

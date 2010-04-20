@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 // Interrupt service routines
 //
 // Written by: Greg Belote [gbelote@mit.edu]
@@ -53,3 +55,6 @@ ISR(__vector_default) {
  **/
 void isr_init() {
 }
+
+#endif
+

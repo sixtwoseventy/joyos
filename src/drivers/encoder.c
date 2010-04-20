@@ -23,20 +23,48 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include <config.h>
 #include <fpga.h>
 #include <encoder.h>
 #include <kern/lock.h>
 
+#else
+
+#include <joyos.h>
+#include <stdio.h>
+#include <string.h>
+#include <socket.h>
+
+#endif
+
+#ifndef SIMULATE
+
 struct lock encoder_lock;
+
+#endif
 
 static uint16_t encoder_zero[4];
 
 void encoder_init (void) {
+
+	#ifndef SIMULATE
+
     init_lock (&encoder_lock, "encoder lock");
+
+	#else
+
+	memset(encoder_zero, 0, 4);
+
+	#endif
+
 }
 
 uint16_t encoder_read_raw(uint8_t encoder) {
+
+	#ifndef SIMULATE
+
     acquire (&encoder_lock);
     uint16_t hi,lo;
     uint16_t result;
@@ -46,6 +74,24 @@ uint16_t encoder_read_raw(uint8_t encoder) {
     result = ((hi<<8) | lo);
     release (&encoder_lock);
     return result;
+
+	#else
+
+	uint16_t in;
+	char pbuf[6];
+
+	sprintf(pbuf, "n %u\n", encoder);
+
+	acquire(&socket_lock);
+	write(sockfd, pbuf, strlen(pbuf));
+	read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
+	sscanf(socket_buffer, "%u", &in);
+	release(&socket_lock);
+  
+	return in;
+
+	#endif
+
 }
 
 void encoder_reset(uint8_t encoder) {

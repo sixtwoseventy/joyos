@@ -26,7 +26,11 @@
 #ifndef _DELAY_H_
 #define _DELAY_H_
 
+#ifndef SIMULATE
 #include <util/delay.h>
+#else
+#include <joyos.h>
+#endif
 
 /**
  * \file delay.h

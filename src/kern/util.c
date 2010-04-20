@@ -23,6 +23,8 @@
  *
  */
 
+#ifndef SIMULATE
+
 #include <avr/interrupt.h>
 #include <board.h>
 #include <kern/global.h>
@@ -55,3 +57,6 @@ void dumpBytes (uint8_t *bytes, uint8_t n) {
                 i, (void *)(bytes + i), bytes[i]);
     }
 }
+
+#endif 
+

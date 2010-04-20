@@ -23,6 +23,7 @@
  *
  */
 
+#ifndef SIMULATE
 #include <joyos.h>
 
 float _lsb_us_per_deg = 0;
@@ -33,8 +34,14 @@ volatile uint8_t _gyro_enabled = 0;
 uint16_t _offset = 0, _offset_fix = 0;
 uint16_t _fix_divisor;
 struct lock gyro_lock;
+#else
+#include <joyos.h>
+#include <stdio.h>
+#include <socket.h>
+#endif
 
 void gyro_init(uint8_t port, float lsb_us_per_deg, uint32_t time_ms) {
+	#ifndef SIMULATE
     uint32_t samples;
     uint32_t sum;
     uint32_t start_time_ms;
@@ -58,8 +65,10 @@ void gyro_init(uint8_t port, float lsb_us_per_deg, uint32_t time_ms) {
 
     init_lock (&gyro_lock, "gyro lock");
     create_thread (&gyro_update, STACK_DEFAULT, 0, "gyro");
+	#endif
 }
 
+#ifndef SIMULATE
 int gyro_update(void) {
     /* The units of theta are converter LSBs * ms
        1 deg/s = 5mV = 0.256 LSB for ADXRS300, 12.5mV = 0.64LSB for ADXRS150
@@ -99,17 +108,37 @@ int gyro_update(void) {
 
     return 0;
 }
+#endif
 
 float gyro_get_degrees (void) {
+	#ifndef SIMULATE
+
     acquire (&gyro_lock);
     float result = _theta / _lsb_us_per_deg;
     release (&gyro_lock);
 
     return result;
+
+	#else
+
+	float in;
+
+	acquire(&socket_lock);
+	write(sockfd, "a\n", 2);
+	read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
+	sscanf(socket_buffer, "%f", &in);
+	release(&socket_lock);
+  
+	return in;
+
+	#endif
 }
 
+#ifndef SIMULATE
 void gyro_set_degrees (float deg) {
     acquire (&gyro_lock);
     _theta = deg * _lsb_us_per_deg;
     release (&gyro_lock);
 }
+#endif
+
