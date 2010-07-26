@@ -1,0 +1,7 @@
+Changes:
+
+-Shaft encoders and digital pins are now 3.3V, and we're using diode ICs to clamp the signals from going too high. Digital pins are now IO, not just inputs. Potential clamping part:
+BAV70DW-7-F
+
+-
+
