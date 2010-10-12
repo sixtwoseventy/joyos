@@ -1,0 +1,21 @@
+DPDT Switch: 11A 125Vac, vertical through hole
+Digikey Number: SW105-ND
+
+
+
+smaller DPDT Switch: 6A 125Vac, vertical through hole
+Digikey Number: CKC5114-ND
+Manufacturer Number: S202031MS02Q
+
+
+smaller sideways DPDT Switch: 4A 125Vac, vertical through hole
+Digikey Number: CKC5103-ND
+Manufacturer Number: L202021MA04Q
+
+
+
+Polyswitch 12A
+Digikey Number: RUEF600-ND
+
+Polyswitch 6A
+Digikey Number: RUEF090-ND
