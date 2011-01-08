@@ -1,0 +1,11 @@
+Changes:
+
+-Shaft encoders and digital pins are now 3.3V, and we're using diode ICs to clamp the signals from going too high. Digital pins are now IO, not just inputs. Potential clamping part:
+BAV70DW-7-F
+
+-Use an 8-bit latch to reduce the number of pins used for memory communication on the FPGA by 8. This allows us to run the ADCs with the FPGA, plus we get to do preprocessing on all the input signals. Possible latch chip:
+SN74AHC374PWR
+
+-remove mounting holes, find a way of removing one of the pushbuttons
+
+-Replace FPGA program memory with newer part? What is this newer part?
