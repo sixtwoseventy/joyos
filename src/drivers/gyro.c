@@ -64,7 +64,7 @@ void gyro_init(uint8_t port, float lsb_us_per_deg, uint32_t time_ms) {
     _theta = 0;
 
     init_lock (&gyro_lock, "gyro lock");
-    create_thread (&gyro_update, STACK_DEFAULT, 0, "gyro");
+    create_thread (&gyro_update, STACK_DEFAULT, THREAD_PRIORITY_NORMAL, "gyro");
 	#endif
 }
 
