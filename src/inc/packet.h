@@ -25,8 +25,8 @@ typedef struct {
     signed x : 12;
     signed y : 12;
     signed theta : 12;
-    signed a : 4;
-    signed b : 4;
+    unsigned hue : 4;
+    unsigned saturation : 4;
     unsigned radius : 4;
 #ifndef SIMULATE
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) board_coord;
