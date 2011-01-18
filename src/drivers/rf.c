@@ -32,8 +32,6 @@ volatile uint32_t position_microtime;
 
 packet_buffer tx, rx;
 
-volatile board_coord goal_position; //The target position received from a goal packet
-
 FILE rfio = FDEV_SETUP_STREAM(rf_put, rf_get, _FDEV_SETUP_RW);
 
 volatile char rf_str_buf[PAYLOAD_SIZE+1];
@@ -44,11 +42,7 @@ uint8_t rf_ch_count = 0;
 volatile uint8_t rf_new_str;
 
 struct lock rf_lock;
-
-volatile uint8_t light_port = 0xFF;
 volatile uint8_t robot_id = 0xFF;
-
-volatile uint8_t caught[4];
 
 void rf_status_update(uint8_t caught){
 
@@ -313,10 +307,6 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             position_microtime = get_time_us();
             break;
 
-        case GOAL:
-            goal_position = rx->payload.coords[0];
-            break;
-
         case START:
             if (robot_id != 0xFF) {
                 //Remaining bytes are robots which are starting.  Check if we're one of them.
@@ -342,23 +332,6 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             memcpy((char *)rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
             break;
 
-        case LIGHT:
-            if (light_port != 0xFF && robot_id != 0xFF) {
-                for (int i=0; i<4; i++) {
-                    if (rx->payload.lights[i].id == robot_id)
-                        motor_set_vel(light_port, rx->payload.lights[i].value);
-                }
-            }
-            break;
-
-        case STATUS:
-            for (uint8_t i=0; i<4; i++){
-                if (rx->payload.status.id == objects[i].id){
-                    caught[i] = rx->payload.status.caught;
-                    break;
-                }
-            }
-            break;
         default:
             break;
     }
