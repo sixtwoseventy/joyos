@@ -287,7 +287,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
                     rx->payload.coords[i] = t;
                 }
             }
-            memcpy((char *)(objects + 4*(rx->seq_no % 8)), rx->payload.coords, sizeof(objects));
+            memcpy((char *)&objects[(4*rx->seq_no) % 32], rx->payload.coords, sizeof(rx->payload.coords));
             position_microtime = get_time_us();
             break;
 
