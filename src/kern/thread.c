@@ -101,48 +101,25 @@ void init_thread(void) {
     ATOMIC_END;
 }
 
-void resume_if_runnable(int id) {
-    if (threads[id].th_status == THREAD_PAUSED &&
-            threads[id].th_wakeup_time <= global_time)
-        threads[id].th_status = THREAD_RUNNABLE;
-
-    if (threads[id].th_status == THREAD_RUNNABLE)
-        resume(&threads[id]);
-}
-
 // Schedule a new thread to run
 // assume interrupts disabled
 void schedule(void) {
-    static int id_lo = 0, id_rt = -1;
-    static uint32_t last_time = 0;
+    int id = current_thread ? current_thread->th_id : MAX_THREADS-1;
     current_thread = NULL;
 
-    if (global_time > last_time) {
-        if (id_rt != -1 ||
-                ((global_time - last_time) > 1 && last_time != 0))
-            panic("Failed to meet realtime commitments");
-        last_time = global_time;
-        id_rt = 0;
+    int offset;
+    for (offset = 1; offset <= MAX_THREADS; offset++) {
+        int tid = (id+offset) % MAX_THREADS;
+
+        if (threads[tid].th_status == THREAD_PAUSED &&
+                threads[tid].th_wakeup_time <= global_time)
+            threads[tid].th_status = THREAD_RUNNABLE;
+
+        if (threads[tid].th_status == THREAD_RUNNABLE)
+            resume(&threads[tid]);
     }
 
-    while (id_rt != -1) {
-        int tid = id_rt;
-        // update id_rt to be the next thread that should be attempted
-        id_rt = (id_rt+2) % (MAX_THREADS+1) - 1;
-        if (threads[tid].th_priority == THREAD_PRIORITY_REALTIME)
-            resume_if_runnable(tid);
-    }
-
-    int old_id_lo = id_lo;
-    do {
-        int tid = id_lo;
-        // update id_lo to be the next thread that should be attempted
-        id_lo = (id_lo + 1) % MAX_THREADS;
-        if (threads[tid].th_priority == THREAD_PRIORITY_NORMAL)
-            resume_if_runnable(tid);
-    } while (id_lo != old_id_lo);
-
-    // wait for the clock to tick
+    // wait for aliens to take us home...
     SREG |= SREG_IF;
     for(;;);
 }
@@ -442,7 +419,6 @@ uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char 
     threads[i].th_runs = 0;
     threads[i].th_stacksize = STACKSIZE;
     threads[i].th_func = func;
-    threads[i].th_priority = priority;
 
     // make the jmp_buf something sensible,
     // calculate the thread's stack top, and
@@ -473,7 +449,8 @@ void halt(void) {
 
     // nuke motor lock
     extern struct lock motor_lock;
-    smash(&motor_lock);
+    motor_lock.locked = 0;
+    motor_lock.thread = NULL;
 
 	#endif
 

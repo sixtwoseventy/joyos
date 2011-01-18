@@ -59,7 +59,11 @@ void init_pid (struct pid_controller *pid, float kp, float ki, float kd, float (
 
 float update_pid_input(struct pid_controller *pid, float current_val) {
 
+    printf ("current value %0.3f\n", current_val);
+
     float error = pid->goal - current_val;
+
+    printf ("error %0.3f\n", error);
 
     // proportional feedback
     float result = error * pid->kp;

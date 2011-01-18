@@ -375,7 +375,7 @@ umain (void) {
     uint8_t num_low_readings = 0;
     activateRun();
 
-    create_thread(&CaughtThread, STACK_DEFAULT, THREAD_PRIORITY_NORMAL, "Caught Thread");
+    create_thread(&CaughtThread, STACK_DEFAULT, 0, "Caught Thread");
 
     while(1){
 

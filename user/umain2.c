@@ -81,7 +81,7 @@ void set_turn (float value) {
 }
 
 int umain(void) {
-    create_thread(&display_angle, 64, THREAD_PRIORITY_NORMAL, "display angle");
+    create_thread(&display_angle, 64, 0, "display angle");
 
     //struct pid_controller pid;
     //init_pid (&pid, 1, 0, 0, &read_angle, &set_turn);
