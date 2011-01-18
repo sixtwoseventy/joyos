@@ -25,7 +25,7 @@
 
 #endif
 
-volatile board_coord objects[4];
+volatile board_coord objects[32];
 volatile uint32_t position_microtime;
 
 #ifndef SIMULATE
@@ -43,22 +43,6 @@ volatile uint8_t rf_new_str;
 
 struct lock rf_lock;
 volatile uint8_t robot_id = 0xFF;
-
-void rf_status_update(uint8_t caught){
-
-    extern volatile uint8_t robot_id;
-
-    ATOMIC_BEGIN;
-
-    tx.type = STATUS;
-    tx.address = 0xFF;
-    tx.payload.status.id = robot_id;
-    tx.payload.status.caught = caught;
-
-    rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet_buffer));
-
-    ATOMIC_END;
-}
 
 int rf_send(char ch){
     ATOMIC_BEGIN;
@@ -303,7 +287,7 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
                     rx->payload.coords[i] = t;
                 }
             }
-            memcpy((char *)objects, rx->payload.coords, sizeof(objects));
+            memcpy((char *)(objects + 4*(rx->seq_no % 8)), rx->payload.coords, sizeof(objects));
             position_microtime = get_time_us();
             break;
 

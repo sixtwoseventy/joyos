@@ -13,15 +13,11 @@
  */
 
 extern volatile uint32_t position_microtime;
-extern volatile board_coord objects[4];
+extern volatile board_coord objects[32];
 
 #ifndef SIMULATE
 
 extern packet_buffer tx, rx;
-
-extern volatile uint8_t caught[4];
-
-extern volatile board_coord goal_position; //The target position received from a goal packet
 
 extern volatile char rf_str_buf[PAYLOAD_SIZE+1];
 
@@ -29,8 +25,6 @@ extern volatile char rf_str_buf[PAYLOAD_SIZE+1];
 // cleared by user code once the string has been
 // processed as desired.
 extern volatile uint8_t rf_new_str;
-
-void rf_status_update(uint8_t status);
 
 int rf_send(char ch);
 int rf_put(char ch, FILE *f);
@@ -54,7 +48,6 @@ uint8_t rf_has_char();
  */
 uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len);
 
-extern volatile uint8_t light_port;
 extern volatile uint8_t robot_id;
 
 /**

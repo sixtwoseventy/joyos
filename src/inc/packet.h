@@ -36,26 +36,15 @@ typedef struct {
 
 #ifndef SIMULATE
 
-typedef struct{
-    uint8_t id;
-    int16_t value;
-} __attribute__ ((aligned (1))) __attribute__ ((packed)) light_command;
-
-typedef struct{
-    uint8_t id;
-    uint8_t caught;
-} __attribute__ ((aligned (1))) __attribute__ ((packed)) status_update;
-
 typedef struct {
     uint8_t type;
-    uint8_t address;
+    unsigned board : 2;
+    unsigned seq_no : 6;
     union {
         uint8_t array[PAYLOAD_SIZE];
         board_coord coords[4];
-        light_command lights[4];
-        status_update status;
     } payload;
-} __attribute__ ((packed)) packet_buffer;
+} __attribute__ ((aligned (1))) __attribute__ ((packed)) packet_buffer;
 
 #endif
 
