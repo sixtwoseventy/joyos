@@ -36,6 +36,10 @@
 #include <kern/global.h>
 #include <avr/interrupt.h>
 #include <setjmp.h>
+#include <string.h>
+
+extern struct thread *current_thread;
+extern struct thread threads[MAX_THREADS];
 
 // Duplicate this thread (with it's own stack).
 // In the parent thread, this returns the thread id (tid) of the child.
@@ -43,37 +47,31 @@
 int fork (void) {
 
     panic("fork");
-
-    struct thread *child;
-
-    // record interrupt status
-    uint8_t was_enabled = SREG & SREG_IF;
-    // lock thread table
-    cli();
+    // pause scheduling
+    ATOMIC_BEGIN;
 
     // allocate new thread for child
-    child = NULL; // FIXME
+    int i = create_thread(current_thread->th_func, current_thread->th_stacksize, current_thread->th_priority, current_thread->th_name);
 
-    // copy state to child thread
-    //if (setjmp(child->th_jmpbuf) != 0) {
-    if (setjmp(TO_JMP_BUF(child->th_jmpbuf)) != 0) {
-        // we're the child now and we've just been scheduled
-        // interrupts should be enabled
+    uint16_t child_sp, parent_sp, size;
 
-        // fork returns 0
-        return 0;
-    }
+    // get stack pointers
+    parent_sp = SP;
+    size = current_thread->th_stacktop - parent_sp;
+    child_sp = threads[i].th_stacktop - size;
 
-    // allocate child stack and copy contents of parent stack
+    // copy stack to child
+    memcpy((void*)(child_sp + 1), (const void *)(parent_sp + 1), size);
 
-    // enable child thread
-    child->th_status = THREAD_RUNNABLE;
+    // patch child jump buffer
+    threads[i].th_jmpbuf.sp = child_sp;
+    threads[i].th_jmpbuf.pc = (uint16_t)&&label_ret;
 
-    // restore interrupt status
-    SREG |= was_enabled;
-
-    // we're the parent and our work is done, we're ready to return
-    return child->th_id;
+    ATOMIC_END;
+    return i; // under what conditions might this be zero?
+label_ret:
+    ATOMIC_END;
+    return 0;
 }
 
 #endif
