@@ -449,8 +449,7 @@ void halt(void) {
 
     // nuke motor lock
     extern struct lock motor_lock;
-    motor_lock.locked = 0;
-    motor_lock.thread = NULL;
+    smash(&motor_lock);
 
 	#endif
 
