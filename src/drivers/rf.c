@@ -25,8 +25,9 @@
 
 #endif
 
+struct lock objects_lock;
 volatile board_coord objects[32];
-volatile uint32_t position_microtime;
+volatile uint32_t position_microtime[32];
 
 #ifndef SIMULATE
 
@@ -287,8 +288,13 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
                     rx->payload.coords[i] = t;
                 }
             }
-            memcpy((char *)&objects[(4*rx->seq_no) % 32], rx->payload.coords, sizeof(rx->payload.coords));
-            position_microtime = get_time_us();
+            acquire(&objects_lock);
+            int offset = (4*rx->seq_no) % 32;
+            memcpy((char *)&objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
+            uint32_t time_us = get_time_us();
+            for (uint8_t i=0;i<4;i++)
+                position_microtime[i+offset] = time_us;
+            release(&objects_lock);
             break;
 
         case START:
@@ -401,6 +407,8 @@ void rf_init (void) {
     // rf from several threads will not cause
     // characters to be interleaved between threads
     init_lock(&rf_lock, "RF Lock");
+
+    init_lock(&objects_lock, "objects[] lock");
 
     // STRING packets don't contain the null character
     // for efficiency.  rf_str_buf is one character larger

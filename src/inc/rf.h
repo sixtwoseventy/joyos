@@ -12,8 +12,9 @@
  * as well as retrieve information received over RF
  */
 
-extern volatile uint32_t position_microtime;
+extern struct lock objects_lock;
 extern volatile board_coord objects[32];
+extern volatile uint32_t position_microtime[32];
 
 #ifndef SIMULATE
 
