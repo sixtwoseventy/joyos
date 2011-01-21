@@ -12,7 +12,6 @@
  * as well as retrieve information received over RF
  */
 
-extern struct lock objects_lock;
 extern volatile board_coord objects[32];
 extern volatile uint32_t position_microtime[32];
 
@@ -48,6 +47,8 @@ uint8_t rf_has_char();
  * Transmits a packet
  */
 uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len);
+
+void copy_objects();
 
 extern volatile uint8_t robot_id;
 

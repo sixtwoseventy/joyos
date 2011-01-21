@@ -27,7 +27,9 @@
 
 struct lock objects_lock;
 volatile board_coord objects[32];
+volatile board_coord locked_objects[32];
 volatile uint32_t position_microtime[32];
+volatile uint32_t locked_position_microtime[32];
 
 #ifndef SIMULATE
 
@@ -290,10 +292,10 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             }
             acquire(&objects_lock);
             int offset = (4*rx->seq_no) % 32;
-            memcpy((char *)&objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
+            memcpy((char *)&locked_objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
             uint32_t time_us = get_time_us();
             for (uint8_t i=0;i<4;i++)
-                position_microtime[i+offset] = time_us;
+                locked_position_microtime[i+offset] = time_us;
             release(&objects_lock);
             break;
 
@@ -325,6 +327,14 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
         default:
             break;
     }
+}
+
+//copy the locked_objects[] into the user-accessible objects[] array - this way users cannot stall the rf thread by holding the objects_lock too long
+void copy_objects(){
+    acquire(&objects_lock);
+    memcpy(&objects, &locked_objects, sizeof(locked_objects));
+    memcpy(&position_microtime, &locked_position_microtime, sizeof(locked_position_microtime));
+    release(&objects_lock);
 }
 
 // get a packet; return pipe number
