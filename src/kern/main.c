@@ -67,10 +67,9 @@ int robot_monitor (void) {
     usetup();
     printf("Finished usetup().\n");
 
-    printf("Press Go to start or Stop to wait for RF.\n");
-    if (!either_click())
-        while (!rf_start)
-            yield();
+    printf("Waiting for RF start, or press Go to start now.\n");
+    while (!rf_start && !go_press())
+      yield();
 
     printf("Running umain()...\n");
     return umain();
