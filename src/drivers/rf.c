@@ -271,32 +271,33 @@ uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len) {
     return (status & _BV(NRF_BIT_TX_DS)) != 0;
 }
 
+uint8_t rf_which_board = 0xFF;
 void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
     uint8_t type = rx->type;
-    //uint8_t address = rx->address;
 
     switch (type) {
         case POSITION:
-            if (robot_id != 0xFF && rx->payload.coords[0].id != robot_id) {
-                uint8_t i;
-                for (i=1; i<4; i++) {
-                    if (rx->payload.coords[i].id == robot_id)
-                        break;
+            if (robot_id != 0xFF) {
+                // if we're in position 1, swap to position 0
+                if (rx->payload.coords[1].id == robot_id) {
+                    board_coord t = rx->payload.coords[0];
+                    rx->payload.coords[0] = rx->payload.coords[1];
+                    rx->payload.coords[1] = t;
                 }
-                if (i != 4) {
-                    board_coord t;
-                    t = rx->payload.coords[0];
-                    rx->payload.coords[0] = rx->payload.coords[i];
-                    rx->payload.coords[i] = t;
+                // if we don't know which board we're on, look for us in position 0
+                if (rf_which_board == 0xFF && rx->payload.coords[0].id == robot_id)
+                    rf_which_board = rx->board;
+                // if this packet is for the board we're on, save it
+                if (rf_which_board == rx->board) {
+                    acquire(&objects_lock);
+                    int offset = (4*rx->seq_no) % 32;
+                    memcpy((char *)&locked_objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
+                    uint32_t time_us = get_time_us();
+                    for (uint8_t i=0;i<4;i++)
+                        locked_position_microtime[i+offset] = time_us;
+                    release(&objects_lock);
                 }
             }
-            acquire(&objects_lock);
-            int offset = (4*rx->seq_no) % 32;
-            memcpy((char *)&locked_objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
-            uint32_t time_us = get_time_us();
-            for (uint8_t i=0;i<4;i++)
-                locked_position_microtime[i+offset] = time_us;
-            release(&objects_lock);
             break;
 
         case START:
