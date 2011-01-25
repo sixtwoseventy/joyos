@@ -60,16 +60,19 @@ void panic_P (PGM_P msg) {
     extern struct lock uart_lock;
 
     smash(&uart_lock);
-
-    uart_printf_P(PANIC_STRING, (void *)(msg ? msg : ""));
+    uart_printf_P(PSTR(PANIC_STRING),(msg ? msg : ""));
+    
+    //old print line... not sure if this is entirely correct, but it appears to workv
+    //uart_printf_P(PANIC_STRING, (void *)(msg ? msg : ""));
 
     // halt board
     halt();
 }
 
 #else
-
+#define PANIC_STRING "\npanic: %s\n"
 void panic_P (char* msg){
+    
 	printf(PANIC_STRING, msg ? msg : "");
 	halt();
 }
