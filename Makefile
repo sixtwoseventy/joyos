@@ -1,7 +1,25 @@
 # User source files
-USERSRC = tests/client.c
-AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBaY
+USERSRC = user/robot/umain.c
+
+# Serial port
 AVRDUDE_USERPORT ?= /dev/ttyUSB0
+
+
+
+
+
+
+
+
+
+
+
+####################################################
+#   NOTHING NEEDS TO BE CHANGED BELOW THIS POINT   #
+####################################################
+
+# Serial port for JTAG programmer
+AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBaY
 
 CC = avr-gcc
 MCU = atmega128
