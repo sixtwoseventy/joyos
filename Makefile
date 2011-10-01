@@ -4,7 +4,8 @@ USERSRC = user/robot/umain.c
 # Serial port
 AVRDUDE_USERPORT ?= /dev/ttyUSB0
 
-
+# Mac Users - you may need to change this to stk500 if you get an error when programming
+PROGRAMMER = stk500v1
 
 
 
@@ -19,7 +20,7 @@ AVRDUDE_USERPORT ?= /dev/ttyUSB0
 ####################################################
 
 # Serial port for JTAG programmer
-AVRDUDE_PORT ?= /dev/tty.usbserial-A800cBaY
+AVRDUDE_PORT ?= /dev/tty.usbserial-A100099c
 
 CC = avr-gcc
 MCU = atmega128
@@ -39,7 +40,7 @@ BOOT_LDFLAGS = $(BOOT_PRINTFOP) $(MEMLAYOUT)
 OS_LDFLAGS = $(OS_PRINTFOP) $(OSMEMLAYOUT) 
 
 AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F
-AVRDUDEFLAGS_USER = -c stk500v1 -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V
+AVRDUDEFLAGS_USER = -c $(PROGRAMMER) -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V
 
 DEBUG_HOST = localhost:4242
 

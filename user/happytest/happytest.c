@@ -30,6 +30,7 @@
  */
 int start_test(char testName[]) {
     printf("\n%s: press Go (or Stop to skip)", testName);
+    pause(100);
     return either_click();
 }
 
