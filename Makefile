@@ -162,10 +162,12 @@ programterm:
 
 $(OSELF): $(OBJ) $(HLOBJ)
 	@echo "-- Linking $@"
+	@mkdir -p bin
 	@$(CC) $(CFLAGS) $(OBJ) $(HLOBJ) -o $@ $(OS_LDFLAGS)
 
 $(BOOTELF): $(BOOTOBJ)
 	@echo "-- Linking $@"
+	@mkdir -p bin
 	@$(CC) $(CFLAGS) $(BOOTOBJ) -o $@ $(BOOT_LDFLAGS) -Wl,--section-start=.text=0x1E000
 
 %.hex: %.elf
