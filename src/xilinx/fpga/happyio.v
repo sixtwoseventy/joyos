@@ -1,6 +1,6 @@
-//`include "Motor.v"
-//`include "Servo.v"
-//`include "Encoder.v"
+`include "Motor.v"
+`include "Servo.v"
+`include "Encoder.v"
 
 module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mot5, Servo, Enc, Digital, ramce);
 	// clock
@@ -59,6 +59,12 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	reg [9:0] srv3;
 	reg [9:0] srv4;
 	reg [9:0] srv5;
+    reg srv0_e;
+    reg srv1_e;
+    reg srv2_e;
+    reg srv3_e;
+    reg srv4_e;
+    reg srv5_e;
 
 	reg [7:0] tempLo;
 	reg [7:0] tempHi;
@@ -148,17 +154,35 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 			// ...
 			// 0x1120 - 0x112B : servos
 			16'h1120:	tempLo = data;
-			16'h1121: srv0 = {data[1:0],tempLo};
+			16'h1121: 	begin
+							srv0 = {data[1:0],tempLo}; 
+							srv0_e = data[7];
+						end
 			16'h1122:	tempLo = data;
-			16'h1123: srv1 = {data[1:0],tempLo};
+			16'h1123: 	begin
+							srv1 = {data[1:0],tempLo}; 
+							srv1_e = data[7];
+						end
 			16'h1124:	tempLo = data;
-			16'h1125: srv2 = {data[1:0],tempLo};
+			16'h1125: 	begin
+							srv2 = {data[1:0],tempLo}; 
+							srv2_e = data[7];
+						end
 			16'h1126:	tempLo = data;
-			16'h1127: srv3 = {data[1:0],tempLo};
+			16'h1127: 	begin
+							srv3 = {data[1:0],tempLo}; 
+							srv3_e = data[7];
+						end
 			16'h1128:	tempLo = data;
-			16'h1129: srv4 = {data[1:0],tempLo};
+			16'h1129: 	begin
+							srv4 = {data[1:0],tempLo}; 
+							srv4_e = data[7];
+						end
 			16'h112A:	tempLo = data;
-			16'h112B: srv5 = {data[1:0],tempLo};
+			16'h112B: 	begin
+							srv5 = {data[1:0],tempLo}; 
+							srv5_e = data[7];
+						end
 			// ...
 		endcase
 	end
@@ -179,11 +203,11 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	Encoder encoder3(clk,Enc[3],enc3);
 
 	// servo drivers
-	Servo servo0(clk,Servo[0],srv0);
-	Servo servo1(clk,Servo[1],srv1);
-	Servo servo2(clk,Servo[2],srv2);
-	Servo servo3(clk,Servo[3],srv3);
-	Servo servo4(clk,Servo[4],srv4);
-	Servo servo5(clk,Servo[5],srv5);
+	Servo servo0(clk,Servo[0],srv0, srv0_e);
+	Servo servo1(clk,Servo[1],srv1, srv1_e);
+	Servo servo2(clk,Servo[2],srv2, srv2_e);
+	Servo servo3(clk,Servo[3],srv3, srv3_e);
+	Servo servo4(clk,Servo[4],srv4, srv4_e);
+	Servo servo5(clk,Servo[5],srv5, srv5_e);
 
 endmodule

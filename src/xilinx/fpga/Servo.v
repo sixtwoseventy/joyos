@@ -1,8 +1,9 @@
-module Servo(clk, out, pos);
+module Servo(clk, out, pos, enable);
 	input clk;
 	output out;
 	reg out;
 	input [9:0] pos;
+    input enable;
 
 	// fpga4fun
 	parameter ClkDiv = 31;
@@ -12,21 +13,19 @@ module Servo(clk, out, pos);
 	reg [PulseCountSize:0] PulseCount;
 	reg ClkTick;
 
-	always @(posedge clk) 
+	always @(posedge clk) begin
 		ClkTick <= (ClkCount==ClkDiv-2);
 
-	always @(posedge clk) 
 		if(ClkTick) 
 			ClkCount <= 0; 
 		else 
 			ClkCount <= ClkCount + 1;
 
-	always @(posedge clk) 
 		if(ClkTick) 
 			PulseCount <= PulseCount + 1;
 	
-	always @(posedge clk) 
-		out = (PulseCount < {2'b00, pos});
+		out = enable ? (PulseCount < {2'b00, pos}) : 0;
+    end
 	// fpga4fun
 
 endmodule

@@ -3,7 +3,7 @@ NGDBUILD = ngdbuild
 MAP = map
 PAR = par
 BITGEN = bitgen
-BITTOOL = c:/Python25/python.exe ../tools/bittool/bittool.py
+BITTOOL = /usr/bin/python ../tools/bittool/bittool.py
 
 # base source/output name
 BASENAME = happyio
