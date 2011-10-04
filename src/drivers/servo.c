@@ -64,7 +64,7 @@ void servo_set_pos_raw(uint8_t servo, uint16_t pos) {
     acquire (&servo_lock);
     uint8_t sbase = FPGA_SERVO_BASE + servo*FPGA_SERVO_SIZE;
     fpga_write_byte(sbase+FPGA_SERVO_LO,pos&0xFF);
-    fpga_write_byte(sbase+FPGA_SERVO_HI,pos>>8);
+    fpga_write_byte(sbase+FPGA_SERVO_HI,(pos>>8) | 0x80);  // TODO: implement enable bit (for now just always set enable=1)
     release (&servo_lock);
 }
 
