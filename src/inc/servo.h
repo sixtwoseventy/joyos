@@ -56,6 +56,14 @@ void servo_init(void);
  * @param pos   New servo value (0..511)
  */
 void servo_set_pos(uint8_t servo, uint16_t pos);
+
+/**
+ * Disable servo - stops sending servo commands
+ * until the next servo_set_pos();
+ * 
+ * @param servo Servo to disable
+ */
+void servo_disable(uint8_t servo);
 void servo_set_range(uint8_t servo, uint16_t lower, uint16_t upper);
 
 #endif
