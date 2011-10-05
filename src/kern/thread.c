@@ -450,12 +450,18 @@ void halt(void) {
     // nuke motor lock
     extern struct lock motor_lock;
     smash(&motor_lock);
+    extern struct lock servo_lock;
+    smash(&servo_lock);
 
 	#endif
 
     // brake each motor
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++) {
         motor_brake (i);
+        servo_disable(i);
+    }
+
+    LED_COMM(1);
 
     // enter busy loop forever
     for(;;);
