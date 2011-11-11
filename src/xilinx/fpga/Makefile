@@ -14,6 +14,8 @@ SRC = $(BASENAME).v \
 			Motor.v \
 			Servo.v \
 			Encoder.v \
+			Quadrature.v \
+			Pwm.v \
 
 all: $(BASENAME).rle
 
@@ -21,7 +23,7 @@ checksyntax: $(BASENAME).ngc
 
 # Verilog compile
 %.ngc: $(SRC)
-	echo "run -ifn $(BASENAME).v -ifmt Verilog -ofn $@ -ofmt NGC -p $(PARTNAME)  -opt_mode Speed -opt_level 1 -ent $(BASENAME)" > xst.scr
+	echo "run -ifn $(BASENAME).v -ifmt Verilog -ofn $@ -ofmt NGC -p $(PARTNAME)  -opt_mode Speed -opt_level 1 -ent $(BASENAME)" -top ${BASENAME} > xst.scr
 	$(XST) -ifn xst.scr
 	rm xst.scr
 

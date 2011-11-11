@@ -1,6 +1,9 @@
 `include "Motor.v"
 `include "Servo.v"
 `include "Encoder.v"
+`include "Debouncer.v"
+`include "Quadrature.v"
+`include "Pwm.v"
 
 module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mot5, Servo, Enc, Digital, ramce);
 	// clock
@@ -20,9 +23,24 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	output [1:0] mot4;
 	output [1:0] mot5;
 	input  [3:0] Enc;
-	input  [7:0] Digital;
+	inout  [7:0] Digital;
 	output [5:0] Servo;
 	output ramce;
+
+	
+	// tri-state digital IO
+	reg [7:0] digitalPinMode = 8'h00;
+	wire [7:0] digitalOutput;
+	reg [7:0] digitalPwm [7:0];
+
+	assign Digital[0] = digitalPinMode[0] ? digitalOutput[0] : 1'bz;
+	assign Digital[1] = digitalPinMode[1] ? digitalOutput[1] : 1'bz;
+	assign Digital[2] = digitalPinMode[2] ? digitalOutput[2] : 1'bz;
+	assign Digital[3] = digitalPinMode[3] ? digitalOutput[3] : 1'bz;
+	assign Digital[4] = digitalPinMode[4] ? digitalOutput[4] : 1'bz;
+	assign Digital[5] = digitalPinMode[5] ? digitalOutput[5] : 1'bz;
+	assign Digital[6] = digitalPinMode[6] ? digitalOutput[6] : 1'bz;
+	assign Digital[7] = digitalPinMode[7] ? digitalOutput[7] : 1'bz;
 
 	//reg ramce;
 
@@ -128,7 +146,7 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 			// 0x11FE : major version
 			16'h11FE:	dataOut = 0;
 			// 0x11FF : minor version
-			16'h11FF:	dataOut = 6;
+			16'h11FF:	dataOut = 7;
 		endcase
 	end
 	
@@ -183,6 +201,20 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 							srv5 = {data[1:0],tempLo}; 
 							srv5_e = data[7];
 						end
+
+
+			// Digital I/O mode
+			16'h1130:	digitalPinMode = data;
+
+			// Digital Output
+			16'h1131:	digitalPwm[0] = data;
+			16'h1132:	digitalPwm[1] = data;
+			16'h1133:	digitalPwm[2] = data;
+			16'h1134:	digitalPwm[3] = data;
+			16'h1135:	digitalPwm[4] = data;
+			16'h1136:	digitalPwm[5] = data;
+			16'h1137:	digitalPwm[6] = data;
+			16'h1138:	digitalPwm[7] = data;
 			// ...
 		endcase
 	end
@@ -197,10 +229,15 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	Motor motor5(clk,mot5,mc1_ctl,mc1_vel);
 
 	// encoder drivers
+    `ifndef QUADRATURE
 	Encoder encoder0(clk,Enc[0],enc0);
 	Encoder encoder1(clk,Enc[1],enc1);
 	Encoder encoder2(clk,Enc[2],enc2);
 	Encoder encoder3(clk,Enc[3],enc3);
+    `else
+	Quadrature quad0(clk,Enc[0],Enc[1], enc0);
+	Quadrature quad1(clk,Enc[2],Enc[3], enc1);
+    `endif
 
 	// servo drivers
 	Servo servo0(clk,Servo[0],srv0, srv0_e);
@@ -209,5 +246,15 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
 	Servo servo3(clk,Servo[3],srv3, srv3_e);
 	Servo servo4(clk,Servo[4],srv4, srv4_e);
 	Servo servo5(clk,Servo[5],srv5, srv5_e);
+
+	// digital IO
+	Pwm pwm0(clk, digitalOutput[0], digitalPwm[0]);
+	Pwm pwm1(clk, digitalOutput[1], digitalPwm[1]);
+	Pwm pwm2(clk, digitalOutput[2], digitalPwm[2]);
+	Pwm pwm3(clk, digitalOutput[3], digitalPwm[3]);
+	Pwm pwm4(clk, digitalOutput[4], digitalPwm[4]);
+	Pwm pwm5(clk, digitalOutput[5], digitalPwm[5]);
+	Pwm pwm6(clk, digitalOutput[6], digitalPwm[6]);
+	Pwm pwm7(clk, digitalOutput[7], digitalPwm[7]);
 
 endmodule
