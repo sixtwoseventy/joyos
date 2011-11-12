@@ -112,7 +112,7 @@ void test_digital() {
     while (!stop_press()) {
         printf("\ndigital=");
         for (uint8_t i=0;i<8;i++)
-            lcd_print_char(digital_read(i) ? '1' : '0',NULL);
+            printf("%c", digital_read(i) ? '1' : '0');
         pause(50);
     }
 }

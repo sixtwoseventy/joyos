@@ -53,7 +53,9 @@
 
 // FPGA Digital Register
 #define FPGA_DIGITAL_BASE   0x1E
+#define FPGA_DIGITAL_PWM_BASE   0x31
 #define FPGA_DIGITAL_SIZE   0x01
+#define FPGA_DIGITAL_PINMODE 0x30
 
 // FPGA Servo Registers
 #define FPGA_SERVO_BASE     0x20

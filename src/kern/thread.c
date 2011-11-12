@@ -461,10 +461,17 @@ void halt(void) {
         servo_disable(i);
     }
 
-    LED_COMM(1);
 
     // enter busy loop forever
-    for(;;);
+    while(1) {
+        for (i = 0; i < 3; i++) {
+            LED_COMM(1);
+            pause(100);
+            LED_COMM(0);
+            pause(150);
+        }
+        pause(800);
+    }
 }
 
 #ifndef SIMULATE

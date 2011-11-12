@@ -47,6 +47,9 @@ void digital_init () {
 
 #endif
 
+// Pin modes of digital IO: 1 = output
+uint8_t output_pinmode = 0;
+
 uint8_t digital_read_8() {
 
 	#ifndef SIMULATE
@@ -65,6 +68,21 @@ uint8_t digital_read_8() {
 
 }
 
+// must be holding digital_lock
+static inline void _set_digital_pinmode(uint8_t port, uint8_t output) {
+    if (port > 7) {
+        panic("_set_diital_pinmode");
+    }
+
+    if (output) {
+        output_pinmode |= (1 << port);
+    } else {
+        output_pinmode &= ~(1 << port);
+    }
+
+    fpga_write_byte(FPGA_DIGITAL_PINMODE, output_pinmode);
+}
+
 uint8_t digital_read(uint8_t port) {
 
 	#ifndef SIMULATE
@@ -72,6 +90,8 @@ uint8_t digital_read(uint8_t port) {
     uint8_t result = 0;
     if (port<8) {
         acquire(&digital_lock);
+        _set_digital_pinmode(port, 0);
+
         // grab a byte from the FPGA and mask the port's bit...
         result = ((~(fpga_read_byte(FPGA_DIGITAL_BASE)))>>port)&1;
         release(&digital_lock);
@@ -90,5 +110,26 @@ uint8_t digital_read(uint8_t port) {
 
 	#endif
 
+}
+
+void digital_write_pwm(uint8_t port, uint8_t val) {
+    #ifndef SIMULATE
+    
+    if (port>7) {
+        panic("digital_write");
+    }
+
+    acquire(&digital_lock);
+
+    // write the new value first, then set the pin as an output
+    fpga_write_byte(FPGA_DIGITAL_PWM_BASE + port*FPGA_DIGITAL_SIZE, val);
+    _set_digital_pinmode(port, 1);
+    
+    release(&digital_lock);
+    #endif
+}
+
+void digital_write(uint8_t port, uint8_t on) {
+    digital_write_pwm(port, on ? 255 : 0);
 }
 

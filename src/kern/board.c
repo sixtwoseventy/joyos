@@ -65,7 +65,7 @@ extern FILE lcdout, uartio;
 #define str_boot_board "Hardware version %X.%02X\n"
 #define str_boot_id "Board ID %04X\n"
 #define str_boot_conf "Board config OK\n"
-#define str_boot_batt "Battery OK: %dmV\n"
+#define str_boot_batt "Motor Battery: %dmV\n"
 #define str_boot_fpga "FPGA v%d.%d\n"
 
 // Load board config.
@@ -109,7 +109,15 @@ void board_fail_P(PGM_P msg) {
     lcd_print_char('\3', NULL);
 #endif
     // and stop
-    while (1);
+    while (1) {
+        for (int i = 0; i < 2; i++) {
+            LED_COMM(1);
+            pause(100);
+            LED_COMM(0);
+            pause(150);
+        }
+        pause(800);
+    }
 }
 #else
 #define board_fail(msg) board_fail_P(msg)
@@ -190,11 +198,20 @@ void board_init (void) {
     printf(str_boot_message, board_config.version>>8, board_config.version&0xFF);
 
     // check battery, fail if <7.5V
-#ifdef CHECK_BATTERY
-    if (!(read_battery()>=7200))
-        board_fail("Low battery");
-#endif
     printf(str_boot_batt,read_battery());
+#ifdef CHECK_BATTERY
+    if (!(read_battery()>=7200)) {
+        // NOTE: in the current 2-battery version of the HappyBoard, the 
+        // battery voltage is the motor battery (P+).  Holding GO overrides
+        // the check so you can run the HappyBoard without a motor battery.
+        if (go_press())
+            printf("WARNING: LOW BATTERY\n");
+        else 
+            board_fail("Low battery");
+    } else {
+        printf("Battery OK\n");
+    }
+#endif
 
 	#ifndef SIMULATE
     // initialise FPGA

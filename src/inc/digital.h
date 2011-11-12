@@ -43,6 +43,7 @@
 /** Initialize digital ports. Should not be called by user. */
 void digital_init (void);
 
+
 /**
  * Return the value of all of the digital ports as a single packed byte.
  * The least significant bit is port 0, the most significant is port 7.
@@ -58,6 +59,23 @@ uint8_t digital_read_8();
  * @param port  port to read (0-23)
  */
 uint8_t digital_read(uint8_t port);
+
+/**
+ * Set the output of a specific digital port on or off
+ * @param port  port to write (0-7)
+ * @param on  0=off, 1=on
+ */
+void digital_write(uint8_t port, uint8_t on);
+
+
+/**
+ * Output PWM on a digital port
+ * @param port  port to write (0-7)
+ * @param val  PWM duty cycle [0-255]: 0=full off, 127=50% duty cycle, 255=full on
+ */
+void digital_write_pwm(uint8_t port, uint8_t val);
+
+
 
 #endif
 
