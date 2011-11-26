@@ -22,10 +22,30 @@ PROGRAMMER = stk500v1
 # Serial port for JTAG programmer
 AVRDUDE_PORT ?= /dev/tty.usbserial-A100099c
 
-CC = avr-gcc
+
+# Use Arduino Toolchain if on Darwin
+ifeq (${shell uname}, Darwin)
+AVR_ROOT := "/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/"
+AVR_INC := ${AVR_ROOT}/avr-4/
+AVR := ${AVR_ROOT}/bin/avr
+LFLAGS += -L/opt/local/lib
+AVRDUDE_CONFIG = -C "${AVR_ROOT}etc/avrdude.conf"
+else
+AVR_ROOT := /usr/lib/avr
+AVR_INC := ${AVR_ROOT}
+AVR := avr
+AVRDUDE_CONFIG = "" #default to the systemwide config
+endif
+
+
+CC = ${AVR}-gcc
+OBJCOPY = ${AVR}-objcopy
+AVRDUDE = ${AVR}dude
+AR = ${AVR}-ar
+AVARICE = ${AVR}rice
+AVRGDB = ${AVR}-gdb
+
 MCU = atmega128
-OBJCOPY = avr-objcopy
-AVRDUDE = avrdude
 FTDI_EEPROM = ftdi_eeprom
 
 INCLUDES = -Isrc/inc
@@ -39,8 +59,8 @@ CFLAGS = -Wall -std=gnu99 -g -Os -mmcu=$(MCU)
 BOOT_LDFLAGS = $(BOOT_PRINTFOP) $(MEMLAYOUT)
 OS_LDFLAGS = $(OS_PRINTFOP) $(OSMEMLAYOUT) 
 
-AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F
-AVRDUDEFLAGS_USER = -c $(PROGRAMMER) -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V
+AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F $(AVRDUDE_CONFIG)
+AVRDUDEFLAGS_USER = -c $(PROGRAMMER) -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V $(AVRDUDE_CONFIG)
 
 DEBUG_HOST = localhost:4242
 
@@ -176,11 +196,11 @@ $(BOOTELF): $(BOOTOBJ)
 
 $(OSLIB): $(DISTOBJ)
 	@echo "-- Archiving" $@
-	@avr-ar rcs $@ $(DISTOBJ)
+	@$(AR) rcs $@ $(DISTOBJ)
 
 $(HLLIB): $(HLOBJ)
 	@echo "-- Archiving" $@
-	@avr-ar rcs $@ $(HLOBJ)
+	@$(AR) rcs $@ $(HLOBJ)
 
 clean:
 	@echo "-- Cleaning objects"
@@ -201,8 +221,8 @@ gdb-config:
 
 debug: $(OSELF) gdb-config
 	@echo "-- Starting debugger"
-	@avarice -D -e -p --file $(OSELF) --jtag $(AVRDUDE_PORT) localhost:4242
-	@avr-gdb --command=gdbinit
+	@$(AVARICE) -D -e -p --file $(OSELF) --jtag $(AVRDUDE_PORT) localhost:4242
+	@$(AVRGDB) --command=gdbinit
 
 docs:
 	@echo "-- Generating documentation"
