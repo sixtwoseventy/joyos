@@ -69,7 +69,7 @@ uint8_t digital_read_8() {
 }
 
 // must be holding digital_lock
-static inline void _set_digital_pinmode(uint8_t port, uint8_t output) {
+void _set_digital_pinmode(uint8_t port, uint8_t output) {
     if (port > 7) {
         panic("_set_diital_pinmode");
     }

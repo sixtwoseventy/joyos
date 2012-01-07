@@ -1,11 +1,11 @@
 # User source files
-USERSRC = user/robot/umain.c
+USERSRC = user/playingField2012/main.c
 
 # Serial port
-AVRDUDE_USERPORT ?= /dev/ttyUSB0
+AVRDUDE_USERPORT ?= `ls /dev/tty.usb*`
 
 # Mac Users - you may need to change this to stk500 if you get an error when programming
-PROGRAMMER = stk500v1
+PROGRAMMER = stk500
 
 
 
