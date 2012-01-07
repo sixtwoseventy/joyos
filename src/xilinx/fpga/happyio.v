@@ -69,6 +69,24 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
     wire [15:0] enc1;
     wire [15:0] enc2;
     wire [15:0] enc3;
+
+    wire signed [15:0] encQuad0;
+    wire signed [15:0] encQuad1;
+
+    // encoders on digital input pins 0-7
+    wire [15:0] encDig0;
+    wire [15:0] encDig1;
+    wire [15:0] encDig2;
+    wire [15:0] encDig3;
+    wire [15:0] encDig4;
+    wire [15:0] encDig5;
+    wire [15:0] encDig6;
+    wire [15:0] encDig7;
+
+    wire signed [15:0] encDigQuad0;
+    wire signed [15:0] encDigQuad1;
+    wire signed [15:0] encDigQuad2;
+    wire signed [15:0] encDigQuad3;
     
     // registers (servos)
     reg [9:0] srv0;
@@ -132,6 +150,39 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
             16'h1111:   dataOut = tempHi;
             16'h1112:   {tempHi, dataOut} = enc3;
             16'h1113:   dataOut = tempHi;
+
+            // encoders on digital input pins
+            16'h1120:   {tempHi, dataOut} = encDig0;
+            16'h1121:   dataOut = tempHi;
+            16'h1122:   {tempHi, dataOut} = encDig1;
+            16'h1123:   dataOut = tempHi;
+            16'h1124:   {tempHi, dataOut} = encDig2;
+            16'h1125:   dataOut = tempHi;
+            16'h1126:   {tempHi, dataOut} = encDig3;
+            16'h1127:   dataOut = tempHi;
+            16'h1128:   {tempHi, dataOut} = encDig4;
+            16'h1129:   dataOut = tempHi;
+            16'h112A:   {tempHi, dataOut} = encDig5;
+            16'h112B:   dataOut = tempHi;
+            16'h112C:   {tempHi, dataOut} = encDig6;
+            16'h112D:   dataOut = tempHi;
+            16'h112E:   {tempHi, dataOut} = encDig7;
+            16'h112F:   dataOut = tempHi;
+
+            // encoders - quadrature mode
+            16'h1130:   {tempHi, dataOut} = encDigQuad0;
+            16'h1131:   dataOut = tempHi;
+            16'h1132:   {tempHi, dataOut} = encDigQuad1;
+            16'h1133:   dataOut = tempHi;
+            16'h1134:   {tempHi, dataOut} = encDigQuad2;
+            16'h1135:   dataOut = tempHi;
+            16'h1136:   {tempHi, dataOut} = encDigQuad3;
+            16'h1137:   dataOut = tempHi;
+            16'h1138:   {tempHi, dataOut} = encQuad0;
+            16'h1139:   dataOut = tempHi;
+            16'h113A:   {tempHi, dataOut} = encQuad1;
+            16'h113B:   dataOut = tempHi;
+
             // 0x1120 - 0x112B : servos
             /*
             16'h1118:   dataOut = srv0;
@@ -146,7 +197,7 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
             // 0x11FE : major version
             16'h11FE:   dataOut = 0;
             // 0x11FF : minor version
-            16'h11FF:   dataOut = 7;
+            16'h11FF:   dataOut = 8;
         endcase
     end
     
@@ -229,15 +280,31 @@ module happyio(clk, ad, a, aout, ale, nRD, nWR, mot0, mot1, mot2, mot3, mot4, mo
     Motor motor5(clk,mot5,mc1_ctl,mc1_vel);
 
     // encoder drivers
-    `ifndef QUADRATURE
     Encoder encoder0(clk,Enc[0],enc0);
     Encoder encoder1(clk,Enc[1],enc1);
     Encoder encoder2(clk,Enc[2],enc2);
     Encoder encoder3(clk,Enc[3],enc3);
-    `else
-    Quadrature quad0(clk,Enc[0],Enc[1], enc0);
-    Quadrature quad1(clk,Enc[2],Enc[3], enc1);
-    `endif
+    
+    Quadrature quad0(clk,Enc[0],Enc[1], encQuad0);
+    Quadrature quad1(clk,Enc[2],Enc[3], encQuad1);
+
+    // encoders on digital inputs
+    /*
+    Encoder encoderDig0(clk, Digital[0], encDig0);
+    Encoder encoderDig1(clk, Digital[1], encDig1);
+    Encoder encoderDig2(clk, Digital[2], encDig2);
+    Encoder encoderDig3(clk, Digital[3], encDig3);
+    Encoder encoderDig4(clk, Digital[4], encDig4);
+    Encoder encoderDig5(clk, Digital[5], encDig5);
+    Encoder encoderDig6(clk, Digital[6], encDig6);
+    Encoder encoderDig7(clk, Digital[7], encDig7);
+*/
+    Quadrature quadDig0(clk, Digital[0], Digital[1], encDigQuad0);
+    Quadrature quadDig1(clk, Digital[2], Digital[3], encDigQuad1);
+    Quadrature quadDig2(clk, Digital[4], Digital[5], encDigQuad2);
+    Quadrature quadDig3(clk, Digital[6], Digital[7], encDigQuad3);
+
+
 
     // servo drivers
     Servo servo0(clk,Servo[0],srv0, srv0_e);
