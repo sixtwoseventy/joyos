@@ -45,9 +45,25 @@ void encoder_init (void);
 void encoder_reset(uint8_t encoder);
 
 /**
+ * Reset the quadrature count value for a specific quadrature encoder
+ * @param pin encoder to reset (0-7 or 24-27)
+ */
+void quadrature_reset(uint8_t pin);
+
+/**
  * Return the count value for a specific shaft encoder
  * @param encoder   encoder to read (24-27)
  */
 uint16_t encoder_read(uint8_t encoder);
+
+
+
+/**
+ * Return the count value for a specific quadrature encoder
+ * @param pin encoder to read (0-7 or 24-27) - since quadrature encoders
+ * require 2 inputs, reading either input will return the same quadrature 
+ * value
+ */
+int16_t quadrature_read(uint8_t pin);
 
 #endif

@@ -52,6 +52,7 @@ uint8_t digital_read_8();
 
 #ifndef SIMULATE
 
+
 /**
  * Return the value of a specific digital port.
  * If the port specified is an analog port (8-23), digital_read() returns the

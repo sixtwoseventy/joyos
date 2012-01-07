@@ -91,6 +91,33 @@ void test_encoders() {
 }
 
 
+
+/**
+ * Test Encoders in Quadrature mode
+ * Displays all quadrature counts
+ */
+void test_quadrature() {
+    quadrature_reset(24);
+    quadrature_reset(26);
+    quadrature_reset(0);
+    quadrature_reset(2);
+    quadrature_reset(4);
+    quadrature_reset(6);
+
+    while (!stop_press()) {
+        uint16_t q24_25 = quadrature_read(24);
+        uint16_t q26_27 = quadrature_read(26);
+        uint16_t q0_1 = quadrature_read(0);
+        uint16_t q2_3 = quadrature_read(2);
+        uint16_t q4_5 = quadrature_read(4);
+        uint16_t q6_7 = quadrature_read(6);
+
+        printf("\nq24/25=%03d q26/27=%03d q0/1=%03d q2/3=%03d q4/5=%03d q6/7=%3d",q24_25, q26_27, q0_1, q2_3, q4_5, q6_7);
+        pause(50);
+    }
+}
+
+
 /**
  * Test Analog Inputs
  * Display single analog input, select with frob knob
@@ -144,6 +171,9 @@ int umain (void) {
 
     if (start_test("Encoder Test"))
         test_encoders();
+
+    if (start_test("Quadrature Test"))
+        test_quadrature();
 
     panic ("Testing new panic()");
 

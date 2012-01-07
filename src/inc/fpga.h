@@ -51,6 +51,11 @@
 #define FPGA_ENCODER_LO     0x00
 #define FPGA_ENCODER_HI     0x01
 
+#define FPGA_QUADRATURE_BASE 0x30
+#define FPGA_QUADRATURE_SIZE 0x02
+#define FPGA_QUADRATURE_LO   0x00
+#define FPGA_QUADRATURE_HI   0x01
+
 // FPGA Digital Register
 #define FPGA_DIGITAL_BASE   0x1E
 #define FPGA_DIGITAL_PWM_BASE   0x31
