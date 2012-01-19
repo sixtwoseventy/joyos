@@ -4,10 +4,11 @@ int usetup() {
     return 0;
 }
 
-#define GEARBOX_MAX 500
+#define GEARBOX_MAX 300
+#define GEARBOX_MARGIN 100
 
-uint16_t servo_home[6] = {374,0,0,0,0,0};
-uint16_t servo_active[6] = {206,0,0,0,0,0};
+uint16_t servo_home[6] = {374,370,0,0,0,0};
+uint16_t servo_active[6] = {206,209,0,0,0,0};
 
 bool dispenser_active[6] = {0,0,0,0,0,0};
 
@@ -46,11 +47,15 @@ int run_dispensers() {
 uint8_t quadrature_pin[6] = {0,2,4,6,24,26};
 
 int run_gearboxes() {
-    /*
     int16_t value[6] = {0,0,0,0,0,0};
+    uint8_t owner[6] = {0,0,0,0,0,0};
+
+    digital_write(6, 0);
+    digital_write(7, 0);
+
     while(1) {
         
-        for (int i = 0; i < 6; i++) {
+        for (int i = 1; i < 2; i++) {
             // Add the quadrature delta
             value[i] += quadrature_read(quadrature_pin[i]);
 
@@ -62,15 +67,30 @@ int run_gearboxes() {
             }
 
             quadrature_reset(quadrature_pin[i]);
+
+            if (value[i] > GEARBOX_MARGIN) {
+                owner[i] = 1;
+                dispenser_active[i] = 1;
+            } else if (value[i] < -GEARBOX_MARGIN) {
+                owner[i] = 2;
+                dispenser_active[i] = 0;
+            }
         }
         
         printf("Value: %d\n", value[0]);
+        if (owner[1] == 1) {
+            digital_write(6, 1);
+            digital_write(7, 0);
+        } else if (owner[1] == 2) {
+            digital_write(6, 0);
+            digital_write(7, 1);
+        }
+
 
         pause(100);
         yield();
     }
-    */
-
+/*
     // FOR DEMO ONLY:
     while(1) {
         if (go_press()) {
@@ -85,6 +105,7 @@ int run_gearboxes() {
         }
         pause(100);
     }
+    */
     return 0;
 }
 

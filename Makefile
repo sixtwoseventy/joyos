@@ -1,4 +1,5 @@
 # User source files
+#USERSRC = user/happytest/happytest.c
 USERSRC = user/playingField2012/main.c
 
 # Serial port
