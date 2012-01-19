@@ -48,16 +48,26 @@
 // defined by user
 extern int umain (void);
 extern int usetup (void);
+extern void uround_start (void);
+extern void uround_end (void);
 
 volatile uint8_t rf_start = 0;
 
 void round_start() {
+    // Only run user code first time we get a round start message
+    if (rf_start == 0) {
+        printf("Round start\n");
+        uround_start();
+    }
     rf_start = 1;
 }
 
 void round_end() {
-    printf("\nRound end");
-    halt();
+    if (rf_start == 1) {
+        printf("Round end\n");
+        uround_end();
+    }
+    rf_start = 0;
 }
 
 int robot_monitor (void) {
