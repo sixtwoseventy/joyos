@@ -7,16 +7,21 @@ int usetup() {
     return 0;
 }
 
-#define GEARBOX_MAX 300
-#define GEARBOX_MARGIN 100
+#define MAXINT 4294967295
+
+#define GEARBOX_MAX 800
+#define GEARBOX_MARGIN 200
+
+#define LEVER_DEBOUNCE_MS 100
+#define SERVO_MOVE_MS 300
 
 // Constant servo positions
-const uint16_t servo_home[6] = {374,370,0,0,0,0};
+const uint16_t servo_home[6] = {370,370,0,0,0,0};
 const uint16_t servo_active[6] = {206,209,0,0,0,0};
 
 // Constant lever positions
-const int16_t lever_x[6] = {0,0,0,0,0,0};
-const int16_t lever_y[6] = {0,0,0,0,0,0};
+const int16_t lever_x[6] = {1791,1280,-512,-1791,-1280,  512};
+const int16_t lever_y[6] = {-443,1330,1773,  443,-1330,-1773};
 
 // Constant lever pins
 const uint8_t lever_pin[6] = {8,9,10,11,12,13};
@@ -26,6 +31,14 @@ const uint8_t quadrature_pin[6] = {0,2,4,6,24,26};
 
 #define FOOT 443.4
 #define LEVER_DIST_SQ ((FOOT*1.5)*(FOOT*1.5))
+
+#define EXPLORATION_MS 10000
+
+#define SCORE_CAPTURE 100
+#define SCORE_MINE 40
+#define SCORE_DUMP 40
+#define SCORE_EXPLORE 10
+#define SCORE_EXPLORE_EARLY 10
 
 // --------------------
 
@@ -42,10 +55,17 @@ uint16_t scores[2] = {0,0};
 int16_t value[6] = {0,0,0,0,0,0};
 uint8_t owner[6] = {-1,-1,-1,-1,-1,-1};
 
+uint32_t servo_home_time[6] = {0,0,0,0,0,0};
 
+uint32_t lever_debounce_time[6] = {0,0,0,0,0,0};
+uint32_t lever_reset_time[6] = {0,0,0,0,0,0};
 
-float dist_sq(float x1, float y1, float x2, float y2) {
-    return ((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+float dist_sq(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
+    float fx1 = (float)x1;
+    float fy1 = (float)y1;
+    float fx2 = (float)x2;
+    float fy2 = (float)y2;
+    return ((fx1-fx2)*(fx1-fx2) + (fy1-fy2)*(fy1-fy2));
 }
 
 
@@ -95,36 +115,68 @@ int run_dispensers() {
     }
 
 
-    bool last_lever = false;
+    uint8_t last_lever[6] = {1,1,1,1,1,1};
     while(1) {
+        copy_objects();
+
+        // maps robot id to objects array index
+        uint8_t object_num[2];
+        if (objects[0].id == robot_ids[0]) {
+            object_num[0] = 0;
+        } else if (objects[1].id == robot_ids[0]) {
+            object_num[0] = 1;
+        }
+
+        if (objects[0].id == robot_ids[1]) {
+            object_num[1] = 0;
+        } else if (objects[1].id == robot_ids[1]) {
+            object_num[1] = 1;
+        }
+
+        for (i = 0; i < 6; i++) {
+            if (get_time() > servo_home_time[i]) {
+                servo_set_pos(i, servo_home[i]);
+            }
+        }
 
         // No dispensers allowed during first 10 seconds
-        if (round_running == 0 || get_time() - round_start_ms < 10000) {
+        if (round_running == 0 || get_time() - round_start_ms < EXPLORATION_MS) {
             pause(10);
             yield();
             continue;
         }
 
 
-        // XXX: only handles one lever
+        for (i = 0; i < 6; i++) {
+            uint8_t cur_lever = (analog_read(lever_pin[i]) < 500);
 
-        bool cur_lever = (analog_read(8) < 500);
+            if (cur_lever && !last_lever[i]) {
+                lever_debounce_time[i] = get_time() + LEVER_DEBOUNCE_MS;
+            }
 
-        if (cur_lever && !last_lever) {
-            for (i = 0; i < 6; i++) {
-                if (owner[i] == 0) {
-                    servo_set_pos(i, servo_active[i]);
+            if (cur_lever && get_time() > lever_debounce_time[i] && get_time() > lever_reset_time[i]) {
+                if (owner[i] != -1) { 
+                    int16_t owner_x = objects[object_num[owner[i]]].x;
+                    int16_t owner_y = objects[object_num[owner[i]]].y;
+                    float owner_sq_dist = dist_sq(owner_x, owner_y, lever_x[i], lever_y[i]);
+
+                    printf("Pull. owner at (%d,%d), lever at (%d,%d).  owner dist sq = %.2f\n", owner_x, owner_y, lever_x[i], lever_y[i], owner_sq_dist);
+
+                    if (owner_sq_dist < LEVER_DIST_SQ) {
+                        servo_set_pos(i, servo_active[i]);
+                        servo_home_time[i] = get_time() + SERVO_MOVE_MS;
+                        lever_reset_time[i] = servo_home_time[i] + SERVO_MOVE_MS; // lever can be used again 300ms after setting the servo home
+                        
+                        lever_debounce_time[i] = MAXINT;
+
+                        scores[owner[i]] += SCORE_MINE;
+                    }
                 }
             }
-            pause(300);
-            
-            for (i = 0; i < 6; i++) {
-                servo_set_pos(i, servo_home[i]);
-            }
-            pause(400);
+
+            last_lever[i] = cur_lever;
         }
 
-        last_lever = cur_lever;
     }
 
 
@@ -133,19 +185,15 @@ int run_dispensers() {
 
 
 int run_gearboxes() {
-
-    digital_write(6, 0);
-    digital_write(7, 0);
-
     while(1) {
         // No capturing allowed during first 10 seconds
-        if (round_running == 0 || get_time() - round_start_ms < 10000) {
+        if (round_running == 0 || get_time() - round_start_ms < EXPLORATION_MS) {
             pause(10);
             yield();
             continue;
         }
         
-        for (int i = 1; i < 2; i++) {
+        for (int i = 0; i < 6; i++) {
             // Add the quadrature delta
             value[i] += quadrature_read(quadrature_pin[i]);
 
@@ -159,21 +207,19 @@ int run_gearboxes() {
             quadrature_reset(quadrature_pin[i]);
 
             if (value[i] > GEARBOX_MARGIN) {
+                if (owner[i] != 0) {
+                    scores[0] += SCORE_CAPTURE;
+                }
                 owner[i] = 0;
             } else if (value[i] < -GEARBOX_MARGIN) {
+                if (owner[i] != 1) {
+                    scores[1] += SCORE_CAPTURE;
+                }
                 owner[i] = 1;
             }
         }
         
-        printf("Value: %d\n", value[0]);
-        if (owner[1] == 0) {
-            digital_write(6, 1);
-            digital_write(7, 0);
-        } else if (owner[1] == 1) {
-            digital_write(6, 0);
-            digital_write(7, 1);
-        }
-
+        printf("Scores A: %d, B: %d\n", scores[0], scores[1]);
 
         pause(100);
         yield();
@@ -182,6 +228,8 @@ int run_gearboxes() {
 }
 
 int umain() {
+    round_running = 1;
+    round_start_ms = get_time();
     create_thread(&run_dispensers, STACK_DEFAULT, 0, "dispenser_thread");
     run_gearboxes();
     return 0;
