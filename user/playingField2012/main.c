@@ -53,12 +53,14 @@ uint16_t scores[2] = {0,0};
 
 // Territory data
 int16_t value[6] = {0,0,0,0,0,0};
-uint8_t owner[6] = {-1,-1,-1,-1,-1,-1};
+int8_t owner[6] = {-1,-1,-1,-1,-1,-1};
 
 uint32_t servo_home_time[6] = {0,0,0,0,0,0};
 
 uint32_t lever_debounce_time[6] = {0,0,0,0,0,0};
 uint32_t lever_reset_time[6] = {0,0,0,0,0,0};
+uint8_t remaining_balls[6] = {0,0,0,0,0,0};
+
 
 float dist_sq(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     float fx1 = (float)x1;
@@ -97,6 +99,7 @@ void uround_start(){
     for (i=0; i<6; i++) {
         owner[i] = -1;
         value[i] = 0;
+        remaining_balls[i] = 10;
     }
 
     round_start_ms = get_time();
@@ -155,12 +158,12 @@ int run_dispensers() {
             }
 
             if (cur_lever && get_time() > lever_debounce_time[i] && get_time() > lever_reset_time[i]) {
-                if (owner[i] != -1) { 
+                if (owner[i] != -1 && remaining_balls[i] > 0) { 
                     int16_t owner_x = objects[object_num[owner[i]]].x;
                     int16_t owner_y = objects[object_num[owner[i]]].y;
                     float owner_sq_dist = dist_sq(owner_x, owner_y, lever_x[i], lever_y[i]);
 
-                    printf("Pull. owner at (%d,%d), lever at (%d,%d).  owner dist sq = %.2f\n", owner_x, owner_y, lever_x[i], lever_y[i], owner_sq_dist);
+                    //printf("Pull. owner at (%d,%d), lever at (%d,%d).  owner dist sq = %.2f\n", owner_x, owner_y, lever_x[i], lever_y[i], owner_sq_dist);
 
                     if (owner_sq_dist < LEVER_DIST_SQ) {
                         servo_set_pos(i, servo_active[i]);
@@ -170,6 +173,8 @@ int run_dispensers() {
                         lever_debounce_time[i] = MAXINT;
 
                         scores[owner[i]] += SCORE_MINE;
+
+                        remaining_balls[i] -= 1;
                     }
                 }
             }
@@ -181,6 +186,39 @@ int run_dispensers() {
 
 
     return 0;
+}
+
+
+void print_data() {
+    /* Format:
+       DATA:
+       [robot id 0],
+       [robot id 1];
+       [score 0],
+       [score 1];
+       [ter 0 owner],
+       [ter 1 owner],
+       [ter 2 owner],
+       [ter 3 owner],
+       [ter 4 owner],
+       [ter 5 owner],;
+       [ter 0 balls left],
+       [ter 1 balls left],
+       [ter 2 balls left],
+       [ter 3 balls left],
+       [ter 4 balls left],
+       [ter 5 balls left],;
+
+    */
+    printf("DATA:%u,%u;%u,%u;", robot_ids[0], robot_ids[1], scores[0], scores[1]);
+    for (int i = 0; i < 6; i++) {
+        printf("%d,", owner[i]);
+    }
+    printf(";");
+    for (int i = 0; i < 6; i++) {
+        printf("%u,", remaining_balls[i]);
+    }
+    printf("\n");
 }
 
 
@@ -218,18 +256,17 @@ int run_gearboxes() {
                 owner[i] = 1;
             }
         }
-        
-        printf("Scores A: %d, B: %d\n", scores[0], scores[1]);
 
-        pause(100);
+        print_data();
+
+        pause(10);
         yield();
     }
     return 0;
 }
 
 int umain() {
-    round_running = 1;
-    round_start_ms = get_time();
+    uround_start();
     create_thread(&run_dispensers, STACK_DEFAULT, 0, "dispenser_thread");
     run_gearboxes();
     return 0;
