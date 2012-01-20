@@ -279,14 +279,14 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
         case POSITION:
             if (robot_id != 0xFF) {
                 // if we're in position 1, swap to position 0
-                if (rx->payload.coords[1].id == robot_id) {
-                    board_coord t = rx->payload.coords[0];
-                    rx->payload.coords[0] = rx->payload.coords[1];
-                    rx->payload.coords[1] = t;
+                if (rx->payload.game.coords[1].id == robot_id) {
+                    board_coord t = rx->payload.game.coords[0];
+                    rx->payload.game.coords[0] = rx->payload.game.coords[1];
+                    rx->payload.game.coords[1] = t;
                 }
                 acquire(&objects_lock);
-                int offset = (4*rx->seq_no) % 32;
-                memcpy((char *)&locked_objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
+                int offset = (4*rx->seq_no) % 2;
+                memcpy((char *)&locked_objects[offset], rx->payload.game.coords, sizeof(rx->payload.game.coords));
                 uint32_t time_us = get_time_us();
                 for (uint8_t i=0;i<4;i++)
                     locked_position_microtime[i+offset] = time_us;

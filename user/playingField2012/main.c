@@ -210,13 +210,13 @@ void print_data() {
        [ter 5 balls left],;
 
     */
-    printf("DATA:%u,%u;%u,%u;", robot_ids[0], robot_ids[1], scores[0], scores[1]);
+    printf("DATA:%02u,%02u;%04u,%04u;", robot_ids[0], robot_ids[1], scores[0], scores[1]);
     for (int i = 0; i < 6; i++) {
-        printf("%d,", owner[i]);
+        printf("%+.1d,", owner[i]);
     }
     printf(";");
     for (int i = 0; i < 6; i++) {
-        printf("%u,", remaining_balls[i]);
+        printf("%02u,", remaining_balls[i]);
     }
     printf("\n");
 }
@@ -226,6 +226,9 @@ int run_gearboxes() {
     while(1) {
         // No capturing allowed during first 10 seconds
         if (round_running == 0 || get_time() - round_start_ms < EXPLORATION_MS) {
+            for (int i = 0; i < 6; i++) {
+                quadrature_reset(quadrature_pin[i]);
+            }
             pause(10);
             yield();
             continue;
