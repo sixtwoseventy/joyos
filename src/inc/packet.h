@@ -20,19 +20,41 @@ enum {
 
 #endif
 
+
+typedef struct {
+    unsigned owner : 5;
+    unsigned remaining : 4;
+    unsigned rate_limit : 7;
+#ifndef SIMULATE
+} __attribute__ ((aligned (1))) __attribute__ ((packed)) territory_data;
+#else
+} territory_data;
+#endif
+
+
 typedef struct {
     unsigned id : 8;
     signed x : 12;
     signed y : 12;
     signed theta : 12;
-    unsigned hue : 4;
-    unsigned saturation : 4;
-    unsigned radius : 4;
+    unsigned score : 12;
 #ifndef SIMULATE
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) board_coord;
 #else
 } board_coord;
 #endif
+
+
+typedef struct {
+    board_coord coords[2];
+    territory_data territories[6];
+    uint8_t _unused[4];
+#ifndef SIMULATE
+} __attribute__ ((aligned (1))) __attribute__ ((packed)) game_data;
+#else
+} game_data;
+#endif
+
 
 #ifndef SIMULATE
 
@@ -42,7 +64,7 @@ typedef struct {
     unsigned seq_no : 6;
     union {
         uint8_t array[PAYLOAD_SIZE];
-        board_coord coords[4];
+        game_data game;
     } payload;
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) packet_buffer;
 

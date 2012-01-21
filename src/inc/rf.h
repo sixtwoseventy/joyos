@@ -12,8 +12,8 @@
  * as well as retrieve information received over RF
  */
 
-extern volatile board_coord objects[32];
-extern volatile uint32_t position_microtime[32];
+extern volatile game_data game;
+extern volatile uint32_t position_microtime;
 
 #ifndef SIMULATE
 

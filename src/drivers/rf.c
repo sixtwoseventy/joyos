@@ -26,10 +26,10 @@
 #endif
 
 struct lock objects_lock;
-volatile board_coord objects[32];
-volatile board_coord locked_objects[32];
-volatile uint32_t position_microtime[32];
-volatile uint32_t locked_position_microtime[32];
+volatile game_data game;
+volatile game_data locked_game;
+volatile uint32_t position_microtime;
+volatile uint32_t locked_position_microtime;
 
 #ifndef SIMULATE
 
@@ -279,22 +279,20 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
         case POSITION:
             if (robot_id != 0xFF) {
                 // if we're in position 1, swap to position 0
-                if (rx->payload.coords[1].id == robot_id) {
-                    board_coord t = rx->payload.coords[0];
-                    rx->payload.coords[0] = rx->payload.coords[1];
-                    rx->payload.coords[1] = t;
+                if (rx->payload.game.coords[1].id == robot_id) {
+                    board_coord t = rx->payload.game.coords[0];
+                    rx->payload.game.coords[0] = rx->payload.game.coords[1];
+                    rx->payload.game.coords[1] = t;
                 }
                 // if we don't know which board we're on, look for us in position 0
-                if (rf_which_board == 0xFF && rx->payload.coords[0].id == robot_id)
+                if (rf_which_board == 0xFF && rx->payload.game.coords[0].id == robot_id)
                     rf_which_board = rx->board;
                 // if this packet is for the board we're on, save it
                 if (rf_which_board == rx->board) {
                     acquire(&objects_lock);
-                    int offset = (4*rx->seq_no) % 32;
-                    memcpy((char *)&locked_objects[offset], rx->payload.coords, sizeof(rx->payload.coords));
+                    memcpy((char *)&locked_game, &rx->payload.game, sizeof(rx->payload.game));
                     uint32_t time_us = get_time_us();
-                    for (uint8_t i=0;i<4;i++)
-                        locked_position_microtime[i+offset] = time_us;
+                    locked_position_microtime = time_us;
                     release(&objects_lock);
                 }
             }
@@ -333,8 +331,8 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
 //copy the locked_objects[] into the user-accessible objects[] array - this way users cannot stall the rf thread by holding the objects_lock too long
 void copy_objects(){
     acquire(&objects_lock);
-    memcpy(&objects, &locked_objects, sizeof(locked_objects));
-    memcpy(&position_microtime, &locked_position_microtime, sizeof(locked_position_microtime));
+    memcpy((char*)&game, (char*)&locked_game, sizeof(locked_game));
+    position_microtime = locked_position_microtime;
     release(&objects_lock);
 }
 
