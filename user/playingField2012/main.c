@@ -9,15 +9,50 @@ int usetup() {
 
 #define MAXINT 4294967295
 
-#define GEARBOX_MAX 800
+#define GEARBOX_MAX 500
 #define GEARBOX_MARGIN 200
 
 #define LEVER_DEBOUNCE_MS 100
 #define SERVO_MOVE_MS 300
 
+
+/*
+A
+373
+208
+
+B
+230
+83
+
+C
+368
+212
+
+D
+337
+186
+
+E
+372
+210
+
+F
+482
+324
+
+0 - D
+1 - E
+2 - F
+3 - A
+4 - B
+5 - C
+*/
+
+
 // Constant servo positions
-const uint16_t servo_home[6] = {370,370,0,0,0,0};
-const uint16_t servo_active[6] = {206,209,0,0,0,0};
+const uint16_t servo_home[6] =   {337,372,482,373,230,368};
+const uint16_t servo_active[6] = {186,210,324,208, 83,212};
 
 // Constant lever positions
 const int16_t lever_x[6] = {1791,1280,-512,-1791,-1280,  512};
@@ -116,6 +151,21 @@ int run_dispensers() {
     for (i = 0; i < 6; i++) {
         servo_set_pos(i, servo_home[i]);
     }
+
+
+    /*
+    // Dispense all the things
+    while(1) {
+        for (i = 0; i < 6; i++) {
+            servo_set_pos(i, servo_home[i]);
+        }
+        pause(300);
+        for (i = 0; i < 6; i++) {
+            servo_set_pos(i, servo_active[i]);
+        }
+        pause(300);
+    }
+    */
 
 
     uint8_t last_lever[6] = {1,1,1,1,1,1};
@@ -262,6 +312,7 @@ int run_gearboxes() {
 
         print_data();
 
+        //printf("%+3i %+3i %+3i %+3i %+3i %+3i\n", value[0], value[1], value[2], value[3], value[4], value[5]);
         pause(10);
         yield();
     }
