@@ -22,10 +22,9 @@ enum {
 
 
 typedef struct {
-    unsigned owner : 2;
+    unsigned owner : 5;
     unsigned remaining : 4;
     unsigned rate_limit : 7;
-    unsigned _unused : 3;
 #ifndef SIMULATE
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) territory_data;
 #else

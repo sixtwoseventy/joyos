@@ -26,10 +26,10 @@
 #endif
 
 struct lock objects_lock;
-volatile board_coord objects[32];
-volatile board_coord locked_objects[32];
-volatile uint32_t position_microtime[32];
-volatile uint32_t locked_position_microtime[32];
+volatile game_data game;
+volatile game_data locked_game;
+volatile uint32_t position_microtime;
+volatile uint32_t locked_position_microtime;
 
 #ifndef SIMULATE
 
@@ -277,33 +277,19 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
 
     switch (type) {
         case POSITION:
-            if (robot_id != 0xFF) {
-                // if we're in position 1, swap to position 0
-                if (rx->payload.game.coords[1].id == robot_id) {
-                    board_coord t = rx->payload.game.coords[0];
-                    rx->payload.game.coords[0] = rx->payload.game.coords[1];
-                    rx->payload.game.coords[1] = t;
-                }
-                acquire(&objects_lock);
-                int offset = (4*rx->seq_no) % 2;
-                memcpy((char *)&locked_objects[offset], rx->payload.game.coords, sizeof(rx->payload.game.coords));
-                uint32_t time_us = get_time_us();
-                for (uint8_t i=0;i<4;i++)
-                    locked_position_microtime[i+offset] = time_us;
-                release(&objects_lock);
-            }
+            acquire(&objects_lock);
+            memcpy((char *)&locked_game, &rx->payload.game, sizeof(game_data));
+            uint32_t time_us = get_time_us();
+            locked_position_microtime = time_us;
+            release(&objects_lock);
             break;
 
         case START:
-            if (robot_id != 0xFF) {
-                round_start();
-            }
+            round_start();
             break;
 
         case STOP:
-            if (robot_id != 0xFF) {
-                round_end();
-            }
+            round_end();
             break;
 
         case STRING:
@@ -319,8 +305,8 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
 //copy the locked_objects[] into the user-accessible objects[] array - this way users cannot stall the rf thread by holding the objects_lock too long
 void copy_objects(){
     acquire(&objects_lock);
-    memcpy(&objects, &locked_objects, sizeof(locked_objects));
-    memcpy(&position_microtime, &locked_position_microtime, sizeof(locked_position_microtime));
+    memcpy((char*)&game, (char*)&locked_game, sizeof(locked_game));
+    position_microtime = locked_position_microtime;
     release(&objects_lock);
 }
 
