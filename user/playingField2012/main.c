@@ -260,9 +260,13 @@ void print_data() {
        [ter 5 balls left],;
 
     */
-    printf("DATA:%02u,%02u;%04u,%04u;", robot_ids[0], robot_ids[1], scores[0], scores[1]);
+    printf("DATA:%u,%u;%u,%u;", robot_ids[0], robot_ids[1], scores[0], scores[1]);
     for (int i = 0; i < 6; i++) {
-        printf("%+.1d,", owner[i]);
+        if (owner[i] == -1) {
+            printf("0,");
+        } else {
+            printf("%d,", robot_ids[owner[i]]);
+        }
     }
     printf(";");
     for (int i = 0; i < 6; i++) {
