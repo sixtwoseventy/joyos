@@ -3,10 +3,6 @@
 
 extern volatile uint8_t robot_id;
 
-int usetup() {
-    robot_id = 0;
-    return 0;
-}
 
 void print_data();
 
@@ -16,6 +12,7 @@ void print_data();
 #define GEARBOX_MARGIN 200
 
 #define LEVER_DEBOUNCE_MS 100
+#define LEVER_ANALOG_THRESHOLD 500
 #define SERVO_MOVE_MS 300
 
 
@@ -78,6 +75,9 @@ const uint8_t quadrature_pin[6] = {0,2,4,6,24,26};
 #define SCORE_EXPLORE 10
 #define SCORE_EXPLORE_EARLY 30
 
+#define RATE_LIMIT_MS 60000
+#define RATE_LIMIT_BALLS 5
+
 // --------------------
 
 uint8_t round_running = 0;
@@ -98,7 +98,9 @@ uint32_t servo_home_time[6] = {0,0,0,0,0,0};
 
 uint32_t lever_debounce_time[6] = {0,0,0,0,0,0};
 uint32_t lever_reset_time[6] = {0,0,0,0,0,0};
-uint8_t remaining_balls[6] = {0,0,0,0,0,0};
+uint8_t available_balls[6] = {0,0,0,0,0,0};
+
+uint32_t rate_limit_start_time[6] = {0,0,0,0,0,0};
 
 
 float dist_sq(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
@@ -109,6 +111,38 @@ float dist_sq(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     return ((fx1-fx2)*(fx1-fx2) + (fy1-fy2)*(fy1-fy2));
 }
 
+int usetup() {
+    robot_id = 0;
+
+    printf("Startup test, testing servos...\n");
+
+    for (int i = 0; i < 6; i++) {
+        servo_set_pos(i, servo_home[i]);
+        pause(SERVO_MOVE_MS);
+        servo_set_pos(i, servo_home[i] - 20);
+        pause(SERVO_MOVE_MS);
+        servo_set_pos(i, servo_home[i]);
+        pause(500);
+    }
+
+    printf("Test gearboxes and levers now.  Press stop to quit test.\n");
+    while (!stop_press() && !round_running) {
+        for (int i = 0; i < 6; i++) {
+            int16_t val = quadrature_read(quadrature_pin[i]);
+            quadrature_reset(quadrature_pin[i]);
+
+            uint8_t lever = analog_read(lever_pin[i]) < LEVER_ANALOG_THRESHOLD;
+            if (val < -5 || val > 5 || lever) {
+                servo_set_pos(i, servo_home[i] - 20);
+            } else {
+                servo_set_pos(i, servo_home[i]);
+            }
+        }
+        pause(200);
+    }
+
+    return 0;
+}
 
 void uround_start(){
     int i;
@@ -142,7 +176,8 @@ void uround_start(){
     for (i=0; i<6; i++) {
         owner[i] = -1;
         value[i] = 0;
-        remaining_balls[i] = 10;
+        available_balls[i] = RATE_LIMIT_BALLS;
+        rate_limit_start_time[i] = 0;
     }
 
     round_start_ms = get_time();
@@ -232,6 +267,12 @@ int run_dispensers() {
             if (get_time() > servo_home_time[i]) {
                 servo_set_pos(i, servo_home[i]);
             }
+
+            // if the rate limit timer expired, make more balls available and clear the timer
+            if (get_time() > rate_limit_start_time[i] + RATE_LIMIT_MS) {
+                available_balls[i] = RATE_LIMIT_BALLS;
+                rate_limit_start_time[i] = 0;
+            }
         }
 
         // No dispensers allowed during first 10 seconds
@@ -243,14 +284,14 @@ int run_dispensers() {
 
 
         for (i = 0; i < 6; i++) {
-            uint8_t cur_lever = (analog_read(lever_pin[i]) < 500);
+            uint8_t cur_lever = (analog_read(lever_pin[i]) < LEVER_ANALOG_THRESHOLD);
 
             if (cur_lever && !last_lever[i]) {
                 lever_debounce_time[i] = get_time() + LEVER_DEBOUNCE_MS;
             }
 
             if (cur_lever && get_time() > lever_debounce_time[i] && get_time() > lever_reset_time[i]) {
-                if (owner[i] != -1 && remaining_balls[i] > 0) { 
+                if (owner[i] != -1 && available_balls[i] > 0) { 
                     int16_t owner_x = game.coords[object_num[owner[i]]].x;
                     int16_t owner_y = game.coords[object_num[owner[i]]].y;
                     float owner_sq_dist = dist_sq(owner_x, owner_y, lever_x[i], lever_y[i]);
@@ -266,7 +307,12 @@ int run_dispensers() {
 
                         scores[owner[i]] += SCORE_MINE;
 
-                        remaining_balls[i] -= 1;
+                        available_balls[i] -= 1;
+
+                        if (rate_limit_start_time[i] == 0) {
+                            // start the rate limit
+                            rate_limit_start_time[i] = get_time();
+                        }
                     }
                 }
             }
@@ -312,8 +358,19 @@ void print_data() {
     }
     printf(";");
     for (int i = 0; i < 6; i++) {
-        printf("%02u,", remaining_balls[i]);
+        printf("%02u,", available_balls[i]);
     }
+    printf(";");
+    for (int i = 0; i < 6; i++) {
+        uint32_t time = get_time();
+        if (time - rate_limit_start_time[i] > RATE_LIMIT_MS || rate_limit_start_time[i]==0) {
+            printf("0,");
+        } else {
+            uint16_t rl = (RATE_LIMIT_MS - (time - rate_limit_start_time[i]))/1000; 
+            printf("%u,", rl);
+        }
+    }
+
     printf("\n");
 }
 

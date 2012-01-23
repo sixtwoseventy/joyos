@@ -1,7 +1,7 @@
 # User source files
 #USERSRC = user/happytest/happytest.c
-#USERSRC = user/playingField2012/main.c
-USERSRC = user/playingField2012/rfmon.c
+USERSRC = user/playingField2012/main.c
+#USERSRC = user/playingField2012/rfmon.c
 
 # Serial port
 AVRDUDE_USERPORT ?= `ls /dev/tty.usb*`
