@@ -31,7 +31,7 @@ int umain() {
                     game.territories[i].remaining,
                     game.territories[i].rate_limit);
         }
-        pause(20);
+        pause(5);
     }
     return 0;
 }

@@ -1,4 +1,5 @@
 #include <joyos.h>
+#include <math.h>
 
 extern volatile uint8_t robot_id;
 
@@ -6,6 +7,8 @@ int usetup() {
     robot_id = 0;
     return 0;
 }
+
+void print_data();
 
 #define MAXINT 4294967295
 
@@ -51,7 +54,7 @@ F
 
 
 // Constant servo positions
-const uint16_t servo_home[6] =   {337,372,482,373,230,368};
+const uint16_t servo_home[6] =   {337,372,482,370,230,368};
 const uint16_t servo_active[6] = {186,210,324,208, 83,212};
 
 // Constant lever positions
@@ -73,7 +76,7 @@ const uint8_t quadrature_pin[6] = {0,2,4,6,24,26};
 #define SCORE_MINE 40
 #define SCORE_DUMP 40
 #define SCORE_EXPLORE 10
-#define SCORE_EXPLORE_EARLY 10
+#define SCORE_EXPLORE_EARLY 30
 
 // --------------------
 
@@ -85,6 +88,7 @@ uint32_t round_start_ms = 0;
 // Keep track of which robot is which
 uint8_t robot_ids[2] = {170, 170};
 uint16_t scores[2] = {0,0};
+uint8_t visited_territories[2] = {0,0}; //bit indicators of exploration, terr 0 is LSB
 
 // Territory data
 int16_t value[6] = {0,0,0,0,0,0};
@@ -110,26 +114,30 @@ void uround_start(){
     int i;
     copy_objects();
 
-    printf("Robots: %d and %d\n", objects[0].id, objects[1].id);
+    printf("Robots: %d and %d\n", game.coords[0].id, game.coords[1].id);
 
     // determine which robot is which
-    if (objects[0].id == 170 || objects[1].id == 170) {
+    if (game.coords[0].id == 170 || game.coords[1].id == 170) {
         printf("FAIL! Missing one or more robot!\n");
         return;
     }
 
-    if (objects[0].x < 0 && objects[1].x > 0) {
-        robot_ids[0] = objects[0].id;
-        robot_ids[1] = objects[1].id;
-    } else if (objects[0].x > 0 && objects[1].x < 0) {
-        robot_ids[0] = objects[1].id;
-        robot_ids[1] = objects[0].id;
+    if (game.coords[0].x < 0 && game.coords[1].x > 0) {
+        robot_ids[0] = game.coords[0].id;
+        robot_ids[1] = game.coords[1].id;
+    } else if (game.coords[0].x > 0 && game.coords[1].x < 0) {
+        robot_ids[0] = game.coords[1].id;
+        robot_ids[1] = game.coords[0].id;
     } else {
-        printf("FAIL! Robots not on distinct halves! x1:%d, x2:%d\n", objects[0].x, objects[1].x);
+        printf("FAIL! Robots not on distinct halves! x1:%d, x2:%d\n", game.coords[0].x, game.coords[1].x);
     }
 
     scores[0] = 0;
     scores[1] = 0;
+
+    // robots are already in a territory at the beginning, they shouldn't get exploration points
+    visited_territories[0] = 1 << 3;
+    visited_territories[1] = 1 << 0;
 
     for (i=0; i<6; i++) {
         owner[i] = -1;
@@ -170,21 +178,55 @@ int run_dispensers() {
 
     uint8_t last_lever[6] = {1,1,1,1,1,1};
     while(1) {
+        print_data();
+        pause(10);
+
         copy_objects();
 
         // maps robot id to objects array index
         uint8_t object_num[2];
-        if (objects[0].id == robot_ids[0]) {
+        if (game.coords[0].id == robot_ids[0]) {
             object_num[0] = 0;
-        } else if (objects[1].id == robot_ids[0]) {
+        } else if (game.coords[1].id == robot_ids[0]) {
             object_num[0] = 1;
         }
 
-        if (objects[0].id == robot_ids[1]) {
+        if (game.coords[0].id == robot_ids[1]) {
             object_num[1] = 0;
-        } else if (objects[1].id == robot_ids[1]) {
+        } else if (game.coords[1].id == robot_ids[1]) {
             object_num[1] = 1;
         }
+
+        
+        // Check exploration
+        if (round_running) {
+            for (int i = 0; i < 2; i++) {
+                if (dist_sq(0,0,game.coords[object_num[i]].x,game.coords[object_num[i]].y) > (2047.*2047.)) {
+                    continue;
+                }
+                float rad = atan2(game.coords[object_num[i]].y, game.coords[object_num[i]].x);
+                rad += M_PI / 6;  //rotate by 30 degrees so terr 0 starts at 0 theta
+                rad += 2*M_PI;       //add 360 so it's positive
+                rad = fmod(rad, 2*M_PI);
+
+                int territory = (int)(rad / (M_PI/3));
+
+                if ((visited_territories[i] & (1 << territory)) == 0) {
+                    printf("Team %d visited territory %d! %f\n", i, territory, rad);
+                    // newly visited territory!
+                    if (get_time() - round_start_ms < EXPLORATION_MS) {
+                        scores[i] += SCORE_EXPLORE_EARLY;
+                    } else {
+                        scores[i] += SCORE_EXPLORE;
+                    }
+                }
+
+                visited_territories[i] |= (1 << territory);
+            }
+        }
+
+
+
 
         for (i = 0; i < 6; i++) {
             if (get_time() > servo_home_time[i]) {
@@ -209,8 +251,8 @@ int run_dispensers() {
 
             if (cur_lever && get_time() > lever_debounce_time[i] && get_time() > lever_reset_time[i]) {
                 if (owner[i] != -1 && remaining_balls[i] > 0) { 
-                    int16_t owner_x = objects[object_num[owner[i]]].x;
-                    int16_t owner_y = objects[object_num[owner[i]]].y;
+                    int16_t owner_x = game.coords[object_num[owner[i]]].x;
+                    int16_t owner_y = game.coords[object_num[owner[i]]].y;
                     float owner_sq_dist = dist_sq(owner_x, owner_y, lever_x[i], lever_y[i]);
 
                     //printf("Pull. owner at (%d,%d), lever at (%d,%d).  owner dist sq = %.2f\n", owner_x, owner_y, lever_x[i], lever_y[i], owner_sq_dist);
@@ -231,7 +273,7 @@ int run_dispensers() {
 
             last_lever[i] = cur_lever;
         }
-
+        
     }
 
 
@@ -314,7 +356,6 @@ int run_gearboxes() {
             }
         }
 
-        print_data();
 
         //printf("%+3i %+3i %+3i %+3i %+3i %+3i\n", value[0], value[1], value[2], value[3], value[4], value[5]);
         pause(10);
