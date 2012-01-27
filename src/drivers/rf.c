@@ -290,6 +290,19 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
                 // if this packet is for the board we're on, save it
                 if (rf_which_board == rx->board) {
                     acquire(&objects_lock);
+
+                    // if this packet doesn't contain our location, we'll just keep our previous coords
+                    if (rx->payload.game.coords[0].id != robot_id) {
+
+                        // if our opponent is in coords[0], copy them to coords[1] instead
+                        if (rx->payload.game.coords[0].id != 0xAA) {
+                            rx->payload.game.coords[1] = rx->payload.game.coords[0];
+                        }
+
+                        // restore our previous coords
+                        rx->payload.game.coords[0] = locked_game.coords[0];
+                    }
+
                     memcpy((char *)&locked_game, &rx->payload.game, sizeof(rx->payload.game));
                     uint32_t time_us = get_time_us();
                     locked_position_microtime = time_us;
