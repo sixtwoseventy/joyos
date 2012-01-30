@@ -443,5 +443,5 @@ void rf_init (void) {
 
 	#endif
 
-    create_thread (&rf_receive, STACK_DEFAULT, 0, "rf");
+    create_thread (&rf_receive, STACK_DEFAULT, THREAD_PRIORITY_NORMAL, "rf");
 }

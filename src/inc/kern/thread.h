@@ -105,6 +105,9 @@ struct thread {
     int (*th_func)();
 };
 
+#define THREAD_PRIORITY_NORMAL 0
+#define THREAD_PRIORITY_REALTIME 1
+
 // Macros for extracting jmp_buf thingies
 
 #define JMPBUF_FP_OFFSET    16

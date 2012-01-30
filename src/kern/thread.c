@@ -101,25 +101,46 @@ void init_thread(void) {
     ATOMIC_END;
 }
 
+void resume_if_runnable(int id, int priority) {
+    if (threads[id].th_priority == priority) {
+        if (threads[id].th_status == THREAD_PAUSED &&
+                threads[id].th_wakeup_time <= global_time)
+            threads[id].th_status = THREAD_RUNNABLE;
+
+        if (threads[id].th_status == THREAD_RUNNABLE)
+            resume(&threads[id]);
+    }
+}
+
 // Schedule a new thread to run
 // assume interrupts disabled
 void schedule(void) {
-    int id = current_thread ? current_thread->th_id : MAX_THREADS-1;
+    static int id_lo = 0, id_rt = 0;
+    static uint32_t last_time = 0;
     current_thread = NULL;
+    int i, id;
 
-    int offset;
-    for (offset = 1; offset <= MAX_THREADS; offset++) {
-        int tid = (id+offset) % MAX_THREADS;
-
-        if (threads[tid].th_status == THREAD_PAUSED &&
-                threads[tid].th_wakeup_time <= global_time)
-            threads[tid].th_status = THREAD_RUNNABLE;
-
-        if (threads[tid].th_status == THREAD_RUNNABLE)
-            resume(&threads[tid]);
+    if (global_time > last_time && last_time != 0) {
+        if (id_rt < MAX_THREADS || (global_time - last_time) > 1)
+            panic("Failed to meet realtime commitments");
+        id_rt = 0;
     }
 
-    // wait for aliens to take us home...
+    last_time = global_time;
+
+    while (id_rt < MAX_THREADS) {
+        id = id_rt;
+        id_rt = (id_rt + 1) % (MAX_THREADS + 1);
+        resume_if_runnable(id, THREAD_PRIORITY_REALTIME);
+    }
+
+    for (i = 0; i < MAX_THREADS; i++) {
+        id = id_lo;
+        id_lo = (id_lo + 1) % MAX_THREADS;
+        resume_if_runnable(id, THREAD_PRIORITY_NORMAL);
+    }
+
+    // wait for the clock to tick
     SREG |= SREG_IF;
     for(;;);
 }
@@ -419,6 +440,7 @@ uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char 
     threads[i].th_runs = 0;
     threads[i].th_stacksize = STACKSIZE;
     threads[i].th_func = func;
+    threads[i].th_priority = priority;
 
     // make the jmp_buf something sensible,
     // calculate the thread's stack top, and

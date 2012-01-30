@@ -23,7 +23,7 @@ int usetup (void) {
 }
 
 int umain(void) {
-    create_thread(&panicbreak, 64, 0, "panicbreak");
+    create_thread(&panicbreak, 64, THREAD_PRIORITY_NORMAL, "panicbreak");
 
     while (1) {
         yield();
