@@ -30,33 +30,17 @@
 #include <kern/global.h>
 #include <kern/util.h>
 #include <kern/lock.h>
+#include <kern/pipe.h>
 #include <lcd.h>
 #include <avr/pgmspace.h>
 
-void waitForClick(char *msg) {
-    if (msg) {
-#ifdef LCD_DEBUG
-        // TODO: clean up, make more general (don't assume LCD)
-        lcd_clear();
-        // print to LCD
-        lcd_printf("%s", msg);
-#endif
-        // print to UART
-        uart_printf("%s\n", msg);
-    }
-
-    go_click();
-}
-
 // prints n bytes of 'bytes' to UART
 void dumpBytes (uint8_t *bytes, uint8_t n) {
-    uart_printf_P(PSTR("INDEX   ADDR   VALUE\n"));
-    uart_printf_P(PSTR("====================\n"));
-    for (int i = 0; i < n; i++) {
-        uart_printf_P(PSTR("% 5d   %4p   %02x\n"),
-                i, (void *)(bytes + i), bytes[i]);
-    }
+    uart_printf("INDEX   ADDR   VALUE\n");
+    uart_printf("====================\n");
+    for (int i = 0; i < n; i++)
+        uart_printf("% 5d   %4p   %02x\n", i, (void *)(bytes + i), bytes[i]);
 }
 
-#endif 
+#endif
 

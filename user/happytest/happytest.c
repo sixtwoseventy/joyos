@@ -111,8 +111,11 @@ void test_analog() {
 void test_digital() {
     while (!stop_press()) {
         printf("\ndigital=");
+        char buf[9];
+        buf[8] = '\0';
         for (uint8_t i=0;i<8;i++)
-            printf("%c", digital_read(i) ? '1' : '0');
+            buf[i] = digital_read(i) ? '1' : '0';
+        printf("%s", buf);
         pause(50);
     }
 }

@@ -37,6 +37,7 @@
 
 #include <lib/pid.h>
 #include <kern/thread.h>
+#include <kern/pipe.h>
 #include <math.h>
 #include <hal/uart.h>
 

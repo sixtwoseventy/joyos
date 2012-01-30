@@ -79,6 +79,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <avr/pgmspace.h>
+#include <kern/pipe.h>
 
 #else
 
@@ -107,48 +108,11 @@ void lcd_init(void);
 void lcd_set_custom_char(uint8_t chnum,uint8_t *data);
 
 /**
- * Write a data byte to the LCD. Should not normally be needed by user code.
- *
- * @param data      byte to write.
- */
-void lcd_write_data(uint8_t data);
-
-/**
  * Display a string to the LCD.
  *
  * @param string    string to display
  */
 void lcd_print(const char *string);
-
-/**
- * Display a formated string to the LCD.
- *
- * @param fmt       format to display
- * @param ap        virtual argument list
- */
-int lcd_vprintf(const char *fmt, va_list ap);
-
-#endif
-
-/**
- * Display a formated string to the LCD.
- *
- * @param fmt       format to display
- */
-int lcd_printf(const char *fmt, ...);
-
-#ifndef SIMULATE
-
-int lcd_vprintf_P (PGM_P fmt, va_list ap);
-int lcd_printf_P (PGM_P fmt, ...);
-
-/**
- * Print a single character to the LCD.
- *
- * @param ch        character to display
- * @param f         ignored
- */
-int lcd_print_char(char ch, FILE *f);
 
 /**
  * Clear the LCD Screen.
@@ -166,6 +130,10 @@ uint8_t lcd_get_pos(void);
  * @param p     position to move to [0..31]
  */
 void lcd_set_pos(uint8_t p);
+
+void lcd_poll(pipe *p);
+
+#define LCD_POS(x) (uint8_t)(0x80+x)
 
 #endif
 

@@ -58,6 +58,8 @@ typedef struct {
 
 #ifndef SIMULATE
 
+#define BROADCAST ((1<<6)-1)
+
 typedef struct {
     uint8_t type;
     unsigned board : 2;

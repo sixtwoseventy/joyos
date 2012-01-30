@@ -31,6 +31,8 @@
 #include <kern/lock.h>
 #include <kern/thread.h>
 #ifndef SIMULATE
+#include <kern/ring.h>
+#include <kern/pipe.h>
 #include <avr/pgmspace.h>
 #else
 #include <stdarg.h>
@@ -106,9 +108,6 @@ uint8_t lcdClearFlag = 0;
 
 char lcdContents[0x20];
 
-// setup LCD file descriptor (for printf)
-// NOTE: when printing directly to lcdout, lcd_lock should be held
-FILE lcdout = FDEV_SETUP_STREAM(lcd_print_char, NULL, _FDEV_SETUP_WRITE);
 
 #endif
 
@@ -136,6 +135,46 @@ void lcd_write(uint8_t is_data, uint8_t value) {
     LCD_E(0);
     lcd_wait();
     release(&lcd_lock);
+}
+
+uint8_t lcd_write_nonblocking(uint8_t _is_data, uint8_t _value) {
+    static uint8_t state = 0;
+    static uint8_t is_data, value;
+    switch (state) {
+        case 0:
+            // latch parameters
+            is_data = _is_data;
+            value = _value;
+            // set data/ctrl
+            LCD_RS(is_data);
+            // write high nibble
+            if (is_data) PORTD = (PORTD & 0x03) | (((value>>4)&0x0F)<<2) | _BV(LCD_PIN_E) | _BV(LCD_PIN_RS);
+            else PORTD = (PORTD & 0x03) | (((value>>4)&0x0F)<<2) | _BV(LCD_PIN_E);
+            state = 1;
+            break;
+            //lcd_wait();
+        case 1:
+            LCD_E(0);
+            state = 2;
+            break;
+            //lcd_wait();
+        case 2:
+            // write low nibble
+            if (is_data) PORTD = (PORTD & 0x03) | ((value&0x0F)<<2) | _BV(LCD_PIN_E) | _BV(LCD_PIN_RS);
+            else PORTD = (PORTD & 0x03) | ((value&0x0F)<<2) | _BV(LCD_PIN_E);
+            state = 3;
+            break;
+            //lcd_wait();
+        case 3:
+            LCD_E(0);
+            state = 4;
+            break;
+            //lcd_wait();
+        case 4:
+            state = 0;
+            break;
+    }
+    return state != 0;
 }
 
 void lcd_set_custom_char(uint8_t chnum,uint8_t *data) {
@@ -174,141 +213,150 @@ void lcd_init(void) {
     init_lock(&lcd_lock, "LCD lock");
 }
 
-// apparently used only in bootloader, and there only for printable characters
-void lcd_print(const char *string) {
-    acquire(&lcd_lock);
-    uint8_t i=0;
-    while (*string) {
-        if (*string=='\n') {
-            lcd_write(LCD_CTRL, LCD_DDADDR);
-            lcdPos=0;
-        }
-        else
-            lcd_write(LCD_DATA, *string);
-        if (i==15)
-            lcd_write(LCD_CTRL, LCD_DDADDR|0x40);
-        i++;
-        lcdPos++;
-        string++;
+void lcd_clear(void) {
+    lcd_printf("\n%c", LCD_POS(0));
+}
+
+uint8_t lcd_put_nonblocking(char _ch);
+
+// move characters from the ring buffer to the LCD,
+// but don't ever actually wait
+void lcd_poll(pipe *p) {
+    static uint8_t state = 0;
+    static uint8_t locked = 0;
+    switch (state) {
+        case 0:
+            if (try_acquire(&p->tx_buf.lock)) {
+                while (state == 0 && ring_size(&p->tx_buf)) {
+                    if (locked || try_acquire(&lcd_lock)) {
+                        locked = 1;
+                        uint8_t ch;
+                        ring_read(&p->tx_buf, &ch, 1);
+                        state = lcd_put_nonblocking(ch) ? 1 : 0;
+                    } else
+                        break;
+                }
+                release(&p->tx_buf.lock);
+            }
+            break;
+        case 1:
+            state = lcd_put_nonblocking(0) ? 1 : 0;
+            break;
     }
-    release(&lcd_lock);
-}
-
-int lcd_vprintf(const char *fmt, va_list ap) {
-    int count;
-
-    acquire(&lcd_lock);
-    count = vfprintf (&lcdout, fmt, ap);
-    release(&lcd_lock);
-
-    return count;
-}
-
-#endif
-
-int lcd_printf(const char *fmt, ...) {
-    va_list ap;
-    int count;
-
-    va_start(ap, fmt);
-
-	#ifndef SIMULATE
-    count = lcd_vprintf(fmt, ap);
-	#else
-	count = vprintf(fmt, ap);
-	#endif
-
-    va_end(ap);
-
-    return count;
-}
-
-#ifndef SIMULATE
-
-int lcd_vprintf_P (PGM_P fmt, va_list ap) {
-    int count;
-
-    acquire (&lcd_lock);
-    count = vfprintf_P (&lcdout, fmt, ap);
-    release (&lcd_lock);
-
-    return count;
-}
-
-
-
-int lcd_printf_P (PGM_P fmt, ...) {
-    va_list ap;
-    int count;
-
-    va_start (ap, fmt);
-    count = lcd_vprintf_P (fmt, ap);
-    va_end (ap);
-
-    return count;
-}
-
-int lcd_print_char(char ch, FILE *f) {
-    // wait for control
-    // note: we want to wrap the whole printf in the lcd_lock as well, so
-    // the text isn't interleaved... however we acquire here to yield while
-    // waiting
-    acquire(&lcd_lock);
-
-    if (lcdClearFlag) {
-        lcd_clear();
-        lcdClearFlag = 0;
+    if (state == 0 && locked) {
+        release(&lcd_lock);
+        locked = 0;
     }
-    if (lcdPos==0x20)
-        lcdPos = 0;
-    if (ch=='\n')
-        lcdClearFlag = 1;
-    else {
-        if (lcdPos == 0x10)
-            lcdPosActual = 0xFF;
-        if (lcdContents[lcdPos] != ch) {
+}
+
+uint8_t lcd_clear_nonblocking(void);
+uint8_t lcd_set_pos_nonblocking(uint8_t _p);
+
+uint8_t lcd_put_nonblocking(char _ch) {
+    static uint8_t state = 0;
+    static char ch = 0;
+    switch (state) {
+        case 0:
+            // latch parameter
+            ch = _ch;
+            if (lcdClearFlag) {
+                lcdClearFlag = 0;
+                state = lcd_clear_nonblocking() ? 1 : 2;
+                if (state != 2)
+                    break;
+            }
+            // fall through
+        case 2:
+            if (lcdPos==0x20)
+                lcdPos = 0;
+            if (ch=='\n') {
+                lcdClearFlag = 1;
+                state = 0;
+                break;
+            }
+            if ((uint8_t)ch >= 0x80 && (uint8_t)ch < 0xA0) {
+                lcdPos = (uint8_t)ch - 0x80;
+                state = 0;
+                break;
+            }
+            if (lcdPos == 0x10)
+                lcdPosActual = 0xFF;
+            if (lcdContents[lcdPos] == ch) {
+                lcdPos++;
+                state = 0;
+                break;
+            }
             lcdContents[lcdPos] = ch;
-            if (lcdPosActual != lcdPos)
-                lcd_set_pos(lcdPos);
-            lcd_write(LCD_DATA, ch);
+            if (lcdPosActual != lcdPos) {
+                state = lcd_set_pos_nonblocking(lcdPos) ? 3 : 4;
+                if (state != 4)
+                    break;
+            }
+            // fall through
+        case 4:
+            state = lcd_write_nonblocking(LCD_DATA, ch) ? 4 : 5;
+            if (state != 5)
+                break;
+            // fall through
+        case 5:
             lcdPosActual++;
-        }
-        lcdPos++;
+            lcdPos++;
+            state = 0;
+            break;
+        case 1:
+            state = lcd_clear_nonblocking() ? 1 : 2;
+            break;
+        case 3:
+            state = lcd_set_pos_nonblocking(lcdPos) ? 3 : 4;
+            break;
     }
-
-    // give up control
-    release(&lcd_lock);
-    return ch;
-}
-
-// recommended that caller holds lcd_lock
-uint8_t lcd_get_pos(void) {
-    return lcdPos;
+    return state != 0;
 }
 
 void lcd_set_pos(uint8_t p) {
-    acquire(&lcd_lock);
-    lcdPos = p;
-    if (p != lcdPosActual) {
-        lcdPosActual = p;
-        if (p<16)
-            lcd_write(LCD_CTRL, LCD_DDADDR|p);
-        else
-            lcd_write(LCD_CTRL, LCD_DDADDR|(p+0x30));
-    }
-    release(&lcd_lock);
+    lcd_printf("%c", LCD_POS(p));
 }
 
-void lcd_clear(void) {
-    int i;
-    acquire(&lcd_lock);
-    lcd_write(LCD_CTRL, LCD_CLR);
-    lcd_write(LCD_CTRL, LCD_HOME);
-    for(i=0;i<0x20;i++)
-        lcdContents[i] = ' ';
-    lcdPos = 0;
-    lcdPosActual = 0;
-    release(&lcd_lock);
+uint8_t lcd_set_pos_nonblocking(uint8_t _p) {
+    static uint8_t p = 0;
+    static uint8_t state = 0;
+    switch (state) {
+        case 0:
+            // latch parameter
+            p = _p;
+            lcdPos = p;
+            if (p != lcdPosActual) {
+                lcdPosActual = p;
+                if (p<16)
+                    state = lcd_write_nonblocking(LCD_CTRL, LCD_DDADDR|p) ? 1 : 0;
+                else
+                    state = lcd_write_nonblocking(LCD_CTRL, LCD_DDADDR|(p+0x30)) ? 1 : 0;
+            }
+            break;
+        case 1:
+            state = lcd_write_nonblocking(0,0) ? 1 : 0;
+            break;
+    }
+    return state != 0;
+}
+
+uint8_t lcd_clear_nonblocking(void) {
+    static uint8_t state = 0;
+    switch (state) {
+        case 0:
+            for(uint8_t i=0;i<0x20;i++)
+                lcdContents[i] = ' ';
+            lcdPos = 0;
+            lcdPosActual = 0;
+            // fall through
+        case 1:
+            state = lcd_write_nonblocking(LCD_CTRL, LCD_CLR) ? 1 : 2;
+            break;
+        case 2:
+            state = lcd_write_nonblocking(LCD_CTRL, LCD_HOME) ? 2 : 0;
+            break;
+    }
+    return state != 0;
 }
 
 #endif

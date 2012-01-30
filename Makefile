@@ -106,6 +106,7 @@ KERNELSRC = src/kern/main.c \
 			src/kern/board.c \
 			src/kern/fork.c \
 			src/kern/panic.c \
+			src/kern/pipe.c \
 			src/kern/thread.c \
 			src/kern/isr.c \
 			src/kern/util.c \

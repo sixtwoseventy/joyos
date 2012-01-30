@@ -27,6 +27,7 @@
 #include <kern/isr.h>
 #include <kern/lock.h>
 #include <kern/thread.h>
+#include <kern/pipe.h>
 
 #ifndef SIMULATE
 #include <socket.h>

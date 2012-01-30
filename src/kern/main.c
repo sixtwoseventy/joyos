@@ -87,7 +87,6 @@ int main (void) {
 	#ifndef SIMULATE
     init_thread();
     create_thread(&robot_monitor, STACK_DEFAULT, THREAD_PRIORITY_NORMAL, "main");
-    rf_init();
     schedule();
 	#else 
 	robot_monitor();

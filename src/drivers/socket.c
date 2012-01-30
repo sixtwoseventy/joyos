@@ -26,8 +26,8 @@ int isStuck(){
 	read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
     result = (int)(socket_buffer[0] == 't');
 	release(&socket_lock);
-	
-  	return result;
+
+    return result;
 }
 
 void init_socket(){

@@ -55,7 +55,7 @@ void panic_P (PGM_P msg) {
 
     lcd_clear(); // clear lcd
     // report panic message
-    lcd_printf_P(PSTR(PANIC_STRING), msg ? msg : ""); // print msg
+    lcd_printf(PANIC_STRING, msg ? msg : ""); // print msg
 #endif
     extern struct lock uart_lock;
 

@@ -33,153 +33,54 @@ volatile uint32_t locked_position_microtime;
 
 #ifndef SIMULATE
 
-packet_buffer tx, rx;
-
-FILE rfio = FDEV_SETUP_STREAM(rf_put, rf_get, _FDEV_SETUP_RW);
-
-volatile char rf_str_buf[PAYLOAD_SIZE+1];
-volatile uint8_t rf_buf_index = PAYLOAD_SIZE;
-
-uint8_t rf_ch_count = 0;
-
-volatile uint8_t rf_new_str;
-
-struct lock rf_lock;
 volatile uint8_t robot_id = 0xFF;
 
-int rf_send(char ch){
-    ATOMIC_BEGIN;
+volatile int rf_flush_count = 0;
 
-    tx.payload.array[rf_ch_count++] = ch;
+uint8_t rf_get_packet(uint8_t *buf, uint8_t *size);
+void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe);
+uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len);
 
-    if ((ch=='\n') || (rf_ch_count == PAYLOAD_SIZE)){
-        tx.type = STRING;
-        rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet_buffer));
-        rf_ch_count = 0;
+void rf_poll(pipe *p) {
+    if (try_acquire(&p->tx_buf.lock)) {
+        // send a packet if we have MIN(29, rf_flush_count) bytes
+        int n = (rf_flush_count == 0 || rf_flush_count > PAYLOAD_SIZE) ? PAYLOAD_SIZE : rf_flush_count;
+        if (ring_size(&p->tx_buf) >= n) {
+            packet_buffer tx;
+            tx.type = STRING;
+            tx.seq_no = robot_id;
+            ring_read(&p->tx_buf, tx.payload.array, n);
+            rf_send_packet(0xE7, (uint8_t*)(&tx), 2 + n);
+            rf_flush_count -= n;
+            if (rf_flush_count < 0)
+                rf_flush_count = 0;
+        }
+        release(&p->tx_buf.lock);
     }
+    if (try_acquire(&p->rx_buf.lock)) {
+        //if (PINE & _BV(PD7)) {
+        uint8_t status = nrf_read_status();
+        if (status & _BV(NRF_BIT_RX_DR)) {
+            nrf_write_reg(NRF_REG_STATUS, _BV(NRF_BIT_RX_DR)); //reset int
 
+            packet_buffer rx;
+            uint8_t size;
+            uint8_t pipe;
+            while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
+                rf_process_packet(&rx, size, pipe);
+        }
+        //}
+        release(&p->rx_buf.lock);
+    }
+}
+
+int rf_fflush(pipe *p) {
+    acquire(&p->tx_buf.lock);
+    ATOMIC_BEGIN;
+    rf_flush_count = ring_size(&p->tx_buf);
     ATOMIC_END;
-
-    return ch;
-}
-
-int rf_put(char ch, FILE *f) {
-    if (ch == '\n')
-        rf_send('\r');
-
-    return rf_send(ch);
-}
-
-
-int rf_vprintf(const char *fmt, va_list ap) {
-    int count;
-    acquire(&rf_lock);
-    count = vfprintf(&rfio, fmt, ap);
-    release(&rf_lock);
-
-    return count;
-}
-
-#endif
-
-int rf_printf(const char *fmt, ...) {
-    va_list ap;
-    int count;
-
-    va_start(ap, fmt);
-	#ifndef SIMULATE
-    count = rf_vprintf(fmt, ap);
-	#else
-	count = vprintf(fmt, ap);
-	#endif
-    va_end(ap);
-
-    return count;
-}
-
-#ifndef SIMULATE
-
-int rf_vprintf_P(const char *fmt, va_list ap) {
-    int count;
-    acquire(&rf_lock);
-    count = vfprintf_P(&rfio, fmt, ap);
-    release(&rf_lock);
-
-    return count;
-}
-
-int rf_printf_P(const char *fmt, ...) {
-    va_list ap;
-    int count;
-
-    va_start(ap, fmt);
-    count = rf_vprintf_P(fmt, ap);
-    va_end(ap);
-
-    return count;
-}
-
-char rf_recv() {
-    while(rf_buf_index==PAYLOAD_SIZE || rf_str_buf[rf_buf_index]=='\0')
-        yield();
-    return rf_str_buf[rf_buf_index++];
-}
-
-int rf_get(FILE * f) {
-    return rf_recv();
-}
-
-int rf_vscanf(const char *fmt, va_list ap){
-    int count;
-    acquire(&rf_lock);
-    count = vfscanf(&rfio, fmt, ap);
-    release(&rf_lock);
-
-    return count;
-}
-
-#endif
-
-int rf_scanf(const char *fmt, ...){
-    va_list ap;
-    int count;
-
-    va_start(ap, fmt);
-	#ifndef SIMULATE
-    count = rf_vscanf(fmt, ap);
-	#else
-	count = vscanf(fmt, ap);
-	#endif
-    va_end(ap);
-
-    return count;
-}
-
-#ifndef SIMULATE
-
-int rf_vscanf_P(const char *fmt, va_list ap) {
-    int count;
-    acquire(&rf_lock);
-    count = vfscanf_P(&rfio, fmt,ap);
-    release(&rf_lock);
-
-    return count;
-}
-
-int rf_scanf_P(const char *fmt, ...) {
-    va_list ap;
-    int count;
-
-    va_start(ap, fmt);
-    count = rf_vscanf_P(fmt, ap);
-    va_end(ap);
-
-    return count;
-}
-
-uint8_t rf_has_char() {
-    return (rf_buf_index != PAYLOAD_SIZE) &&
-        (rf_str_buf[rf_buf_index] != '\0');
+    release(&p->tx_buf.lock);
+    return 0;
 }
 
 void rf_rx(void) {
@@ -331,9 +232,9 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
             }
             break;
 
-        case STRING:
-            rf_buf_index = 0;
-            memcpy((char *)rf_str_buf, rx->payload.array, PAYLOAD_SIZE);
+        case REPLY_STRING:
+            if (rx->seq_no == BROADCAST || rx->seq_no == robot_id)
+                ring_write(&std_pipes[PIPE_RF].rx_buf, rx->payload.array, size - 2);
             break;
 
         default:
@@ -367,84 +268,13 @@ uint8_t rf_get_packet(uint8_t *buf, uint8_t *size) {
     return pipe;
 }
 
-#endif
-
-int rf_receive (void) {
-
-	#ifndef SIMULATE
-
-    for (;;) {
-        //if (PINE & _BV(PD7)) {
-        if (spi_try_acquire()) {
-            uint8_t status = nrf_read_status();
-            if (status & _BV(NRF_BIT_RX_DR)) {
-                nrf_write_reg(NRF_REG_STATUS, _BV(NRF_BIT_RX_DR)); //reset int
-
-                packet_buffer rx;
-                uint8_t size;
-                uint8_t pipe;
-                while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
-                    rf_process_packet(&rx, size, pipe);
-            }
-            spi_release();
-        }
-        //}
-        yield();
-    }
-    return 0;
-
-	#else
-
-	float x;
-	float y;
-
-	while(1){
-
-		write(sockfd, "x\n", 2);
-		read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
-		sscanf(socket_buffer, "%f", &x);
-
-		write(sockfd, "y\n", 2);
-		read(sockfd, socket_buffer, SOCKET_BUF_SIZE);
-		sscanf(socket_buffer, "%f", &y);
-
-		position_microtime = get_time_us();
-
-		pause(10);
-
-	}
-  
-
-	#endif
-
-}
-
-// Initialize RF
 void rf_init (void) {
-
-	#ifndef SIMULATE
-
-    extern struct thread *current_thread;
-    if (current_thread != NULL)
-        return;
-
-    // The rf_lock ensures that printing to
-    // rf from several threads will not cause
-    // characters to be interleaved between threads
-    init_lock(&rf_lock, "RF Lock");
-
-    init_lock(&objects_lock, "objects[] lock");
-
-    // STRING packets don't contain the null character
-    // for efficiency.  rf_str_buf is one character larger
-    // than the payload to hold this additional character
-    rf_str_buf[PAYLOAD_SIZE] = '\0';
-
-    rf_new_str = 0;
-
-    rf_rx(); //Enable receive mode
-
-	#endif
-
-    create_thread (&rf_receive, STACK_DEFAULT, THREAD_PRIORITY_REALTIME, "rf");
+    static uint8_t first_call = 1;
+    if (first_call) {
+        first_call = 0;
+        rf_rx(); //Enable receive mode
+        init_lock(&objects_lock, "objects[] lock");
+    }
 }
+
+#endif

@@ -23,8 +23,6 @@
  *
  */
 
-#ifndef SIMULATE
-
 #ifndef _UART_H_
 #define _UART_H_
 
@@ -40,75 +38,18 @@
  * The Happyboard configures the UART for 19200 baud, 8N1.
  */
 
-#include <inttypes.h>
-#include <stdio.h>
-
-//notice that printf defaults to using PSTR(), while scanf does not.
-#define printf(statement, ...) uart_printf_P(PSTR(statement), ## __VA_ARGS__)
-#define printf_P(statement, ...) uart_printf_P(statement, ## __VA_ARGS__)
-#define scanf(statement, ...) uart_scanf(statement, ## __VA_ARGS__)
-#define scanf_P(statement, ...) uart_scanf_P(PSTR(statement), ## __VA_ARGS__)
-
-/**
- * Send a character over UART.
- */
-int uart_send(char ch);
-
-/**
- * putc function used by printf.
- */
-int uart_put(char, FILE *);
-
-/**
- * Print an unformated string directly to UART.
- */
-void uart_print(const char *string);
-
-int uart_vprintf(const char *fmt, va_list ap);
-
-#endif
-
-/**
- * Print a formated string to UART.
- */
-int uart_printf(const char *fmt, ...);
+#include <kern/pipe.h>
 
 #ifndef SIMULATE
-
-int uart_vprintf_P(const char *fmt, va_list ap);
-int uart_printf_P(const char *fmt, ...);
-
-/**
- *
- */
-char uart_recv();
-
-int uart_get(FILE *f);
-
-/**
- *
- */
-uint8_t uart_has_char();
-
-int uart_vscanf_P(const char *fmt, va_list ap);
-
-#endif
-
-/**
- * Parse a formatted string from UART.
-*/
-int uart_scanf(const char *fmt, ...);
-
-#ifndef SIMULATE
-
-int uart_vscanf_P(const char *fmt, va_list ap);
-int uart_scanf_P(const char *fmt, ...);
-
 /**
  * Initialize the UART driver.
  */
 void uart_init(uint16_t baudRate);
 
+/**
+ * Move character data from/to the UART.
+ */
+void uart_poll(pipe *p);
 #endif
 
 #endif

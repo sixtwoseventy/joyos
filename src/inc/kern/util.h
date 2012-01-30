@@ -30,7 +30,6 @@
 
 #include <stddef.h>
 
-void waitForClick (char *);
 void dumpBytes (uint8_t *, uint8_t);
 
 #endif // __INCLUDE_UTIL_H__
