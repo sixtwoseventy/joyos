@@ -375,15 +375,18 @@ int rf_receive (void) {
 
     for (;;) {
         //if (PINE & _BV(PD7)) {
-        uint8_t status = nrf_read_status();
-        if (status & _BV(NRF_BIT_RX_DR)) {
-            nrf_write_reg(NRF_REG_STATUS, _BV(NRF_BIT_RX_DR)); //reset int
+        if (spi_try_acquire()) {
+            uint8_t status = nrf_read_status();
+            if (status & _BV(NRF_BIT_RX_DR)) {
+                nrf_write_reg(NRF_REG_STATUS, _BV(NRF_BIT_RX_DR)); //reset int
 
-            packet_buffer rx;
-            uint8_t size;
-            uint8_t pipe;
-            while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
-                rf_process_packet(&rx, size, pipe);
+                packet_buffer rx;
+                uint8_t size;
+                uint8_t pipe;
+                while ((pipe = rf_get_packet((uint8_t*)&rx, &size)) != NRF_RX_P_NO_EMPTY)
+                    rf_process_packet(&rx, size, pipe);
+            }
+            spi_release();
         }
         //}
         yield();
@@ -443,5 +446,5 @@ void rf_init (void) {
 
 	#endif
 
-    create_thread (&rf_receive, STACK_DEFAULT, THREAD_PRIORITY_NORMAL, "rf");
+    create_thread (&rf_receive, STACK_DEFAULT, THREAD_PRIORITY_REALTIME, "rf");
 }
