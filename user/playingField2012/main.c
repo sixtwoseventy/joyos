@@ -51,7 +51,7 @@ F
 
 
 // Constant servo positions
-const uint16_t servo_home[6] =   {337,372,482,370,230,368};
+const uint16_t servo_home[6] =   {337,372,482,365,230,368};
 const uint16_t servo_active[6] = {186,210,324,208, 83,212};
 
 // Constant lever positions
@@ -144,27 +144,9 @@ int usetup() {
     return 0;
 }
 
-void uround_start(){
-    int i;
-    copy_objects();
-
-    printf("Robots: %d and %d\n", game.coords[0].id, game.coords[1].id);
-
-    // determine which robot is which
-    if (game.coords[0].id == 170 || game.coords[1].id == 170) {
-        printf("FAIL! Missing one or more robot!\n");
-        return;
-    }
-
-    if (game.coords[0].x < 0 && game.coords[1].x > 0) {
-        robot_ids[0] = game.coords[0].id;
-        robot_ids[1] = game.coords[1].id;
-    } else if (game.coords[0].x > 0 && game.coords[1].x < 0) {
-        robot_ids[0] = game.coords[1].id;
-        robot_ids[1] = game.coords[0].id;
-    } else {
-        printf("FAIL! Robots not on distinct halves! x1:%d, x2:%d\n", game.coords[0].x, game.coords[1].x);
-    }
+void reset_round() {
+    robot_ids[0] = 0;
+    robot_ids[1] = 0;
 
     scores[0] = 0;
     scores[1] = 0;
@@ -173,12 +155,45 @@ void uround_start(){
     visited_territories[0] = 1 << 3;
     visited_territories[1] = 1 << 0;
 
-    for (i=0; i<6; i++) {
+    for (int i=0; i<6; i++) {
         owner[i] = -1;
         value[i] = 0;
         available_balls[i] = RATE_LIMIT_BALLS;
         rate_limit_start_time[i] = 0;
     }
+}
+
+void uround_start(){
+    copy_objects();
+
+    printf("Robots: %d and %d\n", game.coords[0].id, game.coords[1].id);
+    reset_round();
+
+    // determine which robot is which
+    if (game.coords[0].id != 170 && game.coords[1].id != 170) {
+        if ( (game.coords[0].x < 0 && game.coords[1].x < 0) ||
+             (game.coords[0].x > 0 && game.coords[1].x > 0) ) {
+            printf("FAIL! Robots not on distinct halves! x1:%d, x2:%d\n", game.coords[0].x, game.coords[1].x);
+            pause(300);
+        }
+    }
+
+    if (game.coords[0].id != 170) {
+        if (game.coords[0].x < 0) {
+            robot_ids[0] = game.coords[0].id;
+        } else {
+            robot_ids[1] = game.coords[0].id;
+        }
+    }
+
+    if (game.coords[1].id != 170) {
+        if (game.coords[1].x < 0) {
+            robot_ids[0] = game.coords[1].id;
+        } else {
+            robot_ids[1] = game.coords[1].id;
+        }
+    }
+
 
     round_start_ms = get_time();
 
@@ -187,6 +202,8 @@ void uround_start(){
 
 void uround_end(){
     round_running = 0;
+
+    reset_round();
 }
 
 int run_dispensers() {
