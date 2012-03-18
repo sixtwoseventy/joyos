@@ -11,8 +11,18 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    RobotInterface.cpp \
+    GyroSimulator.cpp \
+    RobotSimulator.cpp \
+    RobotGraphicsItem.cpp \
+    MotorSimulator.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    RobotInterface.h \
+    GyroSimulator.h \
+    RobotSimulator.h \
+    RobotGraphicsItem.h \
+    MotorSimulator.h
 
 FORMS    += mainwindow.ui

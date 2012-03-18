@@ -8,7 +8,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     QGraphicsScene *scene =  new QGraphicsScene(0,0,640,480);
-    scene->setBackgroundBrush(Qt::yellow);
+
+    scene->setBackgroundBrush(QColor(50,50,50));
     ui->worldView->setScene(scene);
 }
 
