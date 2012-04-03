@@ -47,8 +47,6 @@
  *
  */
 
-#ifndef SIMULATE
-
 #define SERVO_RAW_MIN   65
 #define SERVO_RAW_MAX   595
 #define SERVO_RAW_RANGE 530 // (SERVO_RAW_MAX-SERVO_RAW_MIN)
@@ -57,18 +55,22 @@
 
 struct lock servo_lock;
 
+
 void servo_init (void) {
     init_lock (&servo_lock, "servo lock");
 }
 
 void servo_disable(uint8_t servo) {
+    #ifndef SIMULATE
     uint8_t sbase = FPGA_SERVO_BASE + servo*FPGA_SERVO_SIZE;
     acquire (&servo_lock);
     fpga_write_byte(sbase+FPGA_SERVO_LO, 0);
     fpga_write_byte(sbase+FPGA_SERVO_HI, 0);
     release (&servo_lock);
+    #endif
 }
 
+#ifndef SIMULATE
 void servo_set_pos_raw(uint8_t servo, uint16_t pos) {
     pos |= SERVO_ENABLE;
     uint8_t sbase = FPGA_SERVO_BASE + servo*FPGA_SERVO_SIZE;
@@ -78,8 +80,8 @@ void servo_set_pos_raw(uint8_t servo, uint16_t pos) {
     fpga_write_byte(sbase+FPGA_SERVO_HI,(pos>>8));
     release (&servo_lock);
 }
-
 #endif
+
 
 /* pos = 0-511 */
 void servo_set_pos(uint8_t servo, uint16_t pos) {

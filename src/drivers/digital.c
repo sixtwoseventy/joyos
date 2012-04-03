@@ -68,6 +68,7 @@ uint8_t digital_read_8() {
 
 }
 
+#ifndef SIMULATE
 // must be holding digital_lock
 static inline void _set_digital_pinmode(uint8_t port, uint8_t output) {
     if (port > 7) {
@@ -82,6 +83,7 @@ static inline void _set_digital_pinmode(uint8_t port, uint8_t output) {
 
     fpga_write_byte(FPGA_DIGITAL_PINMODE, output_pinmode);
 }
+#endif
 
 uint8_t digital_read(uint8_t port) {
 

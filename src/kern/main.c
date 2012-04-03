@@ -43,6 +43,7 @@
 #else
 #include <joyos.h>
 #include <stdio.h>
+#include <socket.h>
 #endif
 
 // defined by user
@@ -75,11 +76,20 @@ int robot_monitor (void) {
     return umain();
 }
 
+#ifndef SIMULATE
 int main (void) {
+#else
+int main(int argc, char *argv[]) {
+#endif
 
     board_init();
+
 	#ifdef SIMULATE
-	init_socket();
+    if (argc == 2) {
+	    init_socket(argv[1]);
+    } else {
+        printf("NOTICE: No simulation server specified; skipping socket initialization\n");
+    }
 	#endif
 
     printf("JoyOS v"JOYOS_VERSION"\n");

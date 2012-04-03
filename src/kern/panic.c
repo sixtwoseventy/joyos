@@ -70,7 +70,6 @@ void panic_P (PGM_P msg) {
 }
 
 #else
-#define PANIC_STRING "\npanic: %s\n"
 void panic_P (char* msg){
     
 	printf(PANIC_STRING, msg ? msg : "");

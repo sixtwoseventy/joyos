@@ -85,18 +85,20 @@ void motor_brake(uint8_t motor) {
 	#endif
 }
 
-#ifndef SIMULATE
 uint16_t motor_get_current(uint8_t motor) {
+#ifndef SIMULATE
     acquire(&motor_lock);
     uint8_t adcPortMap[6] = {4,5,2,3,0,1};
     uint16_t v;
     mcp3008_get_sample(MCP3008_MOTOR, MCP3008_CH0+adcPortMap[motor],&v);
     release(&motor_lock);
     return v;
+#else
+    return 0;
+#endif
 }
 
 uint16_t motor_get_current_MA(uint8_t motor) {
     return motor_get_current(motor)*MOTOR_MA_PER_LSB;
 }
-#endif
 

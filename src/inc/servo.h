@@ -45,9 +45,7 @@
  */
 
 /** Initialize servos. Should not be called by user. */
-#ifndef SIMULATE
 void servo_init(void);
-#endif
 
 /**
  * Set a servo's position.

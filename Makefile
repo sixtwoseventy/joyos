@@ -2,10 +2,10 @@
 USERSRC = user/robot/umain.c
 
 # Serial port
-AVRDUDE_USERPORT ?= /dev/ttyUSB0
+AVRDUDE_USERPORT ?= `ls /dev/tty.usb*`
 
 # Mac Users - you may need to change this to stk500 if you get an error when programming
-PROGRAMMER = stk500v1
+PROGRAMMER = stk500
 
 
 
@@ -25,7 +25,7 @@ AVRDUDE_PORT ?= /dev/tty.usbserial-A100099c
 
 # Use Arduino Toolchain if on Darwin
 ifeq (${shell uname}, Darwin)
-AVR_ROOT := "/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/"
+AVR_ROOT := /Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/
 AVR_INC := ${AVR_ROOT}/avr-4/
 AVR := ${AVR_ROOT}/bin/avr
 LFLAGS += -L/opt/local/lib
@@ -61,6 +61,8 @@ OS_LDFLAGS = $(OS_PRINTFOP) $(OSMEMLAYOUT)
 
 AVRDUDEFLAGS_BOOT = -c jtag1 -p $(MCU) -P $(AVRDUDE_PORT) -F $(AVRDUDE_CONFIG)
 AVRDUDEFLAGS_USER = -c $(PROGRAMMER) -p $(MCU) -P $(AVRDUDE_USERPORT) -F -b 19200 -V $(AVRDUDE_CONFIG)
+
+GCCFLAGS = -Wall -std=gnu99 -g 
 
 DEBUG_HOST = localhost:4242
 
@@ -235,6 +237,6 @@ distclean:
 	@rm -rf dist/*
 
 simulate:
-	@gcc $(SRC) src/drivers/socket.c $(INCLUDES) -o client -D SIMULATE -lpthread
+	@gcc $(GCCFLAGS) $(SRC) src/drivers/socket.c $(INCLUDES) -o client -D SIMULATE -lpthread
 
 .PHONY: all

@@ -29,7 +29,6 @@
 //
 // Written by: Greg Belote [gbelote@mit.edu]
 
-#ifndef SIMULATE
 
 #include <kern/global.h>
 #include <kern/thread.h>
@@ -39,6 +38,7 @@
 #include <hal/io.h>
 #include <board.h>
 #include <string.h>
+#ifndef SIMULATE
 #include <avr/interrupt.h>
 #include <kern/lock.h>
 
@@ -47,6 +47,9 @@
 #include <joyos.h>
 #include <pthread.h>
 #include <time.h>
+    #ifdef __APPLE__
+        #include <sched.h>
+    #endif
 
 #endif
 
@@ -322,8 +325,11 @@ void yield(void) {
     ATOMIC_END;
 
 	#else
-
+    #ifndef __APPLE__
 	pthread_yield();
+    #else
+    sched_yield();
+    #endif
 
 	#endif
 
@@ -395,6 +401,7 @@ void* thread_stub(void* arg){
 	
 	// cast argument to a function pointer and call it
 	(*((int (*)())arg))();
+    return 0;
 
 }
 
@@ -434,7 +441,7 @@ uint8_t create_thread(int (*func)(), uint16_t stacksize, uint8_t priority, char 
 
     pthread_t tid;
     pthread_create(&tid, NULL, thread_stub, (void*)func);
-
+    return 0;
 	#endif
 }
 
@@ -461,15 +468,20 @@ void halt(void) {
         servo_disable(i);
     }
 
+    #ifdef SIMULATE
+    printf("System HALT.  Press ctrl+c to exit.\n");
+    #endif
 
     // enter busy loop forever
     while(1) {
+        #ifndef SIMULATE
         for (i = 0; i < 3; i++) {
             LED_COMM(1);
             pause(100);
             LED_COMM(0);
             pause(150);
         }
+        #endif
         pause(800);
     }
 }

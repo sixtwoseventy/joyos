@@ -30,7 +30,7 @@ int isStuck(){
   	return result;
 }
 
-void init_socket(){
+void init_socket(char *srv_hostname){
 
     int portno, n;
     struct sockaddr_in serv_addr;
@@ -43,7 +43,7 @@ void init_socket(){
 
     if (sockfd < 0) panic("error opening socket");
 
-    server = gethostbyname("dawgwood");
+    server = gethostbyname(srv_hostname);
 
     if (server == NULL) panic("socket error, no such host\n");
 

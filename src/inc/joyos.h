@@ -28,7 +28,7 @@
 #include <kern/lock.h>
 #include <kern/thread.h>
 
-#ifndef SIMULATE
+#ifdef SIMULATE
 #include <socket.h>
 #endif
 
