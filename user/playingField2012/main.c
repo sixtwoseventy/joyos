@@ -64,6 +64,9 @@ const uint8_t lever_pin[6] = {8,9,10,11,12,13};
 // Constant quadrature pins
 const uint8_t quadrature_pin[6] = {0,2,4,6,24,26};
 
+const uint8_t miasmador_pin[2] = {16,17};
+#define MIASMADOR_THRESHOLD 70
+
 #define FOOT 443.4
 #define LEVER_DIST_SQ ((FOOT*1.5)*(FOOT*1.5))
 
@@ -229,6 +232,7 @@ int run_dispensers() {
 
 
     uint8_t last_lever[6] = {1,1,1,1,1,1};
+    uint8_t last_miasmador[2] = {0,0};
     while(1) {
         print_data();
         pause(10);
@@ -247,6 +251,15 @@ int run_dispensers() {
             object_num[1] = 0;
         } else if (game.coords[1].id == robot_ids[1]) {
             object_num[1] = 1;
+        }
+
+
+        for (uint8_t i = 0; i < 2; i++) {
+            uint16_t cur_miasmador = analog_read(miasmador_pin[i]) > MIASMADOR_THRESHOLD;
+            if (cur_miasmador && !last_miasmador[i]) {
+               scores[i] += 40;
+            }
+            last_miasmador[i] = cur_miasmador;
         }
 
         
