@@ -81,22 +81,22 @@
 
 #define lcd_wait()      delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(96);delay_busy_us(48)
 
-unsigned char smileyData0[] PROGMEM = {
+const unsigned char smileyData0[] PROGMEM = {
     0x00, 0x00, 0x0A, 0x00, 0x00, 0x11, 0x0E, 0x00
 }; // normal smiley
-unsigned char smileyData1[] PROGMEM = {
+const unsigned char smileyData1[] PROGMEM = {
     0x00, 0x00, 0x0A, 0x00, 0x00, 0x11, 0x1F, 0x00
 }; // square smiley
-unsigned char frownData[] PROGMEM = {
+const unsigned char frownData[] PROGMEM = {
     0x00, 0x00, 0x0A, 0x00, 0x00, 0x0E, 0x11, 0x00
 }; // frowny
-unsigned char battData[] PROGMEM = {
+const unsigned char battData[] PROGMEM = {
     0x00, 0x0E, 0x1F, 0x11, 0x11, 0x11, 0x1F, 0x00
 }; // battery low
-unsigned char waitData[] PROGMEM = {
+const unsigned char waitData[] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15, 0x00
 }; // wait ...
-unsigned char dlData[] PROGMEM = {
+const unsigned char dlData[] PROGMEM = {
     0x00, 0x0E, 0x0E, 0x0E, 0x1F, 0x0E, 0x04, 0x00
 }; // bootloader
 

@@ -260,7 +260,7 @@ int main(void) {
                                  "rjmp  write_page\n\t"
                                  "block_done:\n\t"
                                  "clr   __zero_reg__\n\t" //restore zero register
-                                 : "=m" (SPMCR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31");
+                                 : "=m" (SPCR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31");
 
     /* Should really add a wait for RWW section to be enabled, don't actually need it since we never */
     /* exit the bootloader without a power cycle anyhow */
