@@ -47,6 +47,18 @@ volatile uint8_t rf_new_str;
 struct lock rf_lock;
 volatile uint8_t robot_id = 0xFF;
 
+void rf_flush(){
+
+    ATOMIC_BEGIN;
+
+    tx.payload.array[rf_ch_count++] = '\0';
+
+    tx.type = STRING;
+    rf_send_packet(0xE7, (uint8_t*)(&tx), sizeof(packet_buffer));
+    rf_ch_count = 0;
+
+    ATOMIC_END;
+}
 int rf_send(char ch){
     ATOMIC_BEGIN;
 
@@ -272,11 +284,24 @@ uint8_t rf_send_packet(uint8_t address, uint8_t *data, uint8_t len) {
 }
 
 uint8_t rf_which_board = 0xFF;
+volatile uint8_t sniff;
+void sniffer(uint8_t new_sniff){
+   sniff = new_sniff; 
+}
 void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
     uint8_t type = rx->type;
 
     switch (type) {
         case POSITION:
+            if (sniff == 1){
+                acquire(&objects_lock);
+                memcpy((char *)&locked_game, &rx->payload.game, sizeof(rx->payload.game));
+                uint32_t time_us = get_time_us();
+                locked_position_microtime = time_us;
+                release(&objects_lock);
+                return;
+            
+            }
             if (robot_id != 0xFF) {
                 // if we're in position 1, swap to position 0
                 if (rx->payload.game.coords[1].id == robot_id) {
@@ -301,11 +326,13 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
 
                         // restore our previous coords
                         rx->payload.game.coords[0] = locked_game.coords[0];
+                    } else{
+                    
+                        uint32_t time_us = get_time_us();
+                        locked_position_microtime = time_us;
                     }
 
                     memcpy((char *)&locked_game, &rx->payload.game, sizeof(rx->payload.game));
-                    uint32_t time_us = get_time_us();
-                    locked_position_microtime = time_us;
                     release(&objects_lock);
                 }
             }
