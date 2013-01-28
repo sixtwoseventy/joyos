@@ -277,11 +277,13 @@ void rf_process_packet (packet_buffer *rx, uint8_t size, uint8_t pipe) {
 
     switch (type) {
         case POSITION:
+
             acquire(&objects_lock);
             memcpy((char *)&locked_game, &rx->payload.game, sizeof(game_data));
             uint32_t time_us = get_time_us();
             locked_position_microtime = time_us;
             release(&objects_lock);
+
             break;
 
         case START:
