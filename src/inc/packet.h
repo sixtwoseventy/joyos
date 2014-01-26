@@ -21,14 +21,27 @@ enum {
 #endif
 
 
+
+
 typedef struct {
-    unsigned owner : 5;
-    unsigned remaining : 4;
-    unsigned rate_limit : 7;
+    unsigned d_blue_high_remaining : 6;
+    unsigned d_blue_high_rate_limit : 6;
+    unsigned d_red_high_remaining : 6;
+    unsigned d_red_high_rate_limit : 6;
+    unsigned d_blue_low_remaining : 6;
+    unsigned d_blue_low_rate_limit : 6;
+    unsigned d_red_low_remaining : 6;
+    unsigned d_red_low_rate_limit : 6;
+    
+    unsigned t_blue_left : 4;
+    unsigned t_blue_right : 4;
+    unsigned t_orange_left : 4;
+    unsigned t_orange_right  : 4;
+   
 #ifndef SIMULATE
-} __attribute__ ((aligned (1))) __attribute__ ((packed)) territory_data;
+} __attribute__ ((aligned (1))) __attribute__ ((packed))field_data;
 #else
-} territory_data;
+} field_data;
 #endif
 
 
@@ -47,8 +60,7 @@ typedef struct {
 
 typedef struct {
     board_coord coords[2];
-    territory_data territories[6];
-    uint8_t _unused[4];
+    field_data sides[2];
 #ifndef SIMULATE
 } __attribute__ ((aligned (1))) __attribute__ ((packed)) game_data;
 #else

@@ -7,3 +7,4 @@ SVN_VER=`svn info | grep "Revision" | cut -f 2 -d " "`
 
 VER_STRING="Revision $SVN_VER"
 echo "PROJECT_NUMBER=\"$VER_STRING\""
+q

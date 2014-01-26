@@ -1,13 +1,24 @@
-# User source files
+# User source files:
+# two happyboards for levers => dispensers
+USERSRC = user/playingField2014/cornermain.c
+# central communication back to PC
+#USERSRC = user/playingField2014/centralmain.c 
+
 #USERSRC = user/happytest/happytest.c
-USERSRC = user/playingField2012/main.c
+#USERSRC = user/playingField2012/main.c
 #USERSRC = user/playingField2012/rfmon.c
+#USERSRC = user/usb2nrf/transmit.c
 
 # Serial port
-AVRDUDE_USERPORT ?= `ls /dev/tty.usb*`
+#AVRDUDE_USERPORT ?= /dev/ttyUSB0
+#AVRDUDE_USERPORT ?= /dev/ttyUSB1
+#AVRDUDE_USERPORT ?= /dev/tty.usbserial.A702ZDTC
+AVRDUDE_USERPORT ?= /dev/tty.usbserial.A702ZDFT # Board 0
+#AVRDUDE_USERPORT ?= /dev/tty.usbserial.A702ZDFJ # Board 1
+#AVRDUDE_USERPORT ?= /dev/tty.usbserial.A702ZDTO # Central
 
 # Mac Users - you may need to change this to stk500 if you get an error when programming
-PROGRAMMER = stk500
+PROGRAMMER = stk500v1
 
 
 
